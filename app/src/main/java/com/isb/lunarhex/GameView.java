@@ -356,10 +356,18 @@ public class GameView extends SurfaceView implements Runnable
         textBoxes.add(textboxHint);
         textboxGenerateNew = new TextBox("Generate New", true, BUTTONS_X, BUTTONS_Y + (3 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
         textBoxes.add(textboxGenerateNew);
-        textboxMaxMoves = new TextBox("Max Moves: XX", true, BUTTONS_X, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
+        textboxMaxMoves = new TextBox("Max Moves: " + String.valueOf(maxMoves), true, BUTTONS_X, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
         textBoxes.add(textboxMaxMoves);
-        textboxMinMoves = new TextBox("Min Moves: XX", true, BUTTONS_X, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
+        textboxMaxMovesMinus = new TextBox("-", true, BUTTONS_X - 50, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
+        textBoxes.add(textboxMaxMovesMinus);
+        textboxMaxMovesPlus = new TextBox("+", true, BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
+        textBoxes.add(textboxMaxMovesPlus);
+        textboxMinMoves = new TextBox("Min Moves: " + String.valueOf(minMoves), true, BUTTONS_X, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
         textBoxes.add(textboxMinMoves);
+        textboxMinMovesMinus = new TextBox("-", true, BUTTONS_X - 50, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
+        textBoxes.add(textboxMinMovesMinus);
+        textboxMinMovesPlus = new TextBox("+", true, BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
+        textBoxes.add(textboxMinMovesPlus);
         textboxExit = new TextBox("Exit", true, BUTTONS_X, BUTTONS_Y + (7 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
         textBoxes.add(textboxExit);
 
@@ -693,30 +701,30 @@ public class GameView extends SurfaceView implements Runnable
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-//                else if (textboxes[5].isClicked(click_point)) // Maximum moves minus
-//                {
-//                    maxMoves--;
-//                    if (maxMoves < minMoves) maxMoves = minMoves;
-//                    textboxes[4].textfield.text = "Max Moves: " + maxMoves;
-//                }
-//                else if (textboxes[6].isClicked(click_point)) // Maximum moves plus
-//                {
-//                    maxMoves++;
-//                    if (maxMoves > 20) maxMoves = 20;
-//                    textboxes[4].textfield.text = "Max Moves: " + maxMoves;
-//                }
-//                else if (textboxes[8].isClicked(click_point)) // Minimum moves minus
-//                {
-//                    minMoves--;
-//                    if (minMoves < 1) minMoves = 1;
-//                    textboxes[7].textfield.text = "Min Moves: " + minMoves;
-//                }
-//                else if (textboxes[9].isClicked(click_point)) // Minimum moves plus
-//                {
-//                    minMoves++;
-//                    if (minMoves > maxMoves) minMoves = maxMoves;
-//                    textboxes[7].textfield.text = "Min Moves: " + minMoves;
-//                }
+                else if (textboxMaxMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves minus
+                {
+                    maxMoves--;
+                    if (maxMoves < minMoves) maxMoves = minMoves;
+                    textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
+                }
+                else if (textboxMaxMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves plus
+                {
+                    maxMoves++;
+                    if (maxMoves > 20) maxMoves = 20;
+                    textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
+                }
+                else if (textboxMinMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves minus
+                {
+                    minMoves--;
+                    if (minMoves < 1) minMoves = 1;
+                    textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
+                }
+                else if (textboxMinMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves plus
+                {
+                    minMoves++;
+                    if (minMoves > maxMoves) minMoves = maxMoves;
+                    textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
+                }
 //                else if (textboxes[10].isClicked(click_point)) // Exit game
 //                {
 //                    SoundManager.play(SoundManager.BUTTON);
@@ -1068,7 +1076,7 @@ public class GameView extends SurfaceView implements Runnable
                     collisionOffsetX = (int) (HEX_WIDTH * -0.75);
                     collisionOffsetY = (int) (HEX_HEIGHT * 0.5);
                 }
-                // Reduce the collision offset to less than a full hexagon past the desination
+                // Reduce the collision offset to less than a full hexagon past the destination
                 collisionOffsetX *= 0.5;
                 collisionOffsetY *= 0.5;
                 int totalTime = 0;

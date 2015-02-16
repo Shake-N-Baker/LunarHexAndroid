@@ -48,7 +48,7 @@ public class TextBox
      * @param   width - The width of the button
      * @param   height - The height of the button
      * @param   offsetX - The X offset from the button bottom left to display text
-     * @param   offsetY - The Y offset from the buttom bottom left to display text
+     * @param   offsetY - The Y offset from the button bottom left to display text
      */
     public TextBox(String text, boolean isButton, int x, int y, int width, int height, int offsetX, int offsetY)
     {
