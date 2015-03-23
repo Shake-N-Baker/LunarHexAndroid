@@ -470,7 +470,7 @@ public class Utils
      * @param	percent - The percent to magnify the color with
      * @return	The new color value after magnification
      */
-    private static int magnifyColor(int color, float percent)
+    public static int magnifyColor(int color, float percent)
     {
         int r = color & 0xFF0000;
         r = r >> 16;

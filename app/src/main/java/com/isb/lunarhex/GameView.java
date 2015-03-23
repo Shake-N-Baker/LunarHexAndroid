@@ -42,6 +42,7 @@ public class GameView extends SurfaceView implements Runnable
     private static final float BUTTONS_BUFFER_Y_PERCENT = 50f / 576f;
     private static final float BUTTONS_WIDTH_PERCENT = 150f / 640f;
     private static final float BUTTONS_HEIGHT_PERCENT = 30f / 576f;
+    private static final float BUTTONS_BORDER_PERCENT = 2f / 576f;
     private static int MS_PER_CYCLE;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
@@ -55,6 +56,7 @@ public class GameView extends SurfaceView implements Runnable
     private static int BUTTONS_BUFFER_Y;
     private static int BUTTONS_WIDTH;
     private static int BUTTONS_HEIGHT;
+    private static int BUTTONS_BORDER;
 
     /**
      * The number of frames a slide (move) will take to finish
@@ -125,64 +127,64 @@ public class GameView extends SurfaceView implements Runnable
     private Paint buttonPaint;
 
     /**
-     * The generate new textbox
+     * The generate new button
      */
-    private TextBox textboxGenerateNew;
+    private RoundedButton buttonGenerateNew;
 
     /**
-     * The reset textbox
+     * The reset button
      */
-    private TextBox textboxReset;
+    private RoundedButton buttonReset;
 
     /**
      * The moves textbox
      */
-    private TextBox textboxMoves;
+    private RoundedButton textboxMoves;
 
     /**
-     * The hint textbox
+     * The hint button
      */
-    private TextBox textboxHint;
+    private RoundedButton buttonHint;
 
     /**
      * The max moves textbox
      */
-    private TextBox textboxMaxMoves;
+    private RoundedButton textboxMaxMoves;
 
     /**
-     * The max moves minus textbox
+     * The max moves minus button
      */
-    private TextBox textboxMaxMovesMinus;
+    private RoundedButton buttonMaxMovesMinus;
 
     /**
-     * The max moves plus textbox
+     * The max moves plus button
      */
-    private TextBox textboxMaxMovesPlus;
+    private RoundedButton buttonMaxMovesPlus;
 
     /**
      * The min moves textbox
      */
-    private TextBox textboxMinMoves;
+    private RoundedButton textboxMinMoves;
 
     /**
-     * The min moves minus textbox
+     * The min moves minus button
      */
-    private TextBox textboxMinMovesMinus;
+    private RoundedButton buttonMinMovesMinus;
 
     /**
-     * The min moves plus textbox
+     * The min moves plus button
      */
-    private TextBox textboxMinMovesPlus;
+    private RoundedButton buttonMinMovesPlus;
 
     /**
-     * The exit textbox
+     * The exit button
      */
-    private TextBox textboxExit;
+    private RoundedButton buttonExit;
 
     /**
      * List of textboxes
      */
-    private List<TextBox> textBoxes;
+    private List<RoundedButton> roundedButtons;
 
     /**
      * List of the bounding boxes for each hexagon tile
@@ -324,6 +326,7 @@ public class GameView extends SurfaceView implements Runnable
         BUTTONS_BUFFER_Y = Math.round(BUTTONS_BUFFER_Y_PERCENT * SCREEN_HEIGHT);
         BUTTONS_WIDTH = Math.round(BUTTONS_WIDTH_PERCENT * SCREEN_WIDTH);
         BUTTONS_HEIGHT = Math.round(BUTTONS_HEIGHT_PERCENT * SCREEN_HEIGHT);
+        BUTTONS_BORDER = Math.round(BUTTONS_BORDER_PERCENT * SCREEN_HEIGHT);
 
         boundingBoxes = Utils.getBoundingBoxes(HEX_WIDTH, HEX_HEIGHT, BOARD_X, BOARD_Y);
 
@@ -343,33 +346,33 @@ public class GameView extends SurfaceView implements Runnable
         textPaint.setTextSize(25);
         buttonPaint = new Paint();
         buttonPaint.setStyle(Paint.Style.FILL);
-        buttonPaint.setColor(Color.WHITE);
+        buttonPaint.setColor(0xFF50D040);
         buttonPaint.setStrokeWidth(0);
 
         // Setup the text boxes
-        textBoxes = new ArrayList<TextBox>();
-        textboxReset = new TextBox("Reset", true, BUTTONS_X, BUTTONS_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxReset);
-        textboxMoves = new TextBox("Moves: XX", true, BUTTONS_X, BUTTONS_Y + BUTTONS_BUFFER_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMoves);
-        textboxHint = new TextBox("Step Hint", true, BUTTONS_X, BUTTONS_Y + (2 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxHint);
-        textboxGenerateNew = new TextBox("Generate New", true, BUTTONS_X, BUTTONS_Y + (3 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxGenerateNew);
-        textboxMaxMoves = new TextBox("Max Moves: " + String.valueOf(maxMoves), true, BUTTONS_X, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMaxMoves);
-        textboxMaxMovesMinus = new TextBox("-", true, BUTTONS_X - 50, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMaxMovesMinus);
-        textboxMaxMovesPlus = new TextBox("+", true, BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMaxMovesPlus);
-        textboxMinMoves = new TextBox("Min Moves: " + String.valueOf(minMoves), true, BUTTONS_X, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMinMoves);
-        textboxMinMovesMinus = new TextBox("-", true, BUTTONS_X - 50, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMinMovesMinus);
-        textboxMinMovesPlus = new TextBox("+", true, BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxMinMovesPlus);
-        textboxExit = new TextBox("Exit", true, BUTTONS_X, BUTTONS_Y + (7 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, 0, 0);
-        textBoxes.add(textboxExit);
+        roundedButtons = new ArrayList<RoundedButton>();
+        buttonReset = new RoundedButton("Reset", BUTTONS_X, BUTTONS_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonReset);
+        textboxMoves = new RoundedButton("Moves: XX", BUTTONS_X, BUTTONS_Y + BUTTONS_BUFFER_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(textboxMoves);
+        buttonHint = new RoundedButton("Step Hint", BUTTONS_X, BUTTONS_Y + (2 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonHint);
+        buttonGenerateNew = new RoundedButton("Generate New", BUTTONS_X, BUTTONS_Y + (3 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonGenerateNew);
+        textboxMaxMoves = new RoundedButton("Max Moves: " + String.valueOf(maxMoves), BUTTONS_X, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(textboxMaxMoves);
+        buttonMaxMovesMinus = new RoundedButton("-", BUTTONS_X - 50, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonMaxMovesMinus);
+        buttonMaxMovesPlus = new RoundedButton("+", BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonMaxMovesPlus);
+        textboxMinMoves = new RoundedButton("Min Moves: " + String.valueOf(minMoves), BUTTONS_X, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(textboxMinMoves);
+        buttonMinMovesMinus = new RoundedButton("-", BUTTONS_X - 50, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonMinMovesMinus);
+        buttonMinMovesPlus = new RoundedButton("+", BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonMinMovesPlus);
+        buttonExit = new RoundedButton("Exit", BUTTONS_X, BUTTONS_Y + (7 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        roundedButtons.add(buttonExit);
 
         // Construct checking hex to compare taps to when determining which hexagon is selected
         hexCheck = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -674,12 +677,12 @@ public class GameView extends SurfaceView implements Runnable
             case MotionEvent.ACTION_UP:
                 // Check for buttons pressed
                 // ...
-                if (textboxGenerateNew.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Generate New Board
+                if (buttonGenerateNew.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Generate New Board
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     randomBoardState(minMoves, maxMoves);
                 }
-                else if (textboxReset.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Reset
+                else if (buttonReset.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Reset
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     boardState = initialBoardState;
@@ -688,7 +691,7 @@ public class GameView extends SurfaceView implements Runnable
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if (textboxHint.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Step Hint
+                else if (buttonHint.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Step Hint
                 {
                     int solutionIndex = solution.indexOf(boardState);
                     if (solutionIndex == -1) {
@@ -701,25 +704,25 @@ public class GameView extends SurfaceView implements Runnable
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if (textboxMaxMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves minus
+                else if (buttonMaxMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves minus
                 {
                     maxMoves--;
                     if (maxMoves < minMoves) maxMoves = minMoves;
                     textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
                 }
-                else if (textboxMaxMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves plus
+                else if (buttonMaxMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves plus
                 {
                     maxMoves++;
                     if (maxMoves > 20) maxMoves = 20;
                     textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
                 }
-                else if (textboxMinMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves minus
+                else if (buttonMinMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves minus
                 {
                     minMoves--;
                     if (minMoves < 1) minMoves = 1;
                     textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
                 }
-                else if (textboxMinMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves plus
+                else if (buttonMinMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves plus
                 {
                     minMoves++;
                     if (minMoves > maxMoves) minMoves = maxMoves;
@@ -953,9 +956,9 @@ public class GameView extends SurfaceView implements Runnable
             y += (height * 0.5);
         }
         // Draw buttons and texts
-        for (int i = 0; i < textBoxes.size(); i++)
+        for (int i = 0; i < roundedButtons.size(); i++)
         {
-            if (textBoxes.get(i).isVisible) textBoxes.get(i).draw(canvas, textPaint, buttonPaint);
+            if (roundedButtons.get(i).isVisible) roundedButtons.get(i).draw(canvas, textPaint, buttonPaint);
         }
     }
 
