@@ -14,6 +14,11 @@ import android.graphics.RectF;
 public class RoundedButton
 {
     /**
+     * Static text bounds variable to avoid mass creation of rectangles on drawing
+     */
+    private static Rect textBounds;
+
+    /**
      * The rectangle encompassing the button
      */
     public RectF rect;
@@ -67,6 +72,10 @@ public class RoundedButton
         this.border = border;
         this.isVisible = true;
         this.isEnabled = true;
+        if (RoundedButton.textBounds == null)
+        {
+            RoundedButton.textBounds = new Rect();
+        }
     }
 
     /**
@@ -106,6 +115,8 @@ public class RoundedButton
         buttonPaint.setColor(darkerColor);
         canvas.drawRect(shadingRect, buttonPaint);
         buttonPaint.setColor(color);
-        canvas.drawText(this.text, this.rect.left + this.border, (((this.rect.top + this.border) + (this.rect.bottom - this.border)) / 2) - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
+        textPaint.getTextBounds(this.text, 0, this.text.length(), RoundedButton.textBounds);
+        int textWidth = RoundedButton.textBounds.width();
+        canvas.drawText(this.text, (((this.rect.left + this.border) + (this.rect.right - this.border)) / 2) - (textWidth / 2), (((this.rect.top + this.border) + (this.rect.bottom - this.border)) / 2) - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
     }
 }
