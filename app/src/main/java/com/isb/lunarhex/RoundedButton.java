@@ -106,6 +106,6 @@ public class RoundedButton
         buttonPaint.setColor(darkerColor);
         canvas.drawRect(shadingRect, buttonPaint);
         buttonPaint.setColor(color);
-        canvas.drawText(this.text, this.rect.left + this.border, this.rect.bottom - this.border, textPaint);
+        canvas.drawText(this.text, this.rect.left + this.border, (((this.rect.top + this.border) + (this.rect.bottom - this.border)) / 2) - ((textPaint.descent() + textPaint.ascent()) / 2), textPaint);
     }
 }
