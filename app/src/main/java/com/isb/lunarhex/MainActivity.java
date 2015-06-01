@@ -12,9 +12,17 @@ import android.view.MotionEvent;
 public class MainActivity extends Activity
 {
     /**
-     * The canvas.
+     * Save state names
      */
-    private GameView view;
+    public static final String STATE_VIEW = "mainView";
+    public static final String STATE_BOARD = "boardState";
+    public static final String STATE_INITIAL_BOARD = "initialBoardState";
+    public static final String STATE_SOLUTION = "solution";
+
+    /**
+     * The view of the game.
+     */
+    private MainView mainView;
 
     /**
      * Called when the activity is starting.
@@ -49,8 +57,8 @@ public class MainActivity extends Activity
      */
     private void startWithState(Bundle savedInstanceState)
     {
-        view = (GameView) findViewById(R.id.view);
-        view.initialize(savedInstanceState);
+        mainView = (MainView) findViewById(R.id.view);
+        mainView.initialize(savedInstanceState);
     }
 
     /**
@@ -63,11 +71,17 @@ public class MainActivity extends Activity
     protected void onSaveInstanceState(Bundle outState)
     {
         // Save the state of the application
-        outState.putString("boardState", view.boardState);
-        outState.putString("initialBoardState", view.initialBoardState);
-        outState.putStringArrayList("solution", view.solution);
-        /// TODO: Save more
-
+        if(mainView.view instanceof Game)
+        {
+            outState.putString(STATE_VIEW, "game");
+            outState.putString(STATE_BOARD, mainView.game.boardState);
+            outState.putString(STATE_INITIAL_BOARD, mainView.game.initialBoardState);
+            outState.putStringArrayList(STATE_SOLUTION, mainView.game.solution);
+        }
+        else
+        {
+            outState.putString(STATE_VIEW, "menu");
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -79,7 +93,7 @@ public class MainActivity extends Activity
     protected void onResume()
     {
         super.onResume();
-        view.resume();
+        mainView.resume();
     }
 
     /**
@@ -90,7 +104,7 @@ public class MainActivity extends Activity
     protected void onPause()
     {
         super.onPause();
-        view.pause();
+        mainView.pause();
     }
 
     /**
@@ -102,7 +116,7 @@ public class MainActivity extends Activity
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        view.touchHandle(event);
+        mainView.touchHandle(event);
         return true;
     }
 }

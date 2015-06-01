@@ -10,7 +10,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.RadialGradient;
 import android.graphics.Rect;
+import android.graphics.Shader;
 
 /**
  * The Utilities class will have helpful functions for parsing and
@@ -588,8 +590,15 @@ public class Utils
         {
             colorIndex = rand.nextInt(red.length);
             color = Color.argb(55 + rand.nextInt(145), red[colorIndex], green[colorIndex], blue[colorIndex]);
-            paint.setColor(color);
-            canvas.drawCircle(rand.nextInt(screenWidth), rand.nextInt(screenHeight), rand.nextInt(10), paint);
+            int starX = rand.nextInt(screenWidth);
+            int starY = rand.nextInt(screenHeight);
+            int starSize = rand.nextInt(16) + 4;
+            RadialGradient radialGradient = new RadialGradient(starX, starY, starSize / 2,
+                    new int[] {color, color, color & 0x00FFFFFF},
+                    new float[] {0.0f, rand.nextFloat() * 0.5f + 0.05f,  1.0f},
+                    Shader.TileMode.CLAMP);
+            paint.setShader(radialGradient);
+            canvas.drawCircle(starX, starY, starSize, paint);
         }
     }
 }

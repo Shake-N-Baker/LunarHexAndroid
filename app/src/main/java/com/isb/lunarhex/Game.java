@@ -1,38 +1,27 @@
 package com.isb.lunarhex;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * The game class.
  *
  * @author Ian Baker
  */
-public class GameView extends SurfaceView implements Runnable
+public class Game implements InteractiveView
 {
     /**
      * Constants
      */
-    private static final int FRAME_RATE = 60;
     private static final float HEX_WIDTH_PERCENT = 100f / 640f;
     private static final float HEX_HEIGHT_PERCENT = 80f / 576f;
     private static final float BOARD_X_PERCENT = 10f / 640f;
@@ -43,14 +32,11 @@ public class GameView extends SurfaceView implements Runnable
     private static final float BUTTONS_WIDTH_PERCENT = 150f / 640f;
     private static final float BUTTONS_HEIGHT_PERCENT = 30f / 576f;
     private static final float BUTTONS_BORDER_PERCENT = 2f / 576f;
-    private static int MS_PER_CYCLE;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
     private static int BOARD_X;
     private static int BOARD_Y;
-    private static int SCREEN_WIDTH;
-    private static int SCREEN_HEIGHT;
     private static int BUTTONS_X;
     private static int BUTTONS_Y;
     private static int BUTTONS_BUFFER_Y;
@@ -59,34 +45,31 @@ public class GameView extends SurfaceView implements Runnable
     private static int BUTTONS_BORDER;
 
     /**
+     * The screen width
+     */
+    private int screenWidth;
+
+    /**
+     * The screen height
+     */
+    private int screenHeight;
+
+    /**
+     * Reference to the list of boards to be used in the main set of boards.
+     */
+    private List<String> mainBoardSet;
+
+    /**
+     * Reference to the list of lists of boards. Each list represents boards of
+     * index + 1 length minimum number of moves to solve. i.e. boardSet[0] is a
+     * list of boards solved in 1 move. boardSet[1] = 2 move solves. etc.
+     */
+    private List<List<String>> boardSet;
+
+    /**
      * The number of frames a slide (move) will take to finish
      */
     private static int SLIDE_FRAMES = 20;
-
-    /**
-     * The start time in milliseconds of this cycle
-     */
-    private volatile long startTime;
-
-    /**
-     * Whether the game is running or not
-     */
-    public volatile boolean running = false;
-
-    /**
-     * The context
-     */
-    public Context context;
-
-    /**
-     * The surface holder which contains the canvas
-     */
-    public SurfaceHolder holder;
-
-    /**
-     * The thread to run rendering in
-     */
-    public Thread renderThread = null;
 
     /**
      * The background image
@@ -102,13 +85,6 @@ public class GameView extends SurfaceView implements Runnable
      * The cursor down position
      */
     private float cursorDownX = 0, cursorDownY = 0;
-
-    /// TODO: Remove debug FPS tracking variable
-    /**
-     * Float measurement of the frames per second
-     */
-    private float framesPerSecond = 0f;
-    private List<Integer> totalTimes = new ArrayList<Integer>();
 
     /**
      * Boolean for ignoring the current touch event, used when a slide animation occurs to ignore
@@ -229,18 +205,6 @@ public class GameView extends SurfaceView implements Runnable
     public ArrayList<String> solution;
 
     /**
-     * Reference to the list of boards to be used in the main set of boards.
-     */
-    private List<String> mainBoardSet;
-
-    /**
-     * Reference to the list of lists of boards. Each list represents boards of
-     * index + 1 length minimum number of moves to solve. i.e. boardSet[0] is a
-     * list of boards solved in 1 move. boardSet[1] = 2 move solves. etc.
-     */
-    private List<List<String>> boardSet;
-
-    /**
      * Whether a piece is currently moving
      */
     private boolean moving;
@@ -301,32 +265,30 @@ public class GameView extends SurfaceView implements Runnable
     private List<Integer> stopIndices;
 
     /**
-     * Constructor for the game canvas.
+     * Constructor for the game.
      *
-     * @param context - The context
+     * @param   screenWidth - The screen width
+     * @param   screenHeight - The screen height
+     * @param   mainBoardSet - The set of main boards
+     * @param   boardSet - The set of random boards
      */
-    public GameView(Context context, AttributeSet attrs)
+    public Game(int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet)
     {
-        super(context, attrs);
-        this.context = context;
-        MS_PER_CYCLE = 1000 / FRAME_RATE;
-        holder = getHolder();
-
-        // Set the screen resolution
-        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
-        SCREEN_HEIGHT = dm.heightPixels;
-        SCREEN_WIDTH = dm.widthPixels;
-        HEX_WIDTH = Math.round(HEX_WIDTH_PERCENT * SCREEN_WIDTH);
-        HEX_HEIGHT = Math.round(HEX_HEIGHT_PERCENT * SCREEN_HEIGHT);
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        this.mainBoardSet = mainBoardSet;
+        this.boardSet = boardSet;
+        HEX_WIDTH = Math.round(HEX_WIDTH_PERCENT * screenWidth);
+        HEX_HEIGHT = Math.round(HEX_HEIGHT_PERCENT * screenHeight);
         HEX_DEPTH = Math.round(HEX_HEIGHT / 10.0f);
-        BOARD_X = Math.round(BOARD_X_PERCENT * SCREEN_WIDTH);
-        BOARD_Y = Math.round(BOARD_Y_PERCENT * SCREEN_HEIGHT);
-        BUTTONS_X = Math.round(BUTTONS_X_PERCENT * SCREEN_WIDTH);
-        BUTTONS_Y = Math.round(BUTTONS_Y_PERCENT * SCREEN_HEIGHT);
-        BUTTONS_BUFFER_Y = Math.round(BUTTONS_BUFFER_Y_PERCENT * SCREEN_HEIGHT);
-        BUTTONS_WIDTH = Math.round(BUTTONS_WIDTH_PERCENT * SCREEN_WIDTH);
-        BUTTONS_HEIGHT = Math.round(BUTTONS_HEIGHT_PERCENT * SCREEN_HEIGHT);
-        BUTTONS_BORDER = Math.round(BUTTONS_BORDER_PERCENT * SCREEN_HEIGHT);
+        BOARD_X = Math.round(BOARD_X_PERCENT * screenWidth);
+        BOARD_Y = Math.round(BOARD_Y_PERCENT * screenHeight);
+        BUTTONS_X = Math.round(BUTTONS_X_PERCENT * screenWidth);
+        BUTTONS_Y = Math.round(BUTTONS_Y_PERCENT * screenHeight);
+        BUTTONS_BUFFER_Y = Math.round(BUTTONS_BUFFER_Y_PERCENT * screenHeight);
+        BUTTONS_WIDTH = Math.round(BUTTONS_WIDTH_PERCENT * screenWidth);
+        BUTTONS_HEIGHT = Math.round(BUTTONS_HEIGHT_PERCENT * screenHeight);
+        BUTTONS_BORDER = Math.round(BUTTONS_BORDER_PERCENT * screenHeight);
 
         boundingBoxes = Utils.getBoundingBoxes(HEX_WIDTH, HEX_HEIGHT, BOARD_X, BOARD_Y);
 
@@ -378,8 +340,6 @@ public class GameView extends SurfaceView implements Runnable
         hexCheck = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
         Canvas temp = new Canvas(hexCheck);
         Utils.drawHex(temp, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFF0000, 0, false);
-
-        loadBoardSets(context);
     }
 
     /**
@@ -394,9 +354,9 @@ public class GameView extends SurfaceView implements Runnable
         if (state != null)
         {
             // Load the old state variables
-            boardState = state.getString("boardState");
-            initialBoardState = state.getString("initialBoardState");
-            solution = state.getStringArrayList("solution");
+            boardState = state.getString(MainActivity.STATE_BOARD);
+            initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
+            solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
 
             // Generate a background to use
             generateBackground();
@@ -416,151 +376,12 @@ public class GameView extends SurfaceView implements Runnable
         }
     }
 
-    /**
-     * Load and setup the sets of boards.
-     *
-     * @param context - The context
-     */
-    private void loadBoardSets(Context context)
-    {
-        mainBoardSet = new ArrayList<String>();
-        boardSet = new ArrayList<List<String>>();
-        for (int i = 0; i < 20; i++)
-        {
-            List<String> moveSet = new ArrayList<String>();
-            boardSet.add(moveSet);
-        }
-
-        // Fetch the boards from the raw resources and store them
-        try
-        {
-            BufferedReader inputMainBoards = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.boards_main)));
-            BufferedReader inputSmallSetBoards = new BufferedReader(new InputStreamReader(context.getResources().openRawResource(R.raw.boards_small)));
-            try
-            {
-                String mainBoardString = inputMainBoards.readLine();
-                String[] mainBoards = mainBoardString.split(",");
-                for (int i = 0; i < mainBoards.length; i++)
-                {
-                    mainBoardSet.add(mainBoards[i]);
-                }
-                String smallBoardString = inputSmallSetBoards.readLine();
-                String[] smallBoards = smallBoardString.split(",");
-                for (int i = 0; i < smallBoards.length; i++)
-                {
-                    if (mainBoardSet.indexOf(smallBoards[i]) == -1)
-                    {
-                        int solveMoves = Integer.parseInt(String.valueOf(smallBoards[i].charAt(0)), 36);
-                        boardSet.get(solveMoves - 1).add(smallBoards[i]);
-                    }
-                }
-            }
-            finally
-            {
-                inputMainBoards.close();
-            }
-        }
-        catch (FileNotFoundException e)
-        {
-            Log.e("LunarHex", "Error loading file: " + e);
-        }
-        catch (IOException e)
-        {
-            Log.e("LunarHex", "Error reading file: " + e);
-        }
-    }
-
-    /**
-     * Called to resume the game.
-     */
-    public void resume()
-    {
-        running = true;
-        startTime = System.currentTimeMillis();
-        renderThread = new Thread(this);
-        renderThread.start();
-    }
-
-    /**
-     * Starts executing the active part of the class' code. This method is called when
-     * a thread is started that has been created with a class which implements Runnable.
-     */
-    @Override
-    public void run()
-    {
-        while(running)
-        {
-            if(!holder.getSurface().isValid())
-            {
-                // Skip this while loop iteration and wait until it becomes valid
-                continue;
-            }
-
-            // Sleep extra time to produce the desired frame rate
-            long endTime = System.currentTimeMillis();
-            long totalTime = endTime - startTime;
-            if (totalTime < MS_PER_CYCLE)
-            {
-                try
-                {
-                    Thread.sleep(MS_PER_CYCLE - totalTime);
-                }
-                catch(InterruptedException e)
-                {
-                    Log.e("LunarHex", "Thread sleep exception: " + e);
-                }
-            }
-            startTime = System.currentTimeMillis();
-
-            /// TODO: Remove debug set frames per second
-            framesPerSecond = 1000 / totalTime;
-            totalTimes.add((int) totalTime);
-            if (totalTimes.size() > 60)
-            {
-                totalTimes.remove(0);
-                int sum = 0;
-                for (int i = 0; i < totalTimes.size(); i++)
-                {
-                    sum += totalTimes.get(i);
-                }
-                framesPerSecond = (60 * 1000) / sum;
-            }
-
-            cycle();
-        }
-    }
-
-    /**
-     * Called to pause the game.
-     */
-    public void pause()
-    {
-        running = false;
-        boolean retry = true;
-        while(retry)
-        {
-            try
-            {
-                renderThread.join();
-                retry = false;
-            }
-            catch (InterruptedException e)
-            {
-                // Retry
-            }
-        }
-    }
-
-    /**
-     * Handles the frame based game logic.
-     */
-    private void cycle()
+    public void update(Canvas canvas, float framesPerSecond)
     {
         // Update
         processSlide();
 
         // Draw
-        Canvas canvas = holder.lockCanvas();
         drawBoard(canvas);
         drawHighlight(canvas);
         drawObjectsOnBoard(canvas);
@@ -576,8 +397,6 @@ public class GameView extends SurfaceView implements Runnable
         canvas.drawCircle(cursorX, cursorY, 5, paint);
         /// TODO: Remove draw debug frames per second
         canvas.drawText(String.valueOf(framesPerSecond), 10, 40, textPaint);
-
-        holder.unlockCanvasAndPost(canvas);
     }
 
     /**
@@ -1127,8 +946,8 @@ public class GameView extends SurfaceView implements Runnable
     {
         if (background == null)
         {
-            background = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888);
+            background = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         }
-        Utils.generateBackground(background, SCREEN_WIDTH, SCREEN_HEIGHT);
+        Utils.generateBackground(background, screenWidth, screenHeight);
     }
 }
