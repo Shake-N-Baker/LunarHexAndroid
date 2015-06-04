@@ -20,6 +20,11 @@ import java.util.Random;
 public class Game implements InteractiveView
 {
     /**
+     * Reference to the main view.
+     */
+    MainView mainView;
+
+    /**
      * Constants
      */
     private static final float HEX_WIDTH_PERCENT = 100f / 640f;
@@ -267,13 +272,15 @@ public class Game implements InteractiveView
     /**
      * Constructor for the game.
      *
+     * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
      * @param   mainBoardSet - The set of main boards
      * @param   boardSet - The set of random boards
      */
-    public Game(int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet)
+    public Game(MainView main, int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet)
     {
+        this.mainView = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.mainBoardSet = mainBoardSet;
@@ -376,6 +383,12 @@ public class Game implements InteractiveView
         }
     }
 
+    /**
+     * Handles the updates to the current canvas and game frame logic.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   framesPerSecond - The frames per second for debugging
+     */
     public void update(Canvas canvas, float framesPerSecond)
     {
         // Update
@@ -547,11 +560,11 @@ public class Game implements InteractiveView
                     if (minMoves > maxMoves) minMoves = maxMoves;
                     textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
                 }
-//                else if (textboxes[10].isClicked(click_point)) // Exit game
-//                {
+                else if (buttonExit.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorDownY)) // Exit game
+                {
 //                    SoundManager.play(SoundManager.BUTTON);
-//                    dispatchEvent(new CustomEvent(CustomEvent.EXIT));
-//                }
+                    mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
+                }
 //                else if (textboxes[11].isClicked(click_point)) // Next level
 //                {
 //                    SoundManager.play(SoundManager.BUTTON);

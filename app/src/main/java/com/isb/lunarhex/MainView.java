@@ -104,19 +104,21 @@ public class MainView extends SurfaceView implements Runnable
 
         loadBoardSets(context);
 
-        game = new Game(SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
-        menu = new Menu(SCREEN_WIDTH, SCREEN_HEIGHT);
+        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
+        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT);
+        game.initialize(null);
+        menu.initialize(null);
     }
 
     /**
-     * Initializes or re-initializes the board with the given state.
+     * Initializes or re-initializes the current view with the given state.
      * Called on start up and when brought from background.
      *
-     * @param   state - The state of the game
+     * @param   state - The state of the view
      */
     public void initialize(Bundle state)
     {
-        String savedView = "game";
+        String savedView = "menu";
         if(state != null)
         {
             savedView = state.getString(MainActivity.STATE_VIEW);
@@ -278,12 +280,29 @@ public class MainView extends SurfaceView implements Runnable
     }
 
     /**
-     * Handles the game logic for touch events.
+     * Handles the view logic for touch events.
      *
      * @param   motionEvent - The touch motion event
      */
     public void touchHandle(MotionEvent motionEvent)
     {
         view.touchHandle(motionEvent);
+    }
+
+    /**
+     * Handles custom events.
+     *
+     * @param   event - The custom event
+     */
+    public void handleEvent(CustomEvent event)
+    {
+        if (event.isType(CustomEvent.NEW_CUSTOM_GAME))
+        {
+            view = game;
+        }
+        else if (event.isType(CustomEvent.EXIT_GAME))
+        {
+            view = menu;
+        }
     }
 }
