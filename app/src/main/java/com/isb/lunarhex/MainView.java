@@ -286,6 +286,13 @@ public class MainView extends SurfaceView implements Runnable
      */
     public void touchHandle(MotionEvent motionEvent)
     {
+        Touch.x = (int) motionEvent.getX();
+        Touch.y = (int) motionEvent.getY();
+        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+        {
+            Touch.downX = (int) motionEvent.getX();
+            Touch.downY = (int) motionEvent.getY();
+        }
         view.touchHandle(motionEvent);
     }
 

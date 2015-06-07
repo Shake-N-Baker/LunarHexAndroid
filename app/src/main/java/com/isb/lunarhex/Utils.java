@@ -12,6 +12,7 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 
 /**
@@ -583,10 +584,18 @@ public class Utils
         Random rand = new Random();
         int colorIndex;
         int color;
-        int[] red =     {255, 153, 250, 17, 106};
-        int[] green =   {255, 153, 149, 35, 37};
-        int[] blue =    {255, 240, 191, 110, 60};
-        for(int i = 0; i < 500; i++)
+        int[] red =     {255, 200, 253};
+        int[] green =   {255, 200, 200};
+        int[] blue =    {255, 247, 222};
+        for(int i = 0; i < 400; i++)
+        {
+            int starX = rand.nextInt(screenWidth);
+            int starY = rand.nextInt(screenHeight);
+            int starSize = (int) Math.ceil((screenWidth + screenHeight) / 1216);
+            paint.setColor(Color.WHITE);
+            canvas.drawRect(new RectF(starX, starY, starX + starSize, starY + starSize), paint);
+        }
+        for(int i = 0; i < 100; i++)
         {
             colorIndex = rand.nextInt(red.length);
             color = Color.argb(55 + rand.nextInt(145), red[colorIndex], green[colorIndex], blue[colorIndex]);

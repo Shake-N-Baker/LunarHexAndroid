@@ -82,16 +82,6 @@ public class Game implements InteractiveView
     private static Bitmap background;
 
     /**
-     * The cursor position
-     */
-    private float cursorX = 0, cursorY = 0;
-
-    /**
-     * The cursor down position
-     */
-    private float cursorDownX = 0, cursorDownY = 0;
-
-    /**
      * Boolean for ignoring the current touch event, used when a slide animation occurs to ignore
      * all events until the next touch down event.
      */
@@ -404,10 +394,10 @@ public class Game implements InteractiveView
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.RED);
         paint.setStrokeWidth(10);
-        canvas.drawCircle(cursorDownX, cursorDownY, 5, paint);
+        canvas.drawCircle(Touch.downX, Touch.downY, 5, paint);
         /// TODO: Remove draw debug cursor
         paint.setColor(Color.GREEN);
-        canvas.drawCircle(cursorX, cursorY, 5, paint);
+        canvas.drawCircle(Touch.x, Touch.y, 5, paint);
         /// TODO: Remove draw debug frames per second
         canvas.drawText(String.valueOf(framesPerSecond), 10, 40, textPaint);
     }
@@ -455,15 +445,8 @@ public class Game implements InteractiveView
      */
     public void touchHandle(MotionEvent motionEvent)
     {
-        // Update the cursor
-        float x = motionEvent.getX();
-        float y = motionEvent.getY();
-        cursorX = x;
-        cursorY = y;
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
         {
-            cursorDownX = x;
-            cursorDownY = y;
             if (slideFrame <= 0) ignoreTouch = false;
         }
 
@@ -509,12 +492,12 @@ public class Game implements InteractiveView
             case MotionEvent.ACTION_UP:
                 // Check for buttons pressed
                 // ...
-                if (buttonGenerateNew.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Generate New Board
+                if (buttonGenerateNew.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Generate New Board
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     randomBoardState(minMoves, maxMoves);
                 }
-                else if (buttonReset.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Reset
+                else if (buttonReset.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Reset
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     boardState = initialBoardState;
@@ -523,7 +506,7 @@ public class Game implements InteractiveView
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if (buttonHint.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Step Hint
+                else if (buttonHint.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Step Hint
                 {
                     int solutionIndex = solution.indexOf(boardState);
                     if (solutionIndex == -1) {
@@ -536,31 +519,31 @@ public class Game implements InteractiveView
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if (buttonMaxMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves minus
+                else if (buttonMaxMovesMinus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Maximum moves minus
                 {
                     maxMoves--;
                     if (maxMoves < minMoves) maxMoves = minMoves;
                     textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
                 }
-                else if (buttonMaxMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Maximum moves plus
+                else if (buttonMaxMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Maximum moves plus
                 {
                     maxMoves++;
                     if (maxMoves > 20) maxMoves = 20;
                     textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
                 }
-                else if (buttonMinMovesMinus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves minus
+                else if (buttonMinMovesMinus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves minus
                 {
                     minMoves--;
                     if (minMoves < 1) minMoves = 1;
                     textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
                 }
-                else if (buttonMinMovesPlus.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorY)) // Minimum moves plus
+                else if (buttonMinMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves plus
                 {
                     minMoves++;
                     if (minMoves > maxMoves) minMoves = maxMoves;
                     textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
                 }
-                else if (buttonExit.isToggled((int) cursorDownX, (int) cursorDownY, (int) cursorX, (int) cursorDownY)) // Exit game
+                else if (buttonExit.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Exit game
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
@@ -728,9 +711,9 @@ public class Game implements InteractiveView
     {
         for (int i = 0; i < boundingBoxes.size(); i++)
         {
-            if (boundingBoxes.get(i).contains((int) cursorX, (int) cursorY))
+            if (boundingBoxes.get(i).contains(Touch.x, Touch.y))
             {
-                if (Integer.toHexString(hexCheck.getPixel((int) cursorX - boundingBoxes.get(i).left, (int) cursorY - boundingBoxes.get(i).top)).equals("ffff0000"))
+                if (Integer.toHexString(hexCheck.getPixel(Touch.x - boundingBoxes.get(i).left, Touch.y - boundingBoxes.get(i).top)).equals("ffff0000"))
                 {
                     return i;
                 }
