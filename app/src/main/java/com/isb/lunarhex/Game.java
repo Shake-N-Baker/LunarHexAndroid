@@ -92,6 +92,9 @@ public class Game implements InteractiveView
      */
     private Paint textPaint;
 
+    /// TODO: Remove me!
+    private Paint debugPaint;
+
     /**
      * The paint used for buttons
      */
@@ -302,7 +305,10 @@ public class Game implements InteractiveView
         // Setup the paint for text boxes
         textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(25);
+        textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
+        debugPaint = new Paint();
+        debugPaint.setColor(Color.GREEN);
+        debugPaint.setTextSize(mainView.FONT_SIZE_15_SP);
         buttonPaint = new Paint();
         buttonPaint.setStyle(Paint.Style.FILL);
         buttonPaint.setColor(0xFF50D040);
@@ -399,7 +405,7 @@ public class Game implements InteractiveView
         paint.setColor(Color.GREEN);
         canvas.drawCircle(Touch.x, Touch.y, 5, paint);
         /// TODO: Remove draw debug frames per second
-        canvas.drawText(String.valueOf(framesPerSecond), 10, 40, textPaint);
+        canvas.drawText(String.valueOf(framesPerSecond), 10, 40, debugPaint);
     }
 
     /**
@@ -684,7 +690,7 @@ public class Game implements InteractiveView
     {
         int moves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
         /// TODO: Setup text here for the Shortest moves to clear textfield(s)
-//        textboxes[2].textfield.text = "Moves: " + moves.toString();
+        textboxMoves.text = "Moves: " + String.valueOf(moves);
 //        textboxes[13].textfield.text = "Best Clear: " + moves.toString();
         List<Integer> encodedMoves = new ArrayList<Integer>();
         int i;

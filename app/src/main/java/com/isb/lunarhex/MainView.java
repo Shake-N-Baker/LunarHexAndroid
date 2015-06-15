@@ -28,6 +28,9 @@ public class MainView extends SurfaceView implements Runnable
      * Constants
      */
     private static final int FRAME_RATE = 60;
+    public static int FONT_SIZE_15_SP;
+    public static int FONT_SIZE_30_SP;
+    public static int FONT_SIZE_60_SP;
     private static int MS_PER_CYCLE;
     private static int SCREEN_WIDTH;
     private static int SCREEN_HEIGHT;
@@ -101,6 +104,9 @@ public class MainView extends SurfaceView implements Runnable
         DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
         SCREEN_HEIGHT = dm.heightPixels;
         SCREEN_WIDTH = dm.widthPixels;
+        FONT_SIZE_15_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_15);
+        FONT_SIZE_30_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_30);
+        FONT_SIZE_60_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_60);
 
         loadBoardSets(context);
 
