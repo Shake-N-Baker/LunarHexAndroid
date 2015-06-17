@@ -22,22 +22,22 @@ public class Menu implements InteractiveView
      */
     private static final float TITLE_X_PERCENT = 23f / 100f;
     private static final float TITLE_Y_PERCENT = 20f / 100f;
-    private static final float PLAY_HEX_X_PERCENT = 16f / 100f;
-    private static final float PLAY_HEX_Y_PERCENT = 28f / 100f;
-    private static final float RANDOM_HEX_X_PERCENT = 56f / 100f;
-    private static final float RANDOM_HEX_Y_PERCENT = 28f / 100f;
-    private static final float SOURCE_HEX_X_PERCENT = 36f / 100f;
-    private static final float SOURCE_HEX_Y_PERCENT = 60f / 100f;
+    private static final float LEVELS_HEX_X_PERCENT = 16f / 100f;
+    private static final float LEVELS_HEX_Y_PERCENT = 28f / 100f;
+    private static final float CUSTOM_HEX_X_PERCENT = 56f / 100f;
+    private static final float CUSTOM_HEX_Y_PERCENT = 28f / 100f;
+    private static final float ABOUT_HEX_X_PERCENT = 36f / 100f;
+    private static final float ABOUT_HEX_Y_PERCENT = 60f / 100f;
     private static final float HEX_BUTTON_WIDTH_PERCENT = 30f / 100f;
     private static final float HEX_BUTTON_HEIGHT_PERCENT = 35f / 100f;
     private static int TITLE_X;
     private static int TITLE_Y;
-    private static int PLAY_HEX_X;
-    private static int PLAY_HEX_Y;
-    private static int RANDOM_HEX_X;
-    private static int RANDOM_HEX_Y;
-    private static int SOURCE_HEX_X;
-    private static int SOURCE_HEX_Y;
+    private static int LEVELS_HEX_X;
+    private static int LEVELS_HEX_Y;
+    private static int CUSTOM_HEX_X;
+    private static int CUSTOM_HEX_Y;
+    private static int ABOUT_HEX_X;
+    private static int ABOUT_HEX_Y;
     private static int HEX_BUTTON_WIDTH;
     private static int HEX_BUTTON_HEIGHT;
 
@@ -126,18 +126,18 @@ public class Menu implements InteractiveView
 
         TITLE_X = Math.round(TITLE_X_PERCENT * screenWidth);
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
-        PLAY_HEX_X = Math.round(PLAY_HEX_X_PERCENT * screenWidth);
-        PLAY_HEX_Y = Math.round(PLAY_HEX_Y_PERCENT * screenHeight);
-        RANDOM_HEX_X = Math.round(RANDOM_HEX_X_PERCENT * screenWidth);
-        RANDOM_HEX_Y = Math.round(RANDOM_HEX_Y_PERCENT * screenHeight);
-        SOURCE_HEX_X = Math.round(SOURCE_HEX_X_PERCENT * screenWidth);
-        SOURCE_HEX_Y = Math.round(SOURCE_HEX_Y_PERCENT * screenHeight);
+        LEVELS_HEX_X = Math.round(LEVELS_HEX_X_PERCENT * screenWidth);
+        LEVELS_HEX_Y = Math.round(LEVELS_HEX_Y_PERCENT * screenHeight);
+        CUSTOM_HEX_X = Math.round(CUSTOM_HEX_X_PERCENT * screenWidth);
+        CUSTOM_HEX_Y = Math.round(CUSTOM_HEX_Y_PERCENT * screenHeight);
+        ABOUT_HEX_X = Math.round(ABOUT_HEX_X_PERCENT * screenWidth);
+        ABOUT_HEX_Y = Math.round(ABOUT_HEX_Y_PERCENT * screenHeight);
         HEX_BUTTON_WIDTH = Math.round(HEX_BUTTON_WIDTH_PERCENT * screenWidth);
         HEX_BUTTON_HEIGHT = Math.round(HEX_BUTTON_HEIGHT_PERCENT * screenHeight);
 
-        playHexRect = new Rect(PLAY_HEX_X, PLAY_HEX_Y, PLAY_HEX_X + HEX_BUTTON_WIDTH, PLAY_HEX_Y + HEX_BUTTON_HEIGHT);
-        randomHexRect = new Rect(RANDOM_HEX_X, RANDOM_HEX_Y, RANDOM_HEX_X + HEX_BUTTON_WIDTH, RANDOM_HEX_Y + HEX_BUTTON_HEIGHT);
-        sourceHexRect = new Rect(SOURCE_HEX_X, SOURCE_HEX_Y, SOURCE_HEX_X + HEX_BUTTON_WIDTH, SOURCE_HEX_Y + HEX_BUTTON_HEIGHT);
+        playHexRect = new Rect(LEVELS_HEX_X, LEVELS_HEX_Y, LEVELS_HEX_X + HEX_BUTTON_WIDTH, LEVELS_HEX_Y + HEX_BUTTON_HEIGHT);
+        randomHexRect = new Rect(CUSTOM_HEX_X, CUSTOM_HEX_Y, CUSTOM_HEX_X + HEX_BUTTON_WIDTH, CUSTOM_HEX_Y + HEX_BUTTON_HEIGHT);
+        sourceHexRect = new Rect(ABOUT_HEX_X, ABOUT_HEX_Y, ABOUT_HEX_X + HEX_BUTTON_WIDTH, ABOUT_HEX_Y + HEX_BUTTON_HEIGHT);
 
         // Setup the paints used for text
         titlePaint = new Paint();
@@ -151,11 +151,11 @@ public class Menu implements InteractiveView
         textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
 
         playTextRect = new Rect();
-        buttonPaint.getTextBounds("PLAY", 0, "PLAY".length(), playTextRect);
+        buttonPaint.getTextBounds("LEVELS", 0, "LEVELS".length(), playTextRect);
         randomTextRect = new Rect();
-        buttonPaint.getTextBounds("RANDOM", 0, "RANDOM".length(), randomTextRect);
+        buttonPaint.getTextBounds("CUSTOM", 0, "CUSTOM".length(), randomTextRect);
         sourceTextRect = new Rect();
-        buttonPaint.getTextBounds("SOURCE", 0, "SOURCE".length(), sourceTextRect);
+        buttonPaint.getTextBounds("ABOUT", 0, "ABOUT".length(), sourceTextRect);
 
         // Construct checking hex to compare taps to when determining which hexagon is selected
         hexButtonCheck = Bitmap.createBitmap(HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -226,15 +226,15 @@ public class Menu implements InteractiveView
         canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
         canvas.drawBitmap(background, 0, 0, null);
 
-        Utils.drawHex(canvas, PLAY_HEX_X, PLAY_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.RED, 0, true);
-        Utils.drawHex(canvas, RANDOM_HEX_X, RANDOM_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.GREEN, 0, true);
-        Utils.drawHex(canvas, SOURCE_HEX_X, SOURCE_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.BLUE, 0, true);
+        Utils.drawHex(canvas, LEVELS_HEX_X, LEVELS_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.RED, 0, true);
+        Utils.drawHex(canvas, CUSTOM_HEX_X, CUSTOM_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.GREEN, 0, true);
+        Utils.drawHex(canvas, ABOUT_HEX_X, ABOUT_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.BLUE, 0, true);
 
         // Draw texts
         canvas.drawText("LUNAR HEX", TITLE_X, TITLE_Y, titlePaint);
-        canvas.drawText("PLAY", ((PLAY_HEX_X + (PLAY_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (playTextRect.width() / 2), ((PLAY_HEX_Y + (PLAY_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
-        canvas.drawText("RANDOM", ((RANDOM_HEX_X + (RANDOM_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (randomTextRect.width() / 2), ((RANDOM_HEX_Y + (RANDOM_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
-        canvas.drawText("SOURCE", ((SOURCE_HEX_X + (SOURCE_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (sourceTextRect.width() / 2), ((SOURCE_HEX_Y + (SOURCE_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
+        canvas.drawText("LEVELS", ((LEVELS_HEX_X + (LEVELS_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (playTextRect.width() / 2), ((LEVELS_HEX_Y + (LEVELS_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
+        canvas.drawText("CUSTOM", ((CUSTOM_HEX_X + (CUSTOM_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (randomTextRect.width() / 2), ((CUSTOM_HEX_Y + (CUSTOM_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
+        canvas.drawText("ABOUT", ((ABOUT_HEX_X + (ABOUT_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (sourceTextRect.width() / 2), ((ABOUT_HEX_Y + (ABOUT_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
         canvas.drawText("Created By: Ian Baker", 10, screenHeight - 10, textPaint);
 
         /// TODO: Remove draw debug down cursor
