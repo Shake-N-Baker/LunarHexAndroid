@@ -251,7 +251,7 @@ public class Menu implements InteractiveView
     /**
      * Generates a new background.
      */
-    private void generateBackground()
+    public void generateBackground()
     {
         if (background == null)
         {

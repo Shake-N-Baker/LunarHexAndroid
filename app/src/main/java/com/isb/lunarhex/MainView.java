@@ -317,5 +317,6 @@ public class MainView extends SurfaceView implements Runnable
         {
             view = menu;
         }
+        view.generateBackground();
     }
 }

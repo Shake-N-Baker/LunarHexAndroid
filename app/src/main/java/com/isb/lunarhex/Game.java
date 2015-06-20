@@ -253,6 +253,11 @@ public class Game implements InteractiveView
     private int currentMove = 0;
 
     /**
+     * Whether the player is in a board clear state for the current board
+     */
+    private boolean playerWon = false;
+
+    /**
      * The indices along the paths of the currently selected piece
      */
     private List<Integer> moveIndices;
@@ -423,9 +428,9 @@ public class Game implements InteractiveView
                 // Hide the instructions if a move is complete on level 1
 //                instructionsTextfield.visible = (currentLevel == 0 && currentMove == 0);
                 boardState = slideToBoard;
-//                youWinTextfield.visible = Utils.boardSolved(boardState);
-//                if (Utils.boardSolved(boardState) && currentLevel != -1)
-//                {
+                playerWon = Utils.boardSolved(boardState);
+                if (playerWon && currentLevel != -1)
+                {
 //                    // Cleared the board, player wins
 //                    PlayerData.setSolveMoves(currentLevel, currentMove);
 //                    textboxes[11].isAButton = (currentLevel != 29 && PlayerData.solveMoves[currentLevel] != -1);
@@ -439,7 +444,7 @@ public class Game implements InteractiveView
 //                        textboxes[3].visible = true;
 //                        PlayerData.setLevelState(currentLevel, 1);
 //                    }
-//                }
+                }
             }
         }
     }
@@ -592,6 +597,7 @@ public class Game implements InteractiveView
                 }
                 selectionSetThisTap = false;
                 tapping = false;
+                playerWon = Utils.boardSolved(boardState);
                 break;
         }
     }
@@ -736,7 +742,6 @@ public class Game implements InteractiveView
     private void drawBoard(Canvas canvas)
     {
         // Clear board
-        canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
         canvas.drawBitmap(background, 0, 0, null);
 
         // Draw the hexagon tiles from back to front
@@ -780,6 +785,10 @@ public class Game implements InteractiveView
         for (int i = 0; i < roundedButtons.size(); i++)
         {
             if (roundedButtons.get(i).isVisible) roundedButtons.get(i).draw(canvas, textPaint, buttonPaint);
+        }
+        if (playerWon)
+        {
+            canvas.drawText("Cleared!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
         }
     }
 
@@ -944,7 +953,7 @@ public class Game implements InteractiveView
     /**
      * Generates a new background.
      */
-    private void generateBackground()
+    public void generateBackground()
     {
         if (background == null)
         {
