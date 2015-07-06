@@ -191,6 +191,7 @@ public class Menu implements InteractiveView
                 if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - playHexRect.left, Touch.downY - playHexRect.top)).equals("ffff0000"))
                 {
                     /// TODO: Handle level select
+                    mainView.handleEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
                 }
             }
         }

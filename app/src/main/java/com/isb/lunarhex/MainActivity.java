@@ -14,9 +14,12 @@ public class MainActivity extends Activity
     /**
      * Save state names
      */
-    public static final String STATE_VIEW = "mainView";
-    public static final String STATE_BOARD = "boardState";
-    public static final String STATE_INITIAL_BOARD = "initialBoardState";
+    public static final String STATE_VIEW = "view";
+    public static final String STATE_LEVEL = "level";
+    public static final String STATE_MOVES_TAKEN = "movesTaken";
+    public static final String STATE_SHORTEST_MOVES = "shortestMoves";
+    public static final String STATE_BOARD = "board";
+    public static final String STATE_INITIAL_BOARD = "initialBoard";
     public static final String STATE_SOLUTION = "solution";
 
     /**
@@ -74,6 +77,9 @@ public class MainActivity extends Activity
         if(mainView.view instanceof Game)
         {
             outState.putString(STATE_VIEW, "game");
+            outState.putInt(STATE_LEVEL, mainView.game.currentLevel);
+            outState.putInt(STATE_MOVES_TAKEN, mainView.game.currentMove);
+            outState.putInt(STATE_SHORTEST_MOVES, mainView.game.shortestMoves);
             outState.putString(STATE_BOARD, mainView.game.boardState);
             outState.putString(STATE_INITIAL_BOARD, mainView.game.initialBoardState);
             outState.putStringArrayList(STATE_SOLUTION, mainView.game.solution);

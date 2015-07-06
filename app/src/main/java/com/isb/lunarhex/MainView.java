@@ -115,8 +115,6 @@ public class MainView extends SurfaceView implements Runnable
 
         game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
         menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT);
-        game.initialize(null);
-        menu.initialize(null);
     }
 
     /**
@@ -314,6 +312,14 @@ public class MainView extends SurfaceView implements Runnable
     {
         if (event.isType(CustomEvent.NEW_CUSTOM_GAME))
         {
+            game.currentLevel = -1;
+            game.newBoardState();
+            view = game;
+        }
+        else if (event.isType(CustomEvent.START_LEVEL))
+        {
+            game.currentLevel = Integer.parseInt(event.data);
+            game.newBoardState();
             view = game;
         }
         else if (event.isType(CustomEvent.EXIT_GAME))

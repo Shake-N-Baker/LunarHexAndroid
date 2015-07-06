@@ -11,12 +11,18 @@ public class CustomEvent
      * Constants
      */
     public static final String NEW_CUSTOM_GAME = "newCustomGame";
+    public static final String START_LEVEL = "startLevel";
     public static final String EXIT_GAME = "exitGame";
 
     /**
      * The custom event name
      */
     private String name;
+
+    /**
+     * Any additional data that goes along with the event
+     */
+    public String data;
 
     /**
      * Constructor for a custom event.
@@ -26,6 +32,18 @@ public class CustomEvent
     public CustomEvent(String name)
     {
         this.name = name;
+    }
+
+    /**
+     * Constructor for a custom event.
+     *
+     * @param   name - The name of the custom event
+     * @param   data - any additional data that goes along with the event
+     */
+    public CustomEvent(String name, String data)
+    {
+        this.name = name;
+        this.data = data;
     }
 
     /**

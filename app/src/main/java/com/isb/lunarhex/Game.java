@@ -245,12 +245,18 @@ public class Game implements InteractiveView
     /**
      * The current level that the player is on (zero based) or -1 if random
      */
-    private int currentLevel = -1;
+    public int currentLevel = -1;
 
     /**
      * The current number of moves the player has taken since the initial board state
      */
-    private int currentMove = 0;
+    /// TODO: Update current move
+    public int currentMove = 0;
+
+    /**
+     * The shortest number of moves to clear the board
+     */
+    public int shortestMoves = 99;
 
     /**
      * Whether the player is in a board clear state for the current board
@@ -361,29 +367,34 @@ public class Game implements InteractiveView
     public void initialize(Bundle state)
     {
         // Reload the state, re-setup all variables involved in tracking the state
-        if (state != null)
-        {
-            // Load the old state variables
-            boardState = state.getString(MainActivity.STATE_BOARD);
-            initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
-            solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
+        currentLevel = state.getInt(MainActivity.STATE_LEVEL);
+        currentMove = state.getInt(MainActivity.STATE_MOVES_TAKEN);
+        shortestMoves = state.getInt(MainActivity.STATE_SHORTEST_MOVES);
+        boardState = state.getString(MainActivity.STATE_BOARD);
+        initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
+        solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
 
-            // Generate a background to use
-            generateBackground();
-        }
+        /// TODO: Add level logic for re-initializing state
+        textboxMoves.text = "Moves: " + String.valueOf(shortestMoves);
 
-        // If no board state then start up new game state
-        if (boardState.equals(""))
+        // Generate a background to use
+        generateBackground();
+    }
+
+    /**
+     * Handles starting up a new level (zero based) or random board if -1.
+     */
+    public void newBoardState()
+    {
+        if (currentLevel != -1)
         {
-            if (currentLevel != -1)
-            {
-                /// TODO: Level logic
-            }
-            else
-            {
-                randomBoardState(minMoves, maxMoves);
-            }
+            setBoardState(currentLevel);
         }
+        else
+        {
+            randomBoardState(minMoves, maxMoves);
+        }
+        generateBackground();
     }
 
     /**
@@ -508,7 +519,7 @@ public class Game implements InteractiveView
                 if (buttonGenerateNew.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Generate New Board
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
-                    randomBoardState(minMoves, maxMoves);
+                    newBoardState();
                 }
                 else if (buttonReset.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Reset
                 {
@@ -564,12 +575,20 @@ public class Game implements InteractiveView
 //                else if (textboxes[11].isClicked(click_point)) // Next level
 //                {
 //                    SoundManager.play(SoundManager.BUTTON);
-//                    if (currentLevel < 29) setBoardState(currentLevel + 1);
+//                    if (currentLevel < 29)
+//                    {
+//                        currentLevel += 1;
+//                        newBoardState();
+//                    }
 //                }
 //                else if (textboxes[12].isClicked(click_point)) // Back level
 //                {
 //                    SoundManager.play(SoundManager.BUTTON);
-//                    if (currentLevel > 0) setBoardState(currentLevel - 1);
+//                    if (currentLevel > 0)
+//                    {
+//                        currentLevel -= 1;
+//                        newBoardState();
+//                    }
 //                }
                 else if (foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
                 {
@@ -656,6 +675,43 @@ public class Game implements InteractiveView
     }
 
     /**
+     * Sets the board state to the given level.
+     *
+     * @param	level - The level to set the board state to (zero based)
+     */
+    private void setBoardState(int level)
+    {
+//        instructionsTextfield.visible = (currentLevel == 0);
+//        textboxes[15].textfield.text = "Level: " + (currentLevel + 1);
+//        if (PlayerData.solveMoves[level] == -1) textboxes[14].textfield.text = "Your Clear: 99";
+//        else textboxes[14].textfield.text = "Your Clear: " + PlayerData.solveMoves[level];
+//        textboxes[12].isAButton = (currentLevel != 0);
+//        textboxes[11].isAButton = (currentLevel != 29 && PlayerData.solveMoves[level] != -1);
+        parseSolution(mainBoardSet.get(level));
+//        if (PlayerData.solveMoves[level] == -1) {
+//            // Hide step hint and best/your clear
+//            textboxes[3].visible = false;
+//            textboxes[13].visible = false;
+//            textboxes[14].visible = false;
+//        } else if (PlayerData.solveMoves[level] > (solution.length - 1)) {
+//            // Hide step hint
+//            textboxes[3].visible = false;
+//            textboxes[13].visible = true;
+//            textboxes[14].visible = true;
+//        } else {
+//            textboxes[3].visible = true;
+//            textboxes[13].visible = true;
+//            textboxes[14].visible = true;
+//        }
+        boardState = Utils.convertCompressedBoard(mainBoardSet.get(level));
+        currentMove = 0;
+        hexSelect = -1;
+        moveIndices.clear();
+        stopIndices.clear();
+        initialBoardState = boardState;
+    }
+
+    /**
      * Randomly generates a board state.
      *
      * @param	low - The lowest number of moves acceptable
@@ -686,7 +742,6 @@ public class Game implements InteractiveView
         moveIndices.clear();
         stopIndices.clear();
         initialBoardState = boardState;
-        generateBackground();
     }
 
     /**
@@ -696,13 +751,13 @@ public class Game implements InteractiveView
      */
     private void parseSolution(String compressedBoard)
     {
-        int moves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
+        shortestMoves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
         /// TODO: Setup text here for the Shortest moves to clear textfield(s)
-        textboxMoves.text = "Moves: " + String.valueOf(moves);
+        textboxMoves.text = "Moves: " + String.valueOf(shortestMoves);
 //        textboxes[13].textfield.text = "Best Clear: " + moves.toString();
         List<Integer> encodedMoves = new ArrayList<Integer>();
         int i;
-        for (i = 1; i <= moves; i++)
+        for (i = 1; i <= shortestMoves; i++)
         {
             encodedMoves.add(Integer.parseInt(String.valueOf(compressedBoard.charAt(i)), 36));
         }
