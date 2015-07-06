@@ -143,12 +143,15 @@ public class Menu implements InteractiveView
         titlePaint = new Paint();
         titlePaint.setColor(Color.WHITE);
         titlePaint.setTextSize(mainView.FONT_SIZE_60_SP);
+        titlePaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
         buttonPaint = new Paint();
         buttonPaint.setColor(Color.WHITE);
         buttonPaint.setTextSize(mainView.FONT_SIZE_30_SP);
+        buttonPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
         textPaint = new Paint();
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
+        textPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
 
         playTextRect = new Rect();
         buttonPaint.getTextBounds("LEVELS", 0, "LEVELS".length(), playTextRect);

@@ -2,6 +2,7 @@ package com.isb.lunarhex;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -34,6 +35,7 @@ public class MainView extends SurfaceView implements Runnable
     private static int MS_PER_CYCLE;
     private static int SCREEN_WIDTH;
     private static int SCREEN_HEIGHT;
+    public static Typeface RALEWAY_BOLD_FONT;
 
     /**
      * The start time in milliseconds of this cycle
@@ -107,6 +109,7 @@ public class MainView extends SurfaceView implements Runnable
         FONT_SIZE_15_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_15);
         FONT_SIZE_30_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_30);
         FONT_SIZE_60_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_60);
+        RALEWAY_BOLD_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Raleway-Bold.ttf");
 
         loadBoardSets(context);
 

@@ -311,9 +311,11 @@ public class Game implements InteractiveView
         textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
+        textPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
         debugPaint = new Paint();
         debugPaint.setColor(Color.GREEN);
         debugPaint.setTextSize(mainView.FONT_SIZE_15_SP);
+        debugPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
         buttonPaint = new Paint();
         buttonPaint.setStyle(Paint.Style.FILL);
         buttonPaint.setColor(0xFF50D040);
