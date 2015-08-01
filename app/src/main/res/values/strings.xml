@@ -4,5 +4,7 @@
     <string name="app_name">LunarHex</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="save_levels_cleared">saveLevelsCleared</string>
+    <string name="save_best_clear_level">saveBestClearLevel</string>
 
 </resources>

@@ -41,25 +41,13 @@ public class MainActivity extends Activity
     }
 
     /**
-     * This method is called after onStart() when the activity is being re-initialized from a previously
-     * saved state, given here in savedInstanceState.
-     *
-     * @param   savedInstanceState - The data most recently supplied in onSaveInstanceState(Bundle)
-     */
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState)
-    {
-        super.onRestoreInstanceState(savedInstanceState);
-        startWithState(savedInstanceState);
-    }
-
-    /**
      * Starts the game with the given saved or new state.
      *
      * @param   savedInstanceState - The most recently saved state
      */
     private void startWithState(Bundle savedInstanceState)
     {
+        PlayerData.initialize(this);
         mainView = (MainView) findViewById(R.id.view);
         mainView.initialize(savedInstanceState);
     }
