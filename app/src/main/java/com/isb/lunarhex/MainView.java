@@ -102,19 +102,13 @@ public class MainView extends SurfaceView implements Runnable
         MS_PER_CYCLE = 1000 / FRAME_RATE;
         holder = getHolder();
 
-        // Set the screen resolution
-        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
-        SCREEN_HEIGHT = dm.heightPixels;
-        SCREEN_WIDTH = dm.widthPixels;
+        // Set up fonts
         FONT_SIZE_15_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_15);
         FONT_SIZE_30_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_30);
         FONT_SIZE_60_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_60);
         RALEWAY_BOLD_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Raleway-Bold.ttf");
 
         loadBoardSets(context);
-
-        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
-        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
     /**
@@ -125,6 +119,14 @@ public class MainView extends SurfaceView implements Runnable
      */
     public void initialize(Bundle state)
     {
+        // Set the screen resolution
+        DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+        SCREEN_HEIGHT = dm.heightPixels;
+        SCREEN_WIDTH = dm.widthPixels;
+
+        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
+        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT);
+
         String savedView = "menu";
         if(state != null)
         {

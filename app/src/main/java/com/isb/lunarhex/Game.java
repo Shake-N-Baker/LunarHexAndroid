@@ -8,6 +8,8 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import com.isb.lunarhex.ui.BackgroundPanel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -104,6 +106,11 @@ public class Game implements InteractiveView
      * The paint used for the textbox backgrounds
      */
     private Paint textBoxPaint;
+
+    /**
+     * The background panel for the user interface to appear on
+     */
+    private BackgroundPanel backgroundPanel;
 
     /**
      * The generate new button
@@ -340,6 +347,8 @@ public class Game implements InteractiveView
         textBoxPaint.setStyle(Paint.Style.FILL);
         textBoxPaint.setColor(0xFFA0A0A0);
         textBoxPaint.setStrokeWidth(0);
+
+        backgroundPanel = new BackgroundPanel((int)(screenWidth * 0.65f), (int)(screenHeight * 0.1f), (int)(screenWidth * 0.33f), (int)(screenHeight * 0.8f));
 
         // Setup the text boxes
         roundedButtons = new ArrayList<RoundedButton>();
@@ -870,6 +879,7 @@ public class Game implements InteractiveView
             y += (height * 0.5);
         }
         // Draw buttons and texts
+        backgroundPanel.draw(canvas);
         for (int i = 0; i < roundedButtons.size(); i++)
         {
             if (roundedButtons.get(i).isVisible) roundedButtons.get(i).draw(canvas, textPaint, buttonPaint);
