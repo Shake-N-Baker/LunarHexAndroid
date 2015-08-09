@@ -240,17 +240,20 @@ public class MainView extends SurfaceView implements Runnable
             startTime = System.currentTimeMillis();
 
             /// TODO: Remove debug set frames per second
-            framesPerSecond = 1000 / totalTime;
-            totalTimes.add((int) totalTime);
-            if (totalTimes.size() > 60)
+            if (totalTime > 0)
             {
-                totalTimes.remove(0);
-                int sum = 0;
-                for (int i = 0; i < totalTimes.size(); i++)
+                framesPerSecond = 1000 / totalTime;
+                totalTimes.add((int) totalTime);
+                if (totalTimes.size() > 60)
                 {
-                    sum += totalTimes.get(i);
+                    totalTimes.remove(0);
+                    int sum = 0;
+                    for (int i = 0; i < totalTimes.size(); i++)
+                    {
+                        sum += totalTimes.get(i);
+                    }
+                    framesPerSecond = (60 * 1000) / sum;
                 }
-                framesPerSecond = (60 * 1000) / sum;
             }
 
             cycle();

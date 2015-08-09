@@ -1,9 +1,11 @@
-package com.isb.lunarhex;
+package com.isb.lunarhex.ui;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+
+import com.isb.lunarhex.Utils;
 
 /**
  * The button class holds data for the button, a field with a given

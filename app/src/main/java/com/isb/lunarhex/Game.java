@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.MotionEvent;
 
 import com.isb.lunarhex.ui.BackgroundPanel;
+import com.isb.lunarhex.ui.RoundedButton;
+import com.isb.lunarhex.ui.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,23 +35,11 @@ public class Game implements InteractiveView
     private static final float HEX_HEIGHT_PERCENT = 80f / 576f;
     private static final float BOARD_X_PERCENT = 10f / 640f;
     private static final float BOARD_Y_PERCENT = 48f / 576f;
-    private static final float BUTTONS_X_PERCENT = 440f / 640f;
-    private static final float BUTTONS_Y_PERCENT = 100f / 576f;
-    private static final float BUTTONS_BUFFER_Y_PERCENT = 50f / 576f;
-    private static final float BUTTONS_WIDTH_PERCENT = 150f / 640f;
-    private static final float BUTTONS_HEIGHT_PERCENT = 30f / 576f;
-    private static final float BUTTONS_BORDER_PERCENT = 2f / 576f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
     private static int BOARD_X;
     private static int BOARD_Y;
-    private static int BUTTONS_X;
-    private static int BUTTONS_Y;
-    private static int BUTTONS_BUFFER_Y;
-    private static int BUTTONS_WIDTH;
-    private static int BUTTONS_HEIGHT;
-    private static int BUTTONS_BORDER;
 
     /**
      * The screen width
@@ -103,14 +93,14 @@ public class Game implements InteractiveView
     private Paint buttonPaint;
 
     /**
-     * The paint used for the textbox backgrounds
-     */
-    private Paint textBoxPaint;
-
-    /**
      * The background panel for the user interface to appear on
      */
     private BackgroundPanel backgroundPanel;
+
+    /**
+     * The level text
+     */
+    private Text levelText;
 
     /**
      * The generate new button
@@ -123,9 +113,9 @@ public class Game implements InteractiveView
     private RoundedButton buttonReset;
 
     /**
-     * The moves textbox
+     * The text for how many moves a board is solveable in
      */
-    private TextBox textboxMoves;
+    private Text textMoves;
 
     /**
      * The hint button
@@ -133,9 +123,9 @@ public class Game implements InteractiveView
     private RoundedButton buttonHint;
 
     /**
-     * The max moves textbox
+     * The static text describing new boards solvable moves range
      */
-    private TextBox textboxMaxMoves;
+    private Text textBoardsSolvable;
 
     /**
      * The max moves minus button
@@ -148,9 +138,9 @@ public class Game implements InteractiveView
     private RoundedButton buttonMaxMovesPlus;
 
     /**
-     * The min moves textbox
+     * The text showing minimum to maximum moves to solve new boards
      */
-    private TextBox textboxMinMoves;
+    private Text textMovesRange;
 
     /**
      * The min moves minus button
@@ -168,14 +158,24 @@ public class Game implements InteractiveView
     private RoundedButton buttonExit;
 
     /**
+     * The button to mute and un-mute music
+     */
+    private RoundedButton buttonToggleMusic;
+
+    /**
+     * The button to mute and un-mute the sound
+     */
+    private RoundedButton buttonToggleSound;
+
+    /**
      * List of buttons
      */
     private List<RoundedButton> roundedButtons;
 
     /**
-     * List of text boxes
+     * List of texts
      */
-    private List<TextBox> textBoxes;
+    private List<Text> texts;
 
     /**
      * List of the bounding boxes for each hexagon tile
@@ -311,12 +311,6 @@ public class Game implements InteractiveView
         HEX_DEPTH = Math.round(HEX_HEIGHT / 10.0f);
         BOARD_X = Math.round(BOARD_X_PERCENT * screenWidth);
         BOARD_Y = Math.round(BOARD_Y_PERCENT * screenHeight);
-        BUTTONS_X = Math.round(BUTTONS_X_PERCENT * screenWidth);
-        BUTTONS_Y = Math.round(BUTTONS_Y_PERCENT * screenHeight);
-        BUTTONS_BUFFER_Y = Math.round(BUTTONS_BUFFER_Y_PERCENT * screenHeight);
-        BUTTONS_WIDTH = Math.round(BUTTONS_WIDTH_PERCENT * screenWidth);
-        BUTTONS_HEIGHT = Math.round(BUTTONS_HEIGHT_PERCENT * screenHeight);
-        BUTTONS_BORDER = Math.round(BUTTONS_BORDER_PERCENT * screenHeight);
 
         boundingBoxes = Utils.getBoundingBoxes(HEX_WIDTH, HEX_HEIGHT, BOARD_X, BOARD_Y);
 
@@ -343,38 +337,40 @@ public class Game implements InteractiveView
         buttonPaint.setStyle(Paint.Style.FILL);
         buttonPaint.setColor(0xFF50D040);
         buttonPaint.setStrokeWidth(0);
-        textBoxPaint = new Paint();
-        textBoxPaint.setStyle(Paint.Style.FILL);
-        textBoxPaint.setColor(0xFFA0A0A0);
-        textBoxPaint.setStrokeWidth(0);
 
-        backgroundPanel = new BackgroundPanel((int)(screenWidth * 0.65f), (int)(screenHeight * 0.1f), (int)(screenWidth * 0.33f), (int)(screenHeight * 0.8f));
+        backgroundPanel = new BackgroundPanel(Math.round(screenWidth * 0.65f), Math.round(screenHeight * 0.1f), Math.round(screenWidth * 0.33f), Math.round(screenHeight * 0.8f));
 
         // Setup the text boxes
         roundedButtons = new ArrayList<RoundedButton>();
-        textBoxes = new ArrayList<TextBox>();
-        buttonReset = new RoundedButton("Reset", BUTTONS_X, BUTTONS_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        texts = new ArrayList<Text>();
+        levelText = new Text("LEVEL: XX", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.13f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.08f));
+        texts.add(levelText);
+        buttonReset = new RoundedButton("Reset", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.63f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonReset);
-        textboxMoves = new TextBox("Moves: XX", BUTTONS_X, BUTTONS_Y + BUTTONS_BUFFER_Y, BUTTONS_WIDTH, BUTTONS_HEIGHT);
-        textBoxes.add(textboxMoves);
-        buttonHint = new RoundedButton("Step Hint", BUTTONS_X, BUTTONS_Y + (2 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        textMoves = new Text("Moves: XX", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.45f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
+        texts.add(textMoves);
+        buttonHint = new RoundedButton("Step Hint", Math.round(screenWidth * 0.76f), Math.round(screenHeight * 0.51f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonHint);
-        buttonGenerateNew = new RoundedButton("Generate New", BUTTONS_X, BUTTONS_Y + (3 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        buttonGenerateNew = new RoundedButton("Generate New", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.13f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonGenerateNew);
-        textboxMaxMoves = new TextBox("Max Moves: " + String.valueOf(maxMoves), BUTTONS_X, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT);
-        textBoxes.add(textboxMaxMoves);
-        buttonMaxMovesMinus = new RoundedButton("-", BUTTONS_X - 50, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        textBoardsSolvable = new Text("Boards solvable in:", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.23f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
+        texts.add(textBoardsSolvable);
+        buttonMaxMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.38f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMaxMovesMinus);
-        buttonMaxMovesPlus = new RoundedButton("+", BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (4 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        buttonMaxMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.29f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMaxMovesPlus);
-        textboxMinMoves = new TextBox("Min Moves: " + String.valueOf(minMoves), BUTTONS_X, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT);
-        textBoxes.add(textboxMinMoves);
-        buttonMinMovesMinus = new RoundedButton("-", BUTTONS_X - 50, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        textMovesRange = new Text(String.valueOf(minMoves) + " - " + String.valueOf(maxMoves), Math.round(screenWidth * 0.76f), Math.round(screenHeight * 0.34f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
+        texts.add(textMovesRange);
+        buttonMinMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.38f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMinMovesMinus);
-        buttonMinMovesPlus = new RoundedButton("+", BUTTONS_X + BUTTONS_WIDTH + 20, BUTTONS_Y + (5 * BUTTONS_BUFFER_Y), BUTTONS_HEIGHT, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        buttonMinMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.29f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMinMovesPlus);
-        buttonExit = new RoundedButton("Exit", BUTTONS_X, BUTTONS_Y + (7 * BUTTONS_BUFFER_Y), BUTTONS_WIDTH, BUTTONS_HEIGHT, BUTTONS_BORDER);
+        buttonExit = new RoundedButton("Exit", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.75f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonExit);
+        buttonToggleSound = new RoundedButton("Sound", Math.round(screenWidth * 0.83f), Math.round(screenHeight * 0.63f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
+        roundedButtons.add(buttonToggleSound);
+        buttonToggleMusic = new RoundedButton("Music", Math.round(screenWidth * 0.83f), Math.round(screenHeight * 0.75f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
+        roundedButtons.add(buttonToggleMusic);
 
         // Construct checking hex to compare taps to when determining which hexagon is selected
         hexCheck = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -399,10 +395,45 @@ public class Game implements InteractiveView
         solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
 
         /// TODO: Add level logic for re-initializing state
-        textboxMoves.text = "Moves: " + String.valueOf(shortestMoves);
+        textMoves.setText("Moves: " + String.valueOf(shortestMoves));
 
         // Generate a background to use
+        updateUIState();
         generateBackground();
+    }
+
+    /**
+     * Updates the user interface state to show and hide the correct buttons.
+     */
+    private void updateUIState()
+    {
+        if (currentLevel != -1)
+        {
+            backgroundPanel.hasLineSeparator = true;
+            levelText.isVisible = true;
+            levelText.setText("LEVEL: " + (currentLevel + 1));
+            buttonGenerateNew.isVisible = false;
+            buttonMaxMovesMinus.isVisible = false;
+            buttonMaxMovesPlus.isVisible = false;
+            buttonMinMovesMinus.isVisible = false;
+            buttonMinMovesPlus.isVisible = false;
+            textBoardsSolvable.isVisible = false;
+            textMovesRange.isVisible = false;
+            textMoves.isVisible = false;
+        }
+        else
+        {
+            backgroundPanel.hasLineSeparator = false;
+            levelText.isVisible = false;
+            buttonGenerateNew.isVisible = true;
+            buttonMaxMovesMinus.isVisible = true;
+            buttonMaxMovesPlus.isVisible = true;
+            buttonMinMovesMinus.isVisible = true;
+            buttonMinMovesPlus.isVisible = true;
+            textBoardsSolvable.isVisible = true;
+            textMovesRange.isVisible = true;
+            textMoves.isVisible = true;
+        }
     }
 
     /**
@@ -410,28 +441,13 @@ public class Game implements InteractiveView
      */
     public void newBoardState()
     {
+        updateUIState();
         if (currentLevel != -1)
         {
-            buttonGenerateNew.isVisible = false;
-            buttonMaxMovesMinus.isVisible = false;
-            buttonMaxMovesPlus.isVisible = false;
-            buttonMinMovesMinus.isVisible = false;
-            buttonMinMovesPlus.isVisible = false;
-            textboxMaxMoves.isVisible = false;
-            textboxMinMoves.isVisible = false;
-            textboxMoves.isVisible = false;
             setBoardState(currentLevel);
         }
         else
         {
-            buttonGenerateNew.isVisible = true;
-            buttonMaxMovesMinus.isVisible = true;
-            buttonMaxMovesPlus.isVisible = true;
-            buttonMinMovesMinus.isVisible = true;
-            buttonMinMovesPlus.isVisible = true;
-            textboxMaxMoves.isVisible = true;
-            textboxMinMoves.isVisible = true;
-            textboxMoves.isVisible = true;
             randomBoardState(minMoves, maxMoves);
         }
         generateBackground();
@@ -587,25 +603,25 @@ public class Game implements InteractiveView
                 {
                     maxMoves--;
                     if (maxMoves < minMoves) maxMoves = minMoves;
-                    textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
+                    textMovesRange.setText(String.valueOf(minMoves) + " - " + String.valueOf(maxMoves));
                 }
                 else if (buttonMaxMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Maximum moves plus
                 {
                     maxMoves++;
                     if (maxMoves > 20) maxMoves = 20;
-                    textboxMaxMoves.text = "Max Moves: " + String.valueOf(maxMoves);
+                    textMovesRange.setText(String.valueOf(minMoves) + " - " + String.valueOf(maxMoves));
                 }
                 else if (buttonMinMovesMinus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves minus
                 {
                     minMoves--;
                     if (minMoves < 1) minMoves = 1;
-                    textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
+                    textMovesRange.setText(String.valueOf(minMoves) + " - " + String.valueOf(maxMoves));
                 }
                 else if (buttonMinMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves plus
                 {
                     minMoves++;
                     if (minMoves > maxMoves) minMoves = maxMoves;
-                    textboxMinMoves.text = "Min Moves: " + String.valueOf(minMoves);
+                    textMovesRange.setText(String.valueOf(minMoves) + " - " + String.valueOf(maxMoves));
                 }
                 else if (buttonExit.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Exit game
                 {
@@ -793,7 +809,7 @@ public class Game implements InteractiveView
     {
         shortestMoves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
         /// TODO: Setup text here for the Shortest moves to clear textfield(s)
-        textboxMoves.text = "Moves: " + String.valueOf(shortestMoves);
+        textMoves.setText("Moves: " + String.valueOf(shortestMoves));
 //        textboxes[13].textfield.text = "Best Clear: " + moves.toString();
         List<Integer> encodedMoves = new ArrayList<Integer>();
         int i;
@@ -884,9 +900,9 @@ public class Game implements InteractiveView
         {
             if (roundedButtons.get(i).isVisible) roundedButtons.get(i).draw(canvas, textPaint, buttonPaint);
         }
-        for (int i = 0; i < textBoxes.size(); i++)
+        for (int i = 0; i < texts.size(); i++)
         {
-            if (textBoxes.get(i).isVisible) textBoxes.get(i).draw(canvas, textPaint, textBoxPaint);
+            if (texts.get(i).isVisible) texts.get(i).draw(canvas);
         }
         if (playerWon)
         {
