@@ -359,7 +359,7 @@ public class Game implements InteractiveView
         roundedButtons.add(buttonReset);
         textMoves = new Text("Moves: XX", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.50f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
         texts.add(textMoves);
-        buttonHint = new RoundedButton("Step Hint", Math.round(screenWidth * 0.76f), Math.round(screenHeight * 0.56f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
+        buttonHint = new RoundedButton("Step Hint", Math.round(screenWidth * 0.74f), Math.round(screenHeight * 0.56f), Math.round(screenWidth * 0.15f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonHint);
         buttonGenerateNew = new RoundedButton("Generate New", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.08f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonGenerateNew);
@@ -408,10 +408,9 @@ public class Game implements InteractiveView
         initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
         solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
 
-        /// TODO: Add level logic for re-initializing state
         textMoves.setText("Moves: " + String.valueOf(shortestMoves));
 
-        // Generate a background to use
+        // Update UI for levels vs custom and generate a background to use
         updateUIState();
         generateBackground();
     }
@@ -421,6 +420,7 @@ public class Game implements InteractiveView
      */
     private void updateUIState()
     {
+        playerWon = Utils.boardSolved(boardState);
         if (currentLevel != -1)
         {
             backgroundPanel.hasLineSeparator = true;
@@ -459,7 +459,6 @@ public class Game implements InteractiveView
      */
     public void newBoardState()
     {
-        updateUIState();
         if (currentLevel != -1)
         {
             setBoardState(currentLevel);
@@ -468,6 +467,7 @@ public class Game implements InteractiveView
         {
             randomBoardState(minMoves, maxMoves);
         }
+        updateUIState();
         generateBackground();
     }
 
