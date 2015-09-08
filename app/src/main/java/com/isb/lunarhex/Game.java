@@ -103,6 +103,16 @@ public class Game implements InteractiveView
     private Text levelText;
 
     /**
+     * The go to next level button
+     */
+    private RoundedButton buttonNextLevel;
+
+    /**
+     * The go to previous level button
+     */
+    private RoundedButton buttonPreviousLevel;
+
+    /**
      * The generate new button
      */
     private RoundedButton buttonGenerateNew;
@@ -361,6 +371,10 @@ public class Game implements InteractiveView
         texts.add(textMoves);
         buttonHint = new RoundedButton("Step Hint", Math.round(screenWidth * 0.74f), Math.round(screenHeight * 0.56f), Math.round(screenWidth * 0.15f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonHint);
+        buttonNextLevel = new RoundedButton("+", Math.round(screenWidth * 0.86f), Math.round(screenHeight * 0.18f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
+        roundedButtons.add(buttonNextLevel);
+        buttonPreviousLevel = new RoundedButton("-", Math.round(screenWidth * 0.70f), Math.round(screenHeight * 0.18f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
+        roundedButtons.add(buttonPreviousLevel);
         buttonGenerateNew = new RoundedButton("Generate New", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.08f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonGenerateNew);
         textBoardsSolvable = new Text("Boards solvable in:", Math.round(screenWidth * 0.66f), Math.round(screenHeight * 0.165f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
@@ -426,6 +440,8 @@ public class Game implements InteractiveView
             backgroundPanel.hasLineSeparator = true;
             levelText.isVisible = true;
             levelText.setText("LEVEL: " + (currentLevel + 1));
+            buttonNextLevel.isVisible = true;
+            buttonPreviousLevel.isVisible = true;
             buttonGenerateNew.isVisible = false;
             buttonMaxMovesMinus.isVisible = false;
             buttonMaxMovesPlus.isVisible = false;
@@ -441,6 +457,8 @@ public class Game implements InteractiveView
         {
             backgroundPanel.hasLineSeparator = false;
             levelText.isVisible = false;
+            buttonNextLevel.isVisible = false;
+            buttonPreviousLevel.isVisible = false;
             buttonGenerateNew.isVisible = true;
             buttonMaxMovesMinus.isVisible = true;
             buttonMaxMovesPlus.isVisible = true;
@@ -660,24 +678,24 @@ public class Game implements InteractiveView
 //                    SoundManager.play(SoundManager.BUTTON);
                     mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
                 }
-//                else if (textboxes[11].isClicked(click_point)) // Next level
-//                {
+                else if (buttonNextLevel.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Next level
+                {
 //                    SoundManager.play(SoundManager.BUTTON);
-//                    if (currentLevel < 29)
-//                    {
-//                        currentLevel += 1;
-//                        newBoardState();
-//                    }
-//                }
-//                else if (textboxes[12].isClicked(click_point)) // Back level
-//                {
+                    if (currentLevel < 29)
+                    {
+                        currentLevel += 1;
+                        newBoardState();
+                    }
+                }
+                else if (buttonPreviousLevel.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Back level
+                {
 //                    SoundManager.play(SoundManager.BUTTON);
-//                    if (currentLevel > 0)
-//                    {
-//                        currentLevel -= 1;
-//                        newBoardState();
-//                    }
-//                }
+                    if (currentLevel > 0)
+                    {
+                        currentLevel -= 1;
+                        newBoardState();
+                    }
+                }
                 else if (foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
                 {
                     if (moveIndices.indexOf(foundHex) != -1)
