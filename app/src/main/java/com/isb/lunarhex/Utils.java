@@ -7,7 +7,6 @@ import java.util.Random;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -590,13 +589,10 @@ public class Utils
      */
     public static void generateBackground(Bitmap background, int screenWidth, int screenHeight)
     {
-        background.eraseColor(Color.BLACK);
+        background.eraseColor(Color.rgb(14, 21, 42));
         Canvas canvas = new Canvas(background);
         Paint paint = new Paint();
         Random rand = new Random();
-        paint.setShader(new LinearGradient(rand.nextInt(screenWidth), 0, rand.nextInt(screenWidth), ((2 * screenHeight) / 5) + rand.nextInt(screenHeight / 5), 0xFF0A090A, 0xFF302A2D, Shader.TileMode.MIRROR));
-        canvas.drawPaint(paint);
-        paint.setShader(null);
         int colorIndex;
         int color;
         int[] red =     {255, 200, 253};

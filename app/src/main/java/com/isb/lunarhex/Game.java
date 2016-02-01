@@ -133,11 +133,6 @@ public class Game implements InteractiveView
     private RoundedButton buttonHint;
 
     /**
-     * The static text describing new boards solvable moves range
-     */
-    private Text textBoardsSolvable;
-
-    /**
      * The max moves minus button
      */
     private RoundedButton buttonMaxMovesMinus;
@@ -367,7 +362,7 @@ public class Game implements InteractiveView
         texts.add(levelText);
         buttonReset = new RoundedButton("Reset", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.68f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonReset);
-        textMoves = new Text("Moves: XX", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.50f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
+        textMoves = new Text("Moves For This Board: XX", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.49f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
         texts.add(textMoves);
         buttonHint = new RoundedButton("Step Hint", Math.round(screenWidth * 0.74f), Math.round(screenHeight * 0.56f), Math.round(screenWidth * 0.15f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonHint);
@@ -377,21 +372,19 @@ public class Game implements InteractiveView
         roundedButtons.add(buttonPreviousLevel);
         buttonGenerateNew = new RoundedButton("Generate New", Math.round(screenWidth * 0.68f), Math.round(screenHeight * 0.08f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.08f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonGenerateNew);
-        textBoardsSolvable = new Text("Boards solvable in:", Math.round(screenWidth * 0.66f), Math.round(screenHeight * 0.165f), Math.round(screenWidth * 0.27f), Math.round(screenHeight * 0.06f));
-        texts.add(textBoardsSolvable);
-        buttonMaxMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.45f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
+        buttonMaxMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.90f), Math.round(screenHeight * 0.41f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMaxMovesMinus);
-        buttonMaxMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.38f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
+        buttonMaxMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.90f), Math.round(screenHeight * 0.34f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMaxMovesPlus);
-        textMovesRangeMin = new Text(String.valueOf(minMoves) + " min moves", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.25f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
+        textMovesRangeMin = new Text("at least " + String.valueOf(minMoves) + " moves", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.21f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
         texts.add(textMovesRangeMin);
-        textMovesRangeMax = new Text(String.valueOf(maxMoves) + " max moves", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.41f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
+        textMovesRangeMax = new Text("at most " + String.valueOf(maxMoves) + " moves", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.37f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
         texts.add(textMovesRangeMax);
-        textMovesRangeTo = new Text("to", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.33f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
+        textMovesRangeTo = new Text("to", Math.round(screenWidth * 0.73f), Math.round(screenHeight * 0.29f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.06f));
         texts.add(textMovesRangeTo);
-        buttonMinMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.29f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
+        buttonMinMovesMinus = new RoundedButton("-", Math.round(screenWidth * 0.90f), Math.round(screenHeight * 0.25f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMinMovesMinus);
-        buttonMinMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.88f), Math.round(screenHeight * 0.22f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
+        buttonMinMovesPlus = new RoundedButton("+", Math.round(screenWidth * 0.90f), Math.round(screenHeight * 0.18f), Math.round(screenWidth * 0.06f), Math.round(screenHeight * 0.07f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonMinMovesPlus);
         buttonExit = new RoundedButton("Exit", Math.round(screenWidth * 0.69f), Math.round(screenHeight * 0.80f), Math.round(screenWidth * 0.11f), Math.round(screenHeight * 0.11f), Math.round(screenHeight * 0.004f));
         roundedButtons.add(buttonExit);
@@ -422,7 +415,7 @@ public class Game implements InteractiveView
         initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
         solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
 
-        textMoves.setText("Moves: " + String.valueOf(shortestMoves));
+        textMoves.setText("Moves For This Board: " + String.valueOf(shortestMoves));
 
         // Update UI for levels vs custom and generate a background to use
         updateUIState();
@@ -461,7 +454,6 @@ public class Game implements InteractiveView
             buttonMaxMovesPlus.isVisible = false;
             buttonMinMovesMinus.isVisible = false;
             buttonMinMovesPlus.isVisible = false;
-            textBoardsSolvable.isVisible = false;
             textMovesRangeMin.isVisible = false;
             textMovesRangeMax.isVisible = false;
             textMovesRangeTo.isVisible = false;
@@ -478,7 +470,6 @@ public class Game implements InteractiveView
             buttonMaxMovesPlus.isVisible = true;
             buttonMinMovesMinus.isVisible = true;
             buttonMinMovesPlus.isVisible = true;
-            textBoardsSolvable.isVisible = true;
             textMovesRangeMin.isVisible = true;
             textMovesRangeMax.isVisible = true;
             textMovesRangeTo.isVisible = true;
@@ -645,18 +636,18 @@ public class Game implements InteractiveView
                     if (maxMoves < minMoves) maxMoves = minMoves;
                     if (maxMoves > 1)
                     {
-                        textMovesRangeMax.setText(String.valueOf(maxMoves) + " max moves");
+                        textMovesRangeMax.setText("at most " + String.valueOf(maxMoves) + " moves");
                     }
                     else
                     {
-                        textMovesRangeMax.setText(String.valueOf(maxMoves) + " max move");
+                        textMovesRangeMax.setText("at most " + String.valueOf(maxMoves) + " move");
                     }
                 }
                 else if (buttonMaxMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Maximum moves plus
                 {
                     maxMoves++;
                     if (maxMoves > 20) maxMoves = 20;
-                    textMovesRangeMax.setText(String.valueOf(maxMoves) + " max moves");
+                    textMovesRangeMax.setText("at most " + String.valueOf(maxMoves) + " moves");
                 }
                 else if (buttonMinMovesMinus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves minus
                 {
@@ -664,18 +655,18 @@ public class Game implements InteractiveView
                     if (minMoves < 1) minMoves = 1;
                     if (minMoves > 1)
                     {
-                        textMovesRangeMin.setText(String.valueOf(minMoves) + " min moves");
+                        textMovesRangeMin.setText("at least " + String.valueOf(minMoves) + " moves");
                     }
                     else
                     {
-                        textMovesRangeMin.setText(String.valueOf(minMoves) + " min move");
+                        textMovesRangeMin.setText("at least " + String.valueOf(minMoves) + " move");
                     }
                 }
                 else if (buttonMinMovesPlus.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Minimum moves plus
                 {
                     minMoves++;
                     if (minMoves > maxMoves) minMoves = maxMoves;
-                    textMovesRangeMin.setText(String.valueOf(minMoves) + " min moves");
+                    textMovesRangeMin.setText("at least " + String.valueOf(minMoves) + " moves");
                 }
                 else if (buttonExit.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Exit game
                 {
@@ -863,7 +854,7 @@ public class Game implements InteractiveView
     {
         shortestMoves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
         /// TODO: Setup text here for the Shortest moves to clear textfield(s)
-        textMoves.setText("Moves: " + String.valueOf(shortestMoves));
+        textMoves.setText("Moves For This Board: " + String.valueOf(shortestMoves));
 //        textboxes[13].textfield.text = "Best Clear: " + moves.toString();
         List<Integer> encodedMoves = new ArrayList<Integer>();
         int i;
