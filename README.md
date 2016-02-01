@@ -8,6 +8,8 @@ An android port of my [Lunar Hex game](http://shake-n-baker.github.io/game-lunar
 
 The concept is based on the board game Lunar Lockout but with the twist of using hexagons instead of squares.
 
+**Play the latest Android release build:** [here](http://shake-n-baker.github.io/assets/apk/lunarhex-release.apk "lunarhex-release.apk")
+
 ## Author
 
 Ian Baker
