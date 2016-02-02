@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/LunarHex.iml" filepath="$PROJECT_DIR$/LunarHex.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/lunarhex/lunarhex.iml" filepath="$PROJECT_DIR$/lunarhex/lunarhex.iml" />
     </modules>
   </component>
 </project>

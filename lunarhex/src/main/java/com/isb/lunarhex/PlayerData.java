@@ -49,10 +49,10 @@ public class PlayerData
         SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
         int levelsCleared = sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_levels_cleared), 0);
         int movesCleared = sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), 99);
-        if (level > levelsCleared)
+        if (level >= levelsCleared)
         {
             SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putInt(PlayerData.activity.getString(R.string.save_levels_cleared), level);
+            editor.putInt(PlayerData.activity.getString(R.string.save_levels_cleared), level + 1);
             editor.putInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), moves);
             editor.commit();
         }
