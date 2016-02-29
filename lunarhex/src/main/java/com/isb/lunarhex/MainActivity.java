@@ -110,7 +110,7 @@ public class MainActivity extends Activity
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        mainView.touchHandle(event);
+        mainView.handleTouch(event);
         return true;
     }
 }

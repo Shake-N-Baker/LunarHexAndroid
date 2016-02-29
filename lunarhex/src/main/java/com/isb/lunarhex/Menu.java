@@ -142,16 +142,16 @@ public class Menu implements InteractiveView
         // Setup the paints used for text
         titlePaint = new Paint();
         titlePaint.setColor(Color.WHITE);
-        titlePaint.setTextSize(mainView.FONT_SIZE_60_SP);
-        titlePaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
+        titlePaint.setTextSize(MainView.FONT_SIZE_60_SP);
+        titlePaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
         buttonPaint = new Paint();
         buttonPaint.setColor(Color.WHITE);
-        buttonPaint.setTextSize(mainView.FONT_SIZE_30_SP);
-        buttonPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
+        buttonPaint.setTextSize(MainView.FONT_SIZE_30_SP);
+        buttonPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
         textPaint = new Paint();
         textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
-        textPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
+        textPaint.setTextSize(MainView.FONT_SIZE_15_SP);
+        textPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
 
         playTextRect = new Rect();
         buttonPaint.getTextBounds("LEVELS", 0, "LEVELS".length(), playTextRect);
@@ -182,7 +182,7 @@ public class Menu implements InteractiveView
      *
      * @param   motionEvent - The touch motion event
      */
-    public void touchHandle(MotionEvent motionEvent)
+    public void handleTouch(MotionEvent motionEvent)
     {
         if (playHexRect.contains(Touch.x, Touch.y) && playHexRect.contains(Touch.downX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
@@ -191,7 +191,7 @@ public class Menu implements InteractiveView
                 if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - playHexRect.left, Touch.downY - playHexRect.top)).equals("ffff0000"))
                 {
                     /// TODO: Handle level select
-                    mainView.handleEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
+                    mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
                 }
             }
         }
@@ -201,7 +201,7 @@ public class Menu implements InteractiveView
             {
                 if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - randomHexRect.left, Touch.downY - randomHexRect.top)).equals("ffff0000"))
                 {
-                    mainView.handleEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
+                    mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
                 }
             }
         }

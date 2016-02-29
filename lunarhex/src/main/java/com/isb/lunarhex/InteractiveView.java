@@ -13,6 +13,6 @@ public interface InteractiveView
 {
     void initialize(Bundle state);
     void update(Canvas canvas, float framesPerSecond);
-    void touchHandle(MotionEvent motionEvent);
+    void handleTouch(MotionEvent motionEvent);
     void generateBackground();
 }

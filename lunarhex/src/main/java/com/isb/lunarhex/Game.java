@@ -519,7 +519,7 @@ public class Game implements InteractiveView
         /// TODO: Remove draw debug cursor
         paint.setColor(Color.GREEN);
         canvas.drawCircle(Touch.x, Touch.y, 5, paint);
-        /// TODO: Remove draw debug frames per second
+        /// TODO: Remove draw debug frames per second, ALSO remove framesPerSecond argument (also in interface)
         canvas.drawText(String.valueOf(framesPerSecond), 10, 40, debugPaint);
     }
 
@@ -554,7 +554,7 @@ public class Game implements InteractiveView
      *
      * @param   motionEvent - The touch motion event
      */
-    public void touchHandle(MotionEvent motionEvent)
+    public void handleTouch(MotionEvent motionEvent)
     {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
         {
@@ -671,7 +671,7 @@ public class Game implements InteractiveView
                 else if (buttonExit.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Exit game
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
-                    mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
+                    mainView.triggerEvent(new CustomEvent(CustomEvent.EXIT_GAME));
                 }
                 else if (buttonNextLevel.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Next level
                 {
