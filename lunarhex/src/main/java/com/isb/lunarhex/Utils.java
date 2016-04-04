@@ -609,12 +609,13 @@ public class Utils
         for(int i = 0; i < 100; i++)
         {
             colorIndex = rand.nextInt(red.length);
-            color = Color.argb(55 + rand.nextInt(145), red[colorIndex], green[colorIndex], blue[colorIndex]);
+            int transparency = 55 + rand.nextInt(145);
+            color = Color.argb(transparency, red[colorIndex], green[colorIndex], blue[colorIndex]);
             int starX = rand.nextInt(screenWidth);
             int starY = rand.nextInt(screenHeight);
             int starSize = rand.nextInt(16) + 4;
             RadialGradient radialGradient = new RadialGradient(starX, starY, starSize / 2,
-                    new int[] {color, color, color & 0x00FFFFFF},
+                    new int[] {color, ((int) (transparency * 0.6f) << 24) + (color & 0x00FFFFFF), (color & 0x00FFFFFF)},
                     new float[] {0.0f, rand.nextFloat() * 0.5f + 0.05f,  1.0f},
                     Shader.TileMode.CLAMP);
             paint.setShader(radialGradient);
