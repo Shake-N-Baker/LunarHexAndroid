@@ -23,12 +23,16 @@ public class Menu implements InteractiveView
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
     private static final float LEVELS_SPACING_X_PERCENT = 43f / 100f;
     private static final float TRANSITION_DISTANCE_X_PERCENT = 2f / 100f;
+    private static final float MAX_DRAG_VELOCITY_X_PERCENT = 80f / 1000f;
+    private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
     private static int LEVELS_SPACING_X;
     private static int TRANSITION_DISTANCE_X;
+    private static int MAX_DRAG_VELOCITY_X;
+    private static int DRAG_VELOCITY_RESISTANCE_X;
 
     /**
      * Reference to the main view.
@@ -66,6 +70,11 @@ public class Menu implements InteractiveView
     private boolean dragging;
 
     /**
+     * The velocity of the last drag event
+     */
+    private int dragVelocity;
+
+    /**
      * The initial value of the screen offset when drag touch event began
      */
     private int dragOffsetStart;
@@ -88,12 +97,19 @@ public class Menu implements InteractiveView
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
+        // Calculate the values based on screen measurements
         TITLE_X = Math.round(TITLE_X_PERCENT * screenWidth);
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
         TRANSITION_DISTANCE_X = Math.round(TRANSITION_DISTANCE_X_PERCENT * screenWidth);
+        MAX_DRAG_VELOCITY_X = Math.round(MAX_DRAG_VELOCITY_X_PERCENT * screenWidth);
+        DRAG_VELOCITY_RESISTANCE_X = Math.round(DRAG_VELOCITY_RESISTANCE_X_PERCENT * screenWidth);
+        if (DRAG_VELOCITY_RESISTANCE_X < 1)
+        {
+            DRAG_VELOCITY_RESISTANCE_X = 1;
+        }
 
         // Setup the paints used for text
         titlePaint = new Paint();
@@ -105,8 +121,10 @@ public class Menu implements InteractiveView
         textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
         textPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
 
+        // Setup the screen offset and dragging variables
         screenOffset = LEVELS_SPACING_X;
         dragging = false;
+        dragVelocity = 0;
         dragOffsetStart = screenOffset;
     }
 
@@ -133,12 +151,24 @@ public class Menu implements InteractiveView
 
         if (motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
+            // Finished dragging, update momentum
             dragging = false;
+            dragVelocity += (tDownX - tX) / 10;
+            if (dragVelocity > MAX_DRAG_VELOCITY_X)
+            {
+                dragVelocity = MAX_DRAG_VELOCITY_X;
+            }
+            else if (dragVelocity < -MAX_DRAG_VELOCITY_X)
+            {
+                dragVelocity = -MAX_DRAG_VELOCITY_X;
+            }
         }
         else
         {
+            // Begin dragging
             if (!dragging)
             {
+                // Start of a drag event, record the screen offset
                 dragOffsetStart = screenOffset;
             }
             dragging = true;
@@ -174,41 +204,83 @@ public class Menu implements InteractiveView
     {
         if (!dragging)
         {
-            if(screenOffset % LEVELS_SPACING_X != 0)
+            // Continue moving with the momentum of the finished drag events or scroll to the nearest level
+            if (dragVelocity != 0)
             {
-                int distanceLeft;
-                if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                // Adjust the screen offset based on the drag momentum
+                screenOffset += dragVelocity;
+                if (screenOffset < 0)
                 {
-                    distanceLeft = LEVELS_SPACING_X - (screenOffset % LEVELS_SPACING_X);
-                    if (distanceLeft > TRANSITION_DISTANCE_X)
+                    screenOffset = 0;
+                    dragVelocity = 0;
+                }
+                else if (screenOffset > (30 * LEVELS_SPACING_X))
+                {
+                    screenOffset = 30 * LEVELS_SPACING_X;
+                    dragVelocity = 0;
+                }
+
+                // Reduce the velocity of the drag momentum
+                if (dragVelocity > 0)
+                {
+                    dragVelocity -= DRAG_VELOCITY_RESISTANCE_X;
+                    if (dragVelocity < 0)
                     {
-                        screenOffset += TRANSITION_DISTANCE_X;
-                    }
-                    else
-                    {
-                        screenOffset += distanceLeft;
+                        dragVelocity = 0;
                     }
                 }
                 else
                 {
-                    distanceLeft = screenOffset % LEVELS_SPACING_X;
-                    if (distanceLeft > TRANSITION_DISTANCE_X)
+                    dragVelocity += DRAG_VELOCITY_RESISTANCE_X;
+                    if (dragVelocity > 0)
                     {
-                        screenOffset -= TRANSITION_DISTANCE_X;
+                        dragVelocity = 0;
+                    }
+                }
+            }
+            else
+            {
+                // Adjust the screen offset moving towards the nearest level
+                if(screenOffset % LEVELS_SPACING_X != 0)
+                {
+                    int distanceLeft;
+                    if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                    {
+                        distanceLeft = LEVELS_SPACING_X - (screenOffset % LEVELS_SPACING_X);
+                        if (distanceLeft > TRANSITION_DISTANCE_X)
+                        {
+                            screenOffset += TRANSITION_DISTANCE_X;
+                        }
+                        else
+                        {
+                            screenOffset += distanceLeft;
+                        }
                     }
                     else
                     {
-                        screenOffset -= distanceLeft;
+                        distanceLeft = screenOffset % LEVELS_SPACING_X;
+                        if (distanceLeft > TRANSITION_DISTANCE_X)
+                        {
+                            screenOffset -= TRANSITION_DISTANCE_X;
+                        }
+                        else
+                        {
+                            screenOffset -= distanceLeft;
+                        }
                     }
                 }
             }
         }
+
+        // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
         float titleTransparency = 1 - ((float) Math.abs(LEVELS_SPACING_X - screenOffset) / (float) LEVELS_SPACING_X);
         if (titleTransparency < 0f)
         {
             titleTransparency = 0f;
         }
         titlePaint.setColor(Color.argb((int) (titleTransparency * 255), 255, 255, 255));
+
+        // Draw the menu
         drawMenu(canvas);
     }
 
