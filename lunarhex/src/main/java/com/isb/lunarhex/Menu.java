@@ -153,7 +153,16 @@ public class Menu implements InteractiveView
         {
             // Finished dragging, update momentum
             dragging = false;
-            dragVelocity += (tDownX - tX) / 10;
+            if (dragVelocity * (tDownX - tX) > 0)
+            {
+                // Dragging in the same direction, add onto the velocity
+                dragVelocity += (tDownX - tX) / 10;
+            }
+            else
+            {
+                // Dragging in opposite direction, reset the velocity
+                dragVelocity = (tDownX - tX) / 10;
+            }
             if (dragVelocity > MAX_DRAG_VELOCITY_X)
             {
                 dragVelocity = MAX_DRAG_VELOCITY_X;
