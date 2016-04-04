@@ -19,6 +19,8 @@ public class Menu implements InteractiveView
      */
     private static final float TITLE_X_PERCENT = 66f / 100f;
     private static final float TITLE_Y_PERCENT = 20f / 100f;
+    private static final float SELECTION_CIRCLE_X_PERCENT = 84f / 100f;
+    private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float LEVELS_TOP_LEFT_X_PERCENT = 50f / 100f;
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
     private static final float LEVELS_SPACING_X_PERCENT = 43f / 100f;
@@ -27,6 +29,9 @@ public class Menu implements InteractiveView
     private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
     private static int TITLE_X;
     private static int TITLE_Y;
+    private static int SELECTION_CIRCLE_X;
+    private static int SELECTION_CIRCLE_Y;
+    private static int SELECTION_CIRCLE_RADIUS = 100;
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
     private static int LEVELS_SPACING_X;
@@ -65,6 +70,11 @@ public class Menu implements InteractiveView
     private Paint textPaint;
 
     /**
+     * The paint used for drawing the selection circle
+     */
+    private Paint circlePaint;
+
+    /**
      * Flag whether the player is dragging his finger across the screen
      */
     private boolean dragging;
@@ -100,6 +110,8 @@ public class Menu implements InteractiveView
         // Calculate the values based on screen measurements
         TITLE_X = Math.round(TITLE_X_PERCENT * screenWidth);
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
+        SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenHeight);
+        SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
@@ -120,6 +132,10 @@ public class Menu implements InteractiveView
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
         textPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
+        circlePaint = new Paint();
+        circlePaint.setColor(Color.argb(210, 168, 183, 225));
+        circlePaint.setStyle(Paint.Style.STROKE);
+        circlePaint.setStrokeWidth(5f);
 
         // Setup the screen offset and dragging variables
         screenOffset = LEVELS_SPACING_X;
@@ -151,6 +167,31 @@ public class Menu implements InteractiveView
 
         if (motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
+            if (Utils.distanceBetweenPoints(tDownX, Touch.downY, tX, Touch.y) < SELECTION_CIRCLE_RADIUS)
+            {
+                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                {
+                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                    {
+                        // Clicked the selection circle
+                        int level = screenOffset / LEVELS_SPACING_X;
+                        if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                        {
+                            level++;
+                        }
+                        if (level == 0)
+                        {
+                            // Random level
+                            mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
+                        }
+                        else
+                        {
+                            // Play selected level
+                            mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
+                        }
+                    }
+                }
+            }
             // Finished dragging, update momentum
             dragging = false;
             if (dragVelocity * (tDownX - tX) > 0)
@@ -181,22 +222,16 @@ public class Menu implements InteractiveView
                 dragOffsetStart = screenOffset;
             }
             dragging = true;
+            screenOffset = dragOffsetStart + tDownX - tX;
+            if (screenOffset < 0)
+            {
+                screenOffset = 0;
+            }
+            else if (screenOffset > (30 * LEVELS_SPACING_X))
+            {
+                screenOffset = 30 * LEVELS_SPACING_X;
+            }
         }
-        screenOffset = dragOffsetStart + tDownX - tX;
-        if (screenOffset < 0)
-        {
-            screenOffset = 0;
-        }
-        else if (screenOffset > (30 * LEVELS_SPACING_X))
-        {
-            screenOffset = 30 * LEVELS_SPACING_X;
-        }
-
-        // Play
-        //mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
-
-        // Random
-        // mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
 
         // Source
         // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
@@ -323,6 +358,12 @@ public class Menu implements InteractiveView
         for (int row = 1; row < 31; row++)
         {
             canvas.drawText(Integer.toString(row), (LEVELS_SPACING_X * row) + LEVELS_TOP_LEFT_X, LEVELS_TOP_LEFT_Y, textPaint);
+        }
+
+        // Draw the selection circle
+        if (!dragging && dragVelocity == 0 && screenOffset % LEVELS_SPACING_X == 0)
+        {
+            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS, circlePaint);
         }
 
         canvas.restoreToCount(defaultMatrix);
