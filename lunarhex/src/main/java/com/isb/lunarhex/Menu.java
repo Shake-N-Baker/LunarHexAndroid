@@ -28,8 +28,12 @@ public class Menu implements InteractiveView
     private static final float CUSTOM_HEX_Y_PERCENT = 28f / 100f;
     private static final float ABOUT_HEX_X_PERCENT = 36f / 100f;
     private static final float ABOUT_HEX_Y_PERCENT = 60f / 100f;
+    private static final float LEVELS_TOP_LEFT_X_PERCENT = 110f / 100f;
+    private static final float LEVELS_TOP_LEFT_Y_PERCENT = 33f / 100f;
+    private static final float LEVELS_SPACING_X_PERCENT = 43f / 100f;
     private static final float HEX_BUTTON_WIDTH_PERCENT = 30f / 100f;
     private static final float HEX_BUTTON_HEIGHT_PERCENT = 35f / 100f;
+    private static final int TRANSITION_TOTAL_FRAMES = 10;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int LEVELS_HEX_X;
@@ -38,6 +42,9 @@ public class Menu implements InteractiveView
     private static int CUSTOM_HEX_Y;
     private static int ABOUT_HEX_X;
     private static int ABOUT_HEX_Y;
+    private static int LEVELS_TOP_LEFT_X;
+    private static int LEVELS_TOP_LEFT_Y;
+    private static int LEVELS_SPACING_X;
     private static int HEX_BUTTON_WIDTH;
     private static int HEX_BUTTON_HEIGHT;
 
@@ -112,6 +119,31 @@ public class Menu implements InteractiveView
     private Bitmap hexButtonCheck;
 
     /**
+     * Flag whether the menu is transitioning between levels
+     */
+    private boolean transitioning;
+
+    /**
+     * The number of frame updates since transition started
+     */
+    private int transitionFramesPassed;
+
+    /**
+     * The level being transitioned from or 0 for random
+     */
+    private int transitioningFrom;
+
+    /**
+     * The level being transitioned to or 0 for random
+     */
+    private int transitioningTo;
+
+    /**
+     * The magnitude of the canvas translation for the screen offset
+     */
+    private int screenOffset;
+
+    /**
      * Constructor for the menu.
      *
      * @param   main - The reference to the main view
@@ -132,6 +164,9 @@ public class Menu implements InteractiveView
         CUSTOM_HEX_Y = Math.round(CUSTOM_HEX_Y_PERCENT * screenHeight);
         ABOUT_HEX_X = Math.round(ABOUT_HEX_X_PERCENT * screenWidth);
         ABOUT_HEX_Y = Math.round(ABOUT_HEX_Y_PERCENT * screenHeight);
+        LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
+        LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
+        LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
         HEX_BUTTON_WIDTH = Math.round(HEX_BUTTON_WIDTH_PERCENT * screenWidth);
         HEX_BUTTON_HEIGHT = Math.round(HEX_BUTTON_HEIGHT_PERCENT * screenHeight);
 
@@ -141,7 +176,7 @@ public class Menu implements InteractiveView
 
         // Setup the paints used for text
         titlePaint = new Paint();
-        titlePaint.setColor(Color.WHITE);
+        titlePaint.setColor(Color.argb(205, 255, 255, 255));
         titlePaint.setTextSize(MainView.FONT_SIZE_60_SP);
         titlePaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
         buttonPaint = new Paint();
@@ -164,6 +199,12 @@ public class Menu implements InteractiveView
         hexButtonCheck = Bitmap.createBitmap(HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Bitmap.Config.ARGB_8888);
         Canvas temp = new Canvas(hexButtonCheck);
         Utils.drawHex(temp, 0, 0, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, 0xFF0000, 0, false);
+
+        transitioning = false;
+        transitionFramesPassed = 0;
+        transitioningFrom = 1;
+        transitioningTo = 1;
+        screenOffset = transitioningFrom * LEVELS_SPACING_X;
     }
 
     /**
@@ -184,37 +225,47 @@ public class Menu implements InteractiveView
      */
     public void handleTouch(MotionEvent motionEvent)
     {
-        if (playHexRect.contains(Touch.x, Touch.y) && playHexRect.contains(Touch.downX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
+        int tX = Touch.x + screenOffset;
+        int tDownX = Touch.downX + screenOffset;
+        if (playHexRect.contains(tX, Touch.y) && playHexRect.contains(tDownX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
-            if (Integer.toHexString(hexButtonCheck.getPixel(Touch.x - playHexRect.left, Touch.y - playHexRect.top)).equals("ffff0000"))
+            if (Integer.toHexString(hexButtonCheck.getPixel(tX - playHexRect.left, Touch.y - playHexRect.top)).equals("ffff0000"))
             {
-                if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - playHexRect.left, Touch.downY - playHexRect.top)).equals("ffff0000"))
+                if (Integer.toHexString(hexButtonCheck.getPixel(tDownX - playHexRect.left, Touch.downY - playHexRect.top)).equals("ffff0000"))
                 {
-                    /// TODO: Handle level select
-                    mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
+                    //mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, "0"));
+                    transitioning = true;
+                    transitioningFrom = 0;
+                    transitioningTo = 1;
                 }
             }
         }
-        else if (randomHexRect.contains(Touch.x, Touch.y) && randomHexRect.contains(Touch.downX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
+        else if (randomHexRect.contains(tX, Touch.y) && randomHexRect.contains(tDownX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
-            if (Integer.toHexString(hexButtonCheck.getPixel(Touch.x - randomHexRect.left, Touch.y - randomHexRect.top)).equals("ffff0000"))
+            if (Integer.toHexString(hexButtonCheck.getPixel(tX - randomHexRect.left, Touch.y - randomHexRect.top)).equals("ffff0000"))
             {
-                if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - randomHexRect.left, Touch.downY - randomHexRect.top)).equals("ffff0000"))
+                if (Integer.toHexString(hexButtonCheck.getPixel(tDownX - randomHexRect.left, Touch.downY - randomHexRect.top)).equals("ffff0000"))
                 {
                     mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
                 }
             }
         }
-        if (sourceHexRect.contains(Touch.x, Touch.y) && sourceHexRect.contains(Touch.downX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
+        else if (sourceHexRect.contains(tX, Touch.y) && sourceHexRect.contains(tDownX, Touch.downY) && motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
-            if (Integer.toHexString(hexButtonCheck.getPixel(Touch.x - sourceHexRect.left, Touch.y - sourceHexRect.top)).equals("ffff0000"))
+            if (Integer.toHexString(hexButtonCheck.getPixel(tX - sourceHexRect.left, Touch.y - sourceHexRect.top)).equals("ffff0000"))
             {
-                if (Integer.toHexString(hexButtonCheck.getPixel(Touch.downX - sourceHexRect.left, Touch.downY - sourceHexRect.top)).equals("ffff0000"))
+                if (Integer.toHexString(hexButtonCheck.getPixel(tDownX - sourceHexRect.left, Touch.downY - sourceHexRect.top)).equals("ffff0000"))
                 {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
                     mainView.getContext().startActivity(browserIntent);
                 }
             }
+        }
+        else if (screenOffset > 0 && !transitioning && motionEvent.getAction() == MotionEvent.ACTION_UP)
+        {
+            transitioning = true;
+            transitioningFrom = 1;
+            transitioningTo = 0;
         }
     }
 
@@ -226,30 +277,82 @@ public class Menu implements InteractiveView
      */
     public void update(Canvas canvas, float framesPerSecond)
     {
+        if (transitioning)
+        {
+            if (transitionFramesPassed > TRANSITION_TOTAL_FRAMES)
+            {
+                transitionFramesPassed = 0;
+                transitioning = false;
+                transitioningFrom = transitioningTo;
+                screenOffset = transitioningFrom * LEVELS_SPACING_X;
+            }
+            else
+            {
+                if (transitioningFrom > transitioningTo)
+                {
+                    screenOffset = (int) ((1 - ((float) transitionFramesPassed / (float) TRANSITION_TOTAL_FRAMES)) * LEVELS_SPACING_X);
+                }
+                else
+                {
+                    screenOffset = (int) (((float) transitionFramesPassed / (float) TRANSITION_TOTAL_FRAMES) * LEVELS_SPACING_X);
+                }
+                transitionFramesPassed++;
+            }
+        }
+        drawMenu(canvas);
+    }
+
+    /**
+     * Draws the menu.
+     *
+     * @param canvas - The canvas to draw the menu on
+     */
+    private void drawMenu(Canvas canvas)
+    {
+        int defaultMatrix = canvas.save();
+
         // Clear board
         canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
+
+        // Draw the background shifted to a smaller degree
+        canvas.translate(-1 * (screenOffset / 10), 0);
         canvas.drawBitmap(background, 0, 0, null);
 
+        // Shift everything else the full amount
+        canvas.restoreToCount(defaultMatrix);
+        canvas.translate(-1 * screenOffset, 0);
+
+        // Draw main menu buttons
         Utils.drawHex(canvas, LEVELS_HEX_X, LEVELS_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.RED, 0, true);
         Utils.drawHex(canvas, CUSTOM_HEX_X, CUSTOM_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.GREEN, 0, true);
         Utils.drawHex(canvas, ABOUT_HEX_X, ABOUT_HEX_Y, HEX_BUTTON_WIDTH, HEX_BUTTON_HEIGHT, Color.BLUE, 0, true);
 
-        // Draw texts
+        // Draw main menu texts
         canvas.drawText("LUNAR HEX", TITLE_X, TITLE_Y, titlePaint);
         canvas.drawText("LEVELS", ((LEVELS_HEX_X + (LEVELS_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (playTextRect.width() / 2), ((LEVELS_HEX_Y + (LEVELS_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
         canvas.drawText("CUSTOM", ((CUSTOM_HEX_X + (CUSTOM_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (randomTextRect.width() / 2), ((CUSTOM_HEX_Y + (CUSTOM_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
         canvas.drawText("ABOUT", ((ABOUT_HEX_X + (ABOUT_HEX_X + HEX_BUTTON_WIDTH)) / 2) - (sourceTextRect.width() / 2), ((ABOUT_HEX_Y + (ABOUT_HEX_Y + HEX_BUTTON_HEIGHT)) / 2) - ((buttonPaint.ascent() + buttonPaint.descent()) / 2), buttonPaint);
-        canvas.drawText("Created By: Ian Baker", 10, screenHeight - 10, textPaint);
+
+        // Draw level select menu texts
+        for (int col = 0; col < 3; col++)
+        {
+            for (int row = 0; row < 10; row++)
+            {
+                canvas.drawText(Integer.toString((col * 10) + row + 1), (LEVELS_SPACING_X * row) + LEVELS_TOP_LEFT_X, LEVELS_TOP_LEFT_Y, textPaint);
+            }
+        }
+
+        canvas.restoreToCount(defaultMatrix);
 
         /// TODO: Remove draw debug down cursor
         Paint paint = new Paint();
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.RED);
         paint.setStrokeWidth(10);
-        canvas.drawCircle(Touch.downX, Touch.downY, 5, paint);
+        canvas.drawCircle(Touch.downX + screenOffset, Touch.downY, 5, paint);
         /// TODO: Remove draw debug cursor
         paint.setColor(Color.GREEN);
-        canvas.drawCircle(Touch.x, Touch.y, 5, paint);
+        canvas.drawCircle(Touch.x + screenOffset, Touch.y, 5, paint);
     }
 
     /**
@@ -259,8 +362,8 @@ public class Menu implements InteractiveView
     {
         if (background == null)
         {
-            background = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+            background = Bitmap.createBitmap((int) (screenWidth * 1.2f), screenHeight, Bitmap.Config.ARGB_8888);
         }
-        Utils.generateBackground(background, screenWidth, screenHeight);
+        Utils.generateBackground(background, (int) (screenWidth * 1.2f), screenHeight);
     }
 }
