@@ -32,8 +32,7 @@ public class MainView extends SurfaceView implements Runnable
      */
     private static final int FRAME_RATE = 60;
     public static final int TRANSITION_TOTAL_FRAMES = 10;
-    public static int FONT_SIZE_15_SP;
-    public static int FONT_SIZE_30_SP;
+    public static int FONT_SIZE_20_SP;
     public static int FONT_SIZE_60_SP;
     private static int MS_PER_CYCLE;
     private static int SCREEN_WIDTH;
@@ -131,8 +130,7 @@ public class MainView extends SurfaceView implements Runnable
         holder = getHolder();
 
         // Set up fonts
-        FONT_SIZE_15_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_15);
-        FONT_SIZE_30_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_30);
+        FONT_SIZE_20_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_20);
         FONT_SIZE_60_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_60);
         RALEWAY_BOLD_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Raleway-Bold.ttf");
 
