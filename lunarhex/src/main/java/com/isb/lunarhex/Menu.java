@@ -413,41 +413,41 @@ public class Menu implements InteractiveView
         canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
 
         // Draw random level text
+        float levelsFromText = (float) screenOffset / (float) LEVELS_SPACING_X;
+        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
         canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
 
         // Draw level texts
         for (int level = 1; level < 31; level++)
         {
+            levelsFromText = ((float) screenOffset / (float) LEVELS_SPACING_X) - (float) level;
+            if (levelsFromText < 0f)
+            {
+                levelsFromText *= -1f;
+            }
+            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
             canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - textCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(level), textPaint);
         }
 
         // Draw about game text
+        levelsFromText = 31f - ((float) screenOffset / (float) LEVELS_SPACING_X);
+        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
         canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
         // Draw the selection circle
-        int diff = screenOffset % LEVELS_SPACING_X;
-        if (diff > (LEVELS_SPACING_X / 2))
+        int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
+        if (differenceFromCenter > (LEVELS_SPACING_X / 2))
         {
-            diff -= LEVELS_SPACING_X;
-            diff *= -1;
+            differenceFromCenter -= LEVELS_SPACING_X;
+            differenceFromCenter *= -1;
         }
-        if (diff < SELECTION_CIRCLE_RADIUS)
+        if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
-            circlePaint.setColor(Color.argb((int) (255 * (1f - ((float) diff / (float) SELECTION_CIRCLE_RADIUS))), 168, 183, 225));
-            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - diff, circlePaint);
+            circlePaint.setColor(Color.argb((int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))), 168, 183, 225));
+            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
 
         canvas.restoreToCount(defaultMatrix);
-
-        /// TODO: Remove draw debug down cursor
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(10);
-        canvas.drawCircle(Touch.downX + screenOffset, Touch.downY, 5, paint);
-        /// TODO: Remove draw debug cursor
-        paint.setColor(Color.GREEN);
-        canvas.drawCircle(Touch.x + screenOffset, Touch.y, 5, paint);
     }
 
     /**
