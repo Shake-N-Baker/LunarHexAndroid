@@ -1,9 +1,12 @@
 package com.isb.lunarhex;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
@@ -20,16 +23,21 @@ public class Menu implements InteractiveView
     /**
      * Constants
      */
-    private static final float TITLE_X_PERCENT = 66f / 100f;
+    private static final String RANDOM_GAME_TEXT = "RANDOM";
+    private static final String ABOUT_TEXT = "ABOUT";
+    private static final String TITLE_TEXT = "LUNAR HEX";
+    private static final float TITLE_X_PERCENT = 23f / 100f;
     private static final float TITLE_Y_PERCENT = 20f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 84f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float LEVELS_TOP_LEFT_X_PERCENT = 50f / 100f;
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
-    private static final float LEVELS_SPACING_X_PERCENT = 43f / 100f;
+    private static final float LEVELS_SPACING_X_PERCENT = 20f / 100f;
     private static final float TRANSITION_DISTANCE_X_PERCENT = 2f / 100f;
     private static final float MAX_DRAG_VELOCITY_X_PERCENT = 80f / 1000f;
     private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
+    private static final int BACKGROUND_OFFSET_DAMPENING_MAGNITUDE = 10;
+    private static final int DRAGGING_VELOCITY_DAMPENING_MAGNITUDE = 10;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int SELECTION_CIRCLE_X;
@@ -76,6 +84,16 @@ public class Menu implements InteractiveView
      * The paint used for drawing the selection circle
      */
     private Paint circlePaint;
+
+    /**
+     * The offsets of the level texts in the X direction
+     */
+    private List<Integer> textCenterOffsetX;
+
+    /**
+     * The offsets of the level texts in the Y direction
+     */
+    private List<Integer> textCenterOffsetY;
 
     /**
      * The previous x coordinates of this drag event
@@ -145,8 +163,27 @@ public class Menu implements InteractiveView
         circlePaint.setStyle(Paint.Style.STROKE);
         circlePaint.setStrokeWidth(5f);
 
+        // Setup the offset from center rectangles for each level text
+        textCenterOffsetX = new ArrayList<Integer>();
+        textCenterOffsetY = new ArrayList<Integer>();
+        Rect temp = new Rect();
+        textPaint.getTextBounds(RANDOM_GAME_TEXT, 0, RANDOM_GAME_TEXT.length(), temp);
+        textCenterOffsetX.add(temp.width() / 2);
+        textCenterOffsetY.add(temp.height() / 2);
+        for (int i = 1; i < 31; i++)
+        {
+            temp = new Rect();
+            textPaint.getTextBounds(String.valueOf(i), 0, String.valueOf(i).length(), temp);
+            textCenterOffsetX.add(temp.width() / 2);
+            textCenterOffsetY.add(temp.height() / 2);
+        }
+        temp = new Rect();
+        textPaint.getTextBounds(ABOUT_TEXT, 0, ABOUT_TEXT.length(), temp);
+        textCenterOffsetX.add(temp.width() / 2);
+        textCenterOffsetY.add(temp.height() / 2);
+
         // Setup the screen offset and dragging variables
-        screenOffset = LEVELS_SPACING_X;
+        screenOffset = 0;
         dragging = false;
         dragVelocity = 0;
         dragOffsetStart = screenOffset;
@@ -195,6 +232,12 @@ public class Menu implements InteractiveView
                         // Random level
                         mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
                     }
+                    else if (level == 31)
+                    {
+                        // View Github page
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                        mainView.getContext().startActivity(browserIntent);
+                    }
                     else
                     {
                         // Play selected level
@@ -207,12 +250,12 @@ public class Menu implements InteractiveView
             if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
             {
                 // Dragging in the same direction, add onto the velocity
-                dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / 10;
+                dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
             }
             else
             {
                 // Dragging in opposite direction, reset the velocity
-                dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / 10;
+                dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
             }
             if (dragVelocity > MAX_DRAG_VELOCITY_X)
             {
@@ -243,15 +286,11 @@ public class Menu implements InteractiveView
             {
                 screenOffset = 0;
             }
-            else if (screenOffset > (30 * LEVELS_SPACING_X))
+            else if (screenOffset > (31 * LEVELS_SPACING_X))
             {
-                screenOffset = 30 * LEVELS_SPACING_X;
+                screenOffset = 31 * LEVELS_SPACING_X;
             }
         }
-
-        // Source
-        // Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
-        // mainView.getContext().startActivity(browserIntent);
     }
 
     /**
@@ -274,9 +313,9 @@ public class Menu implements InteractiveView
                     screenOffset = 0;
                     dragVelocity = 0;
                 }
-                else if (screenOffset > (30 * LEVELS_SPACING_X))
+                else if (screenOffset > (31 * LEVELS_SPACING_X))
                 {
-                    screenOffset = 30 * LEVELS_SPACING_X;
+                    screenOffset = 31 * LEVELS_SPACING_X;
                     dragVelocity = 0;
                 }
 
@@ -339,7 +378,7 @@ public class Menu implements InteractiveView
         }
 
         // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
-        float titleTransparency = 1 - ((float) Math.abs(LEVELS_SPACING_X - screenOffset) / (float) LEVELS_SPACING_X);
+        float titleTransparency = 1 - ((float) screenOffset / (float) LEVELS_SPACING_X);
         if (titleTransparency < 0f)
         {
             titleTransparency = 0f;
@@ -363,7 +402,7 @@ public class Menu implements InteractiveView
         canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
 
         // Draw the background shifted to a smaller degree
-        canvas.translate(-1 * (screenOffset / 10), 0);
+        canvas.translate(-1 * (screenOffset / BACKGROUND_OFFSET_DAMPENING_MAGNITUDE), 0);
         canvas.drawBitmap(background, 0, 0, null);
 
         // Shift everything else the full amount
@@ -371,16 +410,19 @@ public class Menu implements InteractiveView
         canvas.translate(-1 * screenOffset, 0);
 
         // Draw title text
-        canvas.drawText("LUNAR HEX", TITLE_X, TITLE_Y, titlePaint);
+        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
 
         // Draw random level text
-        canvas.drawText("RANDOM", LEVELS_TOP_LEFT_X, LEVELS_TOP_LEFT_Y, textPaint);
+        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
 
         // Draw level texts
-        for (int row = 1; row < 31; row++)
+        for (int level = 1; level < 31; level++)
         {
-            canvas.drawText(Integer.toString(row), (LEVELS_SPACING_X * row) + LEVELS_TOP_LEFT_X, LEVELS_TOP_LEFT_Y, textPaint);
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - textCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(level), textPaint);
         }
+
+        // Draw about game text
+        canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
         // Draw the selection circle
         int diff = screenOffset % LEVELS_SPACING_X;
@@ -415,8 +457,8 @@ public class Menu implements InteractiveView
     {
         if (background == null)
         {
-            background = Bitmap.createBitmap((int) (screenWidth * 2.29f), screenHeight, Bitmap.Config.ARGB_8888);
+            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
         }
-        Utils.generateBackground(background, (int) (screenWidth * 2.29f), screenHeight);
+        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 }
