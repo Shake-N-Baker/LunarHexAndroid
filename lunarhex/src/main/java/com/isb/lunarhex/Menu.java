@@ -7,6 +7,9 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.MotionEvent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * The menu class.
  *
@@ -75,6 +78,11 @@ public class Menu implements InteractiveView
     private Paint circlePaint;
 
     /**
+     * The previous x coordinates of this drag event
+     */
+    private List<Integer> dragPathX;
+
+    /**
      * Flag whether the player is dragging his finger across the screen
      */
     private boolean dragging;
@@ -133,7 +141,7 @@ public class Menu implements InteractiveView
         textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
         textPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
         circlePaint = new Paint();
-        circlePaint.setColor(Color.argb(210, 168, 183, 225));
+        circlePaint.setColor(Color.argb(255, 168, 183, 225));
         circlePaint.setStyle(Paint.Style.STROKE);
         circlePaint.setStrokeWidth(5f);
 
@@ -142,6 +150,11 @@ public class Menu implements InteractiveView
         dragging = false;
         dragVelocity = 0;
         dragOffsetStart = screenOffset;
+        dragPathX = new ArrayList<Integer>();
+        for (int i = 0; i < 15; i++)
+        {
+            dragPathX.add(0);
+        }
     }
 
     /**
@@ -167,42 +180,39 @@ public class Menu implements InteractiveView
 
         if (motionEvent.getAction() == MotionEvent.ACTION_UP)
         {
-            if (Utils.distanceBetweenPoints(tDownX, Touch.downY, tX, Touch.y) < SELECTION_CIRCLE_RADIUS)
+            if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
             {
-                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
                 {
-                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                    // Clicked the selection circle
+                    int level = screenOffset / LEVELS_SPACING_X;
+                    if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
                     {
-                        // Clicked the selection circle
-                        int level = screenOffset / LEVELS_SPACING_X;
-                        if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
-                        {
-                            level++;
-                        }
-                        if (level == 0)
-                        {
-                            // Random level
-                            mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
-                        }
-                        else
-                        {
-                            // Play selected level
-                            mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
-                        }
+                        level++;
+                    }
+                    if (level == 0)
+                    {
+                        // Random level
+                        mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
+                    }
+                    else
+                    {
+                        // Play selected level
+                        mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
                     }
                 }
             }
             // Finished dragging, update momentum
             dragging = false;
-            if (dragVelocity * (tDownX - tX) > 0)
+            if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
             {
                 // Dragging in the same direction, add onto the velocity
-                dragVelocity += (tDownX - tX) / 10;
+                dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / 10;
             }
             else
             {
                 // Dragging in opposite direction, reset the velocity
-                dragVelocity = (tDownX - tX) / 10;
+                dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / 10;
             }
             if (dragVelocity > MAX_DRAG_VELOCITY_X)
             {
@@ -218,10 +228,16 @@ public class Menu implements InteractiveView
             // Begin dragging
             if (!dragging)
             {
-                // Start of a drag event, record the screen offset
+                // Start of a drag event, record the screen offset, reset the path
                 dragOffsetStart = screenOffset;
+                for (int i = 0; i < dragPathX.size(); i++)
+                {
+                    dragPathX.set(i, Touch.x);
+                }
             }
             dragging = true;
+
+            // Shift the screen offset
             screenOffset = dragOffsetStart + tDownX - tX;
             if (screenOffset < 0)
             {
@@ -315,6 +331,12 @@ public class Menu implements InteractiveView
                 }
             }
         }
+        else
+        {
+            // Update the recent dragging path
+            dragPathX.add(0, Touch.x);
+            dragPathX.remove(dragPathX.size() - 1);
+        }
 
         // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
         float titleTransparency = 1 - ((float) Math.abs(LEVELS_SPACING_X - screenOffset) / (float) LEVELS_SPACING_X);
@@ -361,9 +383,16 @@ public class Menu implements InteractiveView
         }
 
         // Draw the selection circle
-        if (!dragging && dragVelocity == 0 && screenOffset % LEVELS_SPACING_X == 0)
+        int diff = screenOffset % LEVELS_SPACING_X;
+        if (diff > (LEVELS_SPACING_X / 2))
         {
-            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS, circlePaint);
+            diff -= LEVELS_SPACING_X;
+            diff *= -1;
+        }
+        if (diff < SELECTION_CIRCLE_RADIUS)
+        {
+            circlePaint.setColor(Color.argb((int) (255 * (1f - ((float) diff / (float) SELECTION_CIRCLE_RADIUS))), 168, 183, 225));
+            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - diff, circlePaint);
         }
 
         canvas.restoreToCount(defaultMatrix);
