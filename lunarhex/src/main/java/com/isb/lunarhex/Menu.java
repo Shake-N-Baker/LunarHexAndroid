@@ -75,6 +75,11 @@ public class Menu implements InteractiveView
     private int screenHeight;
 
     /**
+     * List of levels, each level is a list of colors, each color is a list of x, y, color value.
+     */
+    private List<List<List<Integer>>> boards;
+
+    /**
      * The background image
      */
     private static Bitmap background;
@@ -140,12 +145,15 @@ public class Menu implements InteractiveView
      * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
+     * @param   mainBoards - The set of main boards
      */
-    public Menu(MainView main, int screenWidth, int screenHeight)
+    public Menu(MainView main, int screenWidth, int screenHeight, List<String> mainBoards)
     {
         this.mainView = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+
+        parseBoards(mainBoards);
 
         // Calculate the values based on screen measurements
         TITLE_X = Math.round(TITLE_X_PERCENT * screenWidth);
@@ -466,14 +474,52 @@ public class Menu implements InteractiveView
 
         if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
+            int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
+
             // Draw the preview board
             if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
             {
-                previewBoardPaint.setColor(Color.argb((int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))), 255, 255, 255));
+                List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+
                 for (int x = 0; x < 5; x++)
                 {
-                    for (int y = 0; y < 5; y++)
+                    for (int y = 0; y < 6; y++)
                     {
+                        // The final row only has 2 spaces instead of 5
+                        if (y == 5)
+                        {
+                            if (x != 1 && x != 3)
+                            {
+                                continue;
+                            }
+                        }
+
+                        // Search the colors to see if this index matches their coordinates
+                        boolean colorFound = false;
+                        for (List<Integer> color : board)
+                        {
+                            if (x == color.get(0) && y == color.get(1))
+                            {
+                                previewBoardPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
+                                colorFound = true;
+                                break;
+                            }
+                        }
+
+                        // Tint the center red and color the rest of the spaces white
+                        if (!colorFound)
+                        {
+                            if (x == 2 && y == 2)
+                            {
+                                previewBoardPaint.setColor(Color.argb(transparency, 255, 196, 196));
+                            }
+                            else
+                            {
+                                previewBoardPaint.setColor(Color.argb(transparency, 255, 255, 255));
+                            }
+                        }
+
+                        // Columns of the board alternate in height
                         if (x % 2 == 0)
                         {
                             canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
@@ -484,12 +530,10 @@ public class Menu implements InteractiveView
                         }
                     }
                 }
-                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * 1) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * 5) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
-                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * 3) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * 5) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
             }
 
             // Draw the selection circle
-            circlePaint.setColor(Color.argb((int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))), 168, 183, 225));
+            circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
             canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
 
@@ -506,5 +550,75 @@ public class Menu implements InteractiveView
             background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
         }
         Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
+    }
+
+    /**
+     * Parses the boards into a format used by the menu when previewing boards.
+     *
+     * @param   mainBoards - The set of main boards
+     */
+    private void parseBoards(List<String> mainBoards)
+    {
+        boards = new ArrayList<List<List<Integer>>>();
+        for (int level = 0; level < 30; level++)
+        {
+            String uncompressedBoard = Utils.convertCompressedBoard(mainBoards.get(level));
+
+            List<List<Integer>> levelColors = new ArrayList<List<Integer>>();
+            String[] pairs = uncompressedBoard.split(",");
+            for (int i = 0; i < pairs.length; i++)
+            {
+                List<Integer> colorCoordinates = new ArrayList<Integer>();
+                Character color = pairs[i].split("-")[0].charAt(0);
+                int index = Integer.parseInt(pairs[i].split("-")[1]);
+                int x = 0;
+                int y = 0;
+                if (0 <= index && index <= 24)
+                {
+                    x = index % 5;
+                    y = index / 5;
+                }
+                else if (index == 25)
+                {
+                    x = 1;
+                    y = 5;
+                }
+                else if (index == 26)
+                {
+                    x = 3;
+                    y = 5;
+                }
+                int colorValue;
+                switch (color)
+                {
+                    case 'R':
+                        colorValue = 0xFFAA0000;
+                        break;
+                    case 'G':
+                        colorValue = 0xFF009900;
+                        break;
+                    case 'B':
+                        colorValue = 0xFF333399;
+                        break;
+                    case 'Y':
+                        colorValue = 0xFFFFFF00;
+                        break;
+                    case 'O':
+                        colorValue = 0xFFDD7700;
+                        break;
+                    case 'P':
+                        colorValue = 0xFF9900AA;
+                        break;
+                    default:
+                        colorValue = 0xFF808080;
+                        break;
+                }
+                colorCoordinates.add(x);
+                colorCoordinates.add(y);
+                colorCoordinates.add(colorValue);
+                levelColors.add(colorCoordinates);
+            }
+            boards.add(levelColors);
+        }
     }
 }

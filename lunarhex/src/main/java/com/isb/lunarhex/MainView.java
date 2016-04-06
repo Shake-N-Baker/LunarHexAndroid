@@ -165,7 +165,7 @@ public class MainView extends SurfaceView implements Runnable
 
         // Setup Game and Menu
         game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
-        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT);
+        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet);
 
         String savedView = "menu";
         if(state != null)
