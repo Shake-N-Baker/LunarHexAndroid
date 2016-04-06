@@ -342,12 +342,12 @@ public class Game implements InteractiveView
         // Setup the paint for text boxes
         textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(mainView.FONT_SIZE_15_SP);
-        textPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
+        textPaint.setTextSize(mainView.FONT_SIZE_20_SP);
+        textPaint.setTypeface(mainView.LATO_FONT);
         debugPaint = new Paint();
         debugPaint.setColor(Color.GREEN);
-        debugPaint.setTextSize(mainView.FONT_SIZE_15_SP);
-        debugPaint.setTypeface(mainView.RALEWAY_BOLD_FONT);
+        debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
+        debugPaint.setTypeface(mainView.LATO_FONT);
         buttonPaint = new Paint();
         buttonPaint.setStyle(Paint.Style.FILL);
         buttonPaint.setColor(0xFF50D040);
@@ -430,6 +430,9 @@ public class Game implements InteractiveView
         playerWon = Utils.boardSolved(boardState);
         if (currentLevel != -1)
         {
+            /// TODO: Add instructions
+            /// Lv 1 - Slide the red piece to the middle to win
+            /// Lv 2 - Pieces may only slide into other pieces
             backgroundPanel.hasLineSeparator = true;
             levelText.isVisible = true;
             levelText.setText("LEVEL: " + (currentLevel + 1));

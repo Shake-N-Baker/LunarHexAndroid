@@ -75,8 +75,8 @@ public class Text
         {
             Text.textFillPaint = new Paint();
             Text.textFillPaint.setColor(0xFFFFFFFF);
-            Text.textFillPaint.setTextSize(MainView.FONT_SIZE_15_SP);
-            Text.textFillPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
+            Text.textFillPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+            Text.textFillPaint.setTypeface(MainView.LATO_FONT);
         }
         if (Text.textBorderPaint == null)
         {
@@ -84,8 +84,8 @@ public class Text
             Text.textBorderPaint.setStyle(Paint.Style.STROKE);
             Text.textBorderPaint.setStrokeWidth(2);
             Text.textBorderPaint.setColor(0xFF000000);
-            Text.textBorderPaint.setTextSize(MainView.FONT_SIZE_15_SP);
-            Text.textBorderPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
+            Text.textBorderPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+            Text.textBorderPaint.setTypeface(MainView.LATO_FONT);
         }
 
         this.text = text;

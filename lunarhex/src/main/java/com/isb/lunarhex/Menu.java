@@ -153,11 +153,11 @@ public class Menu implements InteractiveView
         titlePaint = new Paint();
         titlePaint.setColor(Color.argb(255, 255, 255, 255));
         titlePaint.setTextSize(MainView.FONT_SIZE_60_SP);
-        titlePaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
+        titlePaint.setTypeface(MainView.LATO_HEAVY_FONT);
         textPaint = new Paint();
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
-        textPaint.setTypeface(MainView.RALEWAY_BOLD_FONT);
+        textPaint.setTypeface(MainView.LATO_FONT);
         circlePaint = new Paint();
         circlePaint.setColor(Color.argb(255, 168, 183, 225));
         circlePaint.setStyle(Paint.Style.STROKE);

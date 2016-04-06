@@ -37,7 +37,8 @@ public class MainView extends SurfaceView implements Runnable
     private static int MS_PER_CYCLE;
     private static int SCREEN_WIDTH;
     private static int SCREEN_HEIGHT;
-    public static Typeface RALEWAY_BOLD_FONT;
+    public static Typeface LATO_HEAVY_FONT;
+    public static Typeface LATO_FONT;
 
     /**
      * The start time in milliseconds of this cycle
@@ -132,7 +133,8 @@ public class MainView extends SurfaceView implements Runnable
         // Set up fonts
         FONT_SIZE_20_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_20);
         FONT_SIZE_60_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_60);
-        RALEWAY_BOLD_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Raleway-Bold.ttf");
+        LATO_HEAVY_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Lato-Heavy.ttf");
+        LATO_FONT = Typeface.createFromAsset(context.getAssets(), "fonts/Lato-Regular.ttf");
 
         loadBoardSets(context);
     }
