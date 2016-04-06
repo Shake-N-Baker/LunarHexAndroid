@@ -30,6 +30,10 @@ public class Menu implements InteractiveView
     private static final float TITLE_Y_PERCENT = 20f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 84f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
+    private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
+    private static final float PREVIEW_BOARD_Y_PERCENT = 15f / 100f;
+    private static final float PREVIEW_BOARD_SPACING_X_PERCENT = 8f / 100f;
+    private static final float PREVIEW_BOARD_SPACING_Y_PERCENT = 6f / 100f;
     private static final float LEVELS_TOP_LEFT_X_PERCENT = 50f / 100f;
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
     private static final float LEVELS_SPACING_X_PERCENT = 20f / 100f;
@@ -38,11 +42,16 @@ public class Menu implements InteractiveView
     private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
     private static final int BACKGROUND_OFFSET_DAMPENING_MAGNITUDE = 10;
     private static final int DRAGGING_VELOCITY_DAMPENING_MAGNITUDE = 10;
+    private static final int SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO = 8;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS = 100;
+    private static int PREVIEW_BOARD_X;
+    private static int PREVIEW_BOARD_Y;
+    private static int PREVIEW_BOARD_SPACING_X;
+    private static int PREVIEW_BOARD_SPACING_Y;
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
     private static int LEVELS_SPACING_X;
@@ -84,6 +93,11 @@ public class Menu implements InteractiveView
      * The paint used for drawing the selection circle
      */
     private Paint circlePaint;
+
+    /**
+     * The paint used for drawing the preview board
+     */
+    private Paint previewBoardPaint;
 
     /**
      * The offsets of the level texts in the X direction
@@ -141,6 +155,10 @@ public class Menu implements InteractiveView
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
+        PREVIEW_BOARD_X = Math.round(PREVIEW_BOARD_X_PERCENT * screenWidth);
+        PREVIEW_BOARD_Y = Math.round(PREVIEW_BOARD_Y_PERCENT * screenHeight);
+        PREVIEW_BOARD_SPACING_X = Math.round(PREVIEW_BOARD_SPACING_X_PERCENT * screenWidth);
+        PREVIEW_BOARD_SPACING_Y = Math.round(PREVIEW_BOARD_SPACING_Y_PERCENT * screenHeight);
         TRANSITION_DISTANCE_X = Math.round(TRANSITION_DISTANCE_X_PERCENT * screenWidth);
         MAX_DRAG_VELOCITY_X = Math.round(MAX_DRAG_VELOCITY_X_PERCENT * screenWidth);
         DRAG_VELOCITY_RESISTANCE_X = Math.round(DRAG_VELOCITY_RESISTANCE_X_PERCENT * screenWidth);
@@ -162,6 +180,9 @@ public class Menu implements InteractiveView
         circlePaint.setColor(Color.argb(255, 168, 183, 225));
         circlePaint.setStyle(Paint.Style.STROKE);
         circlePaint.setStrokeWidth(5f);
+        previewBoardPaint = new Paint();
+        previewBoardPaint.setColor(Color.argb(255, 255, 255, 255));
+        previewBoardPaint.setStyle(Paint.Style.FILL);
 
         // Setup the offset from center rectangles for each level text
         textCenterOffsetX = new ArrayList<Integer>();
@@ -413,14 +434,15 @@ public class Menu implements InteractiveView
         canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
 
         // Draw random level text
-        float levelsFromText = (float) screenOffset / (float) LEVELS_SPACING_X;
+        float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
+        float levelsFromText = viewingLevel;
         textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
         canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
 
         // Draw level texts
         for (int level = 1; level < 31; level++)
         {
-            levelsFromText = ((float) screenOffset / (float) LEVELS_SPACING_X) - (float) level;
+            levelsFromText = viewingLevel - (float) level;
             if (levelsFromText < 0f)
             {
                 levelsFromText *= -1f;
@@ -430,19 +452,43 @@ public class Menu implements InteractiveView
         }
 
         // Draw about game text
-        levelsFromText = 31f - ((float) screenOffset / (float) LEVELS_SPACING_X);
+        levelsFromText = 31f - viewingLevel;
         textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
         canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
-        // Draw the selection circle
+        // Calculate the distance from being centered on a level
         int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
         if (differenceFromCenter > (LEVELS_SPACING_X / 2))
         {
             differenceFromCenter -= LEVELS_SPACING_X;
             differenceFromCenter *= -1;
         }
+
         if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
+            // Draw the preview board
+            if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
+            {
+                previewBoardPaint.setColor(Color.argb((int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))), 255, 255, 255));
+                for (int x = 0; x < 5; x++)
+                {
+                    for (int y = 0; y < 5; y++)
+                    {
+                        if (x % 2 == 0)
+                        {
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                        }
+                        else
+                        {
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                        }
+                    }
+                }
+                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * 1) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * 5) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * 3) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * 5) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+            }
+
+            // Draw the selection circle
             circlePaint.setColor(Color.argb((int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))), 168, 183, 225));
             canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
