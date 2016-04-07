@@ -46,7 +46,7 @@ public class Menu implements InteractiveView
     private static int TITLE_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
-    private static int SELECTION_CIRCLE_RADIUS = 100;
+    private static int SELECTION_CIRCLE_RADIUS;
     private static int PREVIEW_BOARD_X;
     private static int PREVIEW_BOARD_Y;
     private static int PREVIEW_BOARD_SPACING_X;
@@ -158,6 +158,7 @@ public class Menu implements InteractiveView
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
+        SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
