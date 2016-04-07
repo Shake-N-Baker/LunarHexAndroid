@@ -26,9 +26,8 @@ public class Menu implements InteractiveView
     private static final String RANDOM_GAME_TEXT = "RANDOM";
     private static final String ABOUT_TEXT = "ABOUT";
     private static final String TITLE_TEXT = "LUNAR HEX";
-    private static final float TITLE_X_PERCENT = 23f / 100f;
     private static final float TITLE_Y_PERCENT = 20f / 100f;
-    private static final float SELECTION_CIRCLE_X_PERCENT = 84f / 100f;
+    private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
     private static final float PREVIEW_BOARD_Y_PERCENT = 15f / 100f;
@@ -156,9 +155,8 @@ public class Menu implements InteractiveView
         parseBoards(mainBoards);
 
         // Calculate the values based on screen measurements
-        TITLE_X = Math.round(TITLE_X_PERCENT * screenWidth);
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
-        SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenHeight);
+        SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
@@ -192,10 +190,14 @@ public class Menu implements InteractiveView
         previewBoardPaint.setColor(Color.argb(255, 255, 255, 255));
         previewBoardPaint.setStyle(Paint.Style.FILL);
 
+        Rect temp = new Rect();
+        titlePaint.getTextBounds(TITLE_TEXT, 0, TITLE_TEXT.length(), temp);
+        TITLE_X = Math.round((float) screenWidth / 2f) - Math.round((float) temp.width() / 2f);
+
         // Setup the offset from center rectangles for each level text
         textCenterOffsetX = new ArrayList<Integer>();
         textCenterOffsetY = new ArrayList<Integer>();
-        Rect temp = new Rect();
+        temp = new Rect();
         textPaint.getTextBounds(RANDOM_GAME_TEXT, 0, RANDOM_GAME_TEXT.length(), temp);
         textCenterOffsetX.add(temp.width() / 2);
         textCenterOffsetY.add(temp.height() / 2);
