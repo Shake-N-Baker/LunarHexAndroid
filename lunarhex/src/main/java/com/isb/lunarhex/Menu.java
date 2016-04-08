@@ -27,6 +27,10 @@ public class Menu implements InteractiveView
     private static final String ABOUT_TEXT = "ABOUT";
     private static final String TITLE_TEXT = "LUNAR HEX";
     private static final float TITLE_Y_PERCENT = 20f / 100f;
+    private static final float HAMBURGER_MENU_X_PERCENT = 90f / 100f;
+    private static final float HAMBURGER_MENU_WIDTH_PERCENT = 6f / 100f;
+    private static final float HAMBURGER_MENU_Y_PERCENT = 6f / 100f;
+    private static final float HAMBURGER_MENU_SPACING_Y_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
@@ -44,6 +48,10 @@ public class Menu implements InteractiveView
     private static final int SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO = 8;
     private static int TITLE_X;
     private static int TITLE_Y;
+    private static int HAMBURGER_MENU_X;
+    private static int HAMBURGER_MENU_Y;
+    private static int HAMBURGER_MENU_WIDTH;
+    private static int HAMBURGER_MENU_SPACING_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
@@ -104,6 +112,11 @@ public class Menu implements InteractiveView
     private Paint previewBoardPaint;
 
     /**
+     * The paint used for drawing the hamburger menu
+     */
+    private Paint hamburgerMenuPaint;
+
+    /**
      * The offsets of the level texts in the X direction
      */
     private List<Integer> textCenterOffsetX;
@@ -156,6 +169,10 @@ public class Menu implements InteractiveView
 
         // Calculate the values based on screen measurements
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
+        HAMBURGER_MENU_X = Math.round(HAMBURGER_MENU_X_PERCENT * screenWidth);
+        HAMBURGER_MENU_Y = Math.round(HAMBURGER_MENU_Y_PERCENT * screenHeight);
+        HAMBURGER_MENU_WIDTH = Math.round(HAMBURGER_MENU_WIDTH_PERCENT * screenWidth);
+        HAMBURGER_MENU_SPACING_Y = Math.round(HAMBURGER_MENU_SPACING_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
@@ -190,6 +207,11 @@ public class Menu implements InteractiveView
         previewBoardPaint = new Paint();
         previewBoardPaint.setColor(Color.argb(255, 255, 255, 255));
         previewBoardPaint.setStyle(Paint.Style.FILL);
+        hamburgerMenuPaint = new Paint();
+        hamburgerMenuPaint.setColor(Color.argb(255, 255, 255, 255));
+        hamburgerMenuPaint.setStyle(Paint.Style.STROKE);
+        hamburgerMenuPaint.setStrokeWidth(12f);
+        hamburgerMenuPaint.setStrokeCap(Paint.Cap.ROUND);
 
         Rect temp = new Rect();
         titlePaint.getTextBounds(TITLE_TEXT, 0, TITLE_TEXT.length(), temp);
@@ -437,35 +459,13 @@ public class Menu implements InteractiveView
         canvas.translate(-1 * (screenOffset / BACKGROUND_OFFSET_DAMPENING_MAGNITUDE), 0);
         canvas.drawBitmap(background, 0, 0, null);
 
-        // Shift everything else the full amount
+        // Draw elements fixed in place on the screen
         canvas.restoreToCount(defaultMatrix);
-        canvas.translate(-1 * screenOffset, 0);
 
-        // Draw title text
-        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
-
-        // Draw random level text
-        float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
-        float levelsFromText = viewingLevel;
-        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
-
-        // Draw level texts
-        for (int level = 1; level < 31; level++)
-        {
-            levelsFromText = viewingLevel - (float) level;
-            if (levelsFromText < 0f)
-            {
-                levelsFromText *= -1f;
-            }
-            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - textCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(level), textPaint);
-        }
-
-        // Draw about game text
-        levelsFromText = 31f - viewingLevel;
-        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
+        // Draw hamburger menu
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
 
         // Calculate the distance from being centered on a level
         int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
@@ -474,6 +474,7 @@ public class Menu implements InteractiveView
             differenceFromCenter -= LEVELS_SPACING_X;
             differenceFromCenter *= -1;
         }
+        float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
 
         if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
@@ -525,11 +526,11 @@ public class Menu implements InteractiveView
                         // Columns of the board alternate in height
                         if (x % 2 == 0)
                         {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
                         }
                         else
                         {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X + screenOffset, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
                         }
                     }
                 }
@@ -537,8 +538,36 @@ public class Menu implements InteractiveView
 
             // Draw the selection circle
             circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
-            canvas.drawCircle(SELECTION_CIRCLE_X + screenOffset, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
+            canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
+
+        // Shift everything else the full screen offset amount
+        canvas.translate(-1 * screenOffset, 0);
+
+        // Draw title text
+        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
+
+        // Draw random level text
+        float levelsFromText = viewingLevel;
+        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
+
+        // Draw level texts
+        for (int level = 1; level < 31; level++)
+        {
+            levelsFromText = viewingLevel - (float) level;
+            if (levelsFromText < 0f)
+            {
+                levelsFromText *= -1f;
+            }
+            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - textCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(level), textPaint);
+        }
+
+        // Draw about game text
+        levelsFromText = 31f - viewingLevel;
+        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+        canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
         canvas.restoreToCount(defaultMatrix);
     }
