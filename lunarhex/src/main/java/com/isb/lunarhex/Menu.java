@@ -31,6 +31,7 @@ public class Menu implements InteractiveView
     private static final float HAMBURGER_MENU_WIDTH_PERCENT = 6f / 100f;
     private static final float HAMBURGER_MENU_Y_PERCENT = 6f / 100f;
     private static final float HAMBURGER_MENU_SPACING_Y_PERCENT = 4f / 100f;
+    private static final float HAMBURGER_MENU_TOUCH_BUFFER_PERCENT = 5f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
@@ -52,6 +53,8 @@ public class Menu implements InteractiveView
     private static int HAMBURGER_MENU_Y;
     private static int HAMBURGER_MENU_WIDTH;
     private static int HAMBURGER_MENU_SPACING_Y;
+    private static int HAMBURGER_MENU_TOUCH_BUFFER_X;
+    private static int HAMBURGER_MENU_TOUCH_BUFFER_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
@@ -90,6 +93,11 @@ public class Menu implements InteractiveView
      * The background image
      */
     private static Bitmap background;
+
+    /**
+     * The hamburger menu shading background image
+     */
+    private static Bitmap hamburgerBackground;
 
     /**
      * The paint used for the title
@@ -152,6 +160,11 @@ public class Menu implements InteractiveView
     private int screenOffset;
 
     /**
+     * The flag whether the hamburger menu is open
+     */
+    private boolean hamburgerMenuOpen;
+
+    /**
      * Constructor for the menu.
      *
      * @param   main - The reference to the main view
@@ -173,6 +186,8 @@ public class Menu implements InteractiveView
         HAMBURGER_MENU_Y = Math.round(HAMBURGER_MENU_Y_PERCENT * screenHeight);
         HAMBURGER_MENU_WIDTH = Math.round(HAMBURGER_MENU_WIDTH_PERCENT * screenWidth);
         HAMBURGER_MENU_SPACING_Y = Math.round(HAMBURGER_MENU_SPACING_Y_PERCENT * screenHeight);
+        HAMBURGER_MENU_TOUCH_BUFFER_X = Math.round(HAMBURGER_MENU_TOUCH_BUFFER_PERCENT * screenWidth);
+        HAMBURGER_MENU_TOUCH_BUFFER_Y = Math.round(HAMBURGER_MENU_TOUCH_BUFFER_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
@@ -246,6 +261,8 @@ public class Menu implements InteractiveView
         {
             dragPathX.add(0);
         }
+
+        hamburgerMenuOpen = false;
     }
 
     /**
@@ -266,83 +283,114 @@ public class Menu implements InteractiveView
      */
     public void handleTouch(MotionEvent motionEvent)
     {
-        int tX = Touch.x + screenOffset;
-        int tDownX = Touch.downX + screenOffset;
-
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP)
+        if (hamburgerMenuOpen)
         {
-            if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP)
             {
-                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                 {
-                    // Clicked the selection circle
-                    int level = screenOffset / LEVELS_SPACING_X;
-                    if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                     {
-                        level++;
-                    }
-                    if (level == 0)
-                    {
-                        // Random level
-                        mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
-                    }
-                    else if (level == 31)
-                    {
-                        // View Github page
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
-                        mainView.getContext().startActivity(browserIntent);
-                    }
-                    else
-                    {
-                        // Play selected level
-                        mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
+                        // Close the hamburger menu
+                        hamburgerMenuOpen = false;
                     }
                 }
-            }
-            // Finished dragging, update momentum
-            dragging = false;
-            if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
-            {
-                // Dragging in the same direction, add onto the velocity
-                dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
-            }
-            else
-            {
-                // Dragging in opposite direction, reset the velocity
-                dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
-            }
-            if (dragVelocity > MAX_DRAG_VELOCITY_X)
-            {
-                dragVelocity = MAX_DRAG_VELOCITY_X;
-            }
-            else if (dragVelocity < -MAX_DRAG_VELOCITY_X)
-            {
-                dragVelocity = -MAX_DRAG_VELOCITY_X;
             }
         }
         else
         {
-            // Begin dragging
-            if (!dragging)
+            int tX = Touch.x + screenOffset;
+            int tDownX = Touch.downX + screenOffset;
+
+            if (motionEvent.getAction() == MotionEvent.ACTION_UP)
             {
-                // Start of a drag event, record the screen offset, reset the path
-                dragOffsetStart = screenOffset;
-                for (int i = 0; i < dragPathX.size(); i++)
+                dragging = false;
+                boolean nothingClicked = true;
+                if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                 {
-                    dragPathX.set(i, Touch.x);
+                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
+                    {
+                        // Selected the hamburger menu
+                        nothingClicked = false;
+                        hamburgerMenuOpen = true;
+                    }
+                }
+                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                {
+                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                    {
+                        // Clicked the selection circle
+                        nothingClicked = false;
+                        int level = screenOffset / LEVELS_SPACING_X;
+                        if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                        {
+                            level++;
+                        }
+                        if (level == 0)
+                        {
+                            // Random level
+                            mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
+                        }
+                        else if (level == 31)
+                        {
+                            // View Github page
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                            mainView.getContext().startActivity(browserIntent);
+                        }
+                        else
+                        {
+                            // Play selected level
+                            mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
+                        }
+                    }
+                }
+                if (nothingClicked)
+                {
+                    // Finished dragging, update momentum
+                    if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
+                    {
+                        // Dragging in the same direction, add onto the velocity
+                        dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
+                    }
+                    else
+                    {
+                        // Dragging in opposite direction, reset the velocity
+                        dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
+                    }
+                    if (dragVelocity > MAX_DRAG_VELOCITY_X)
+                    {
+                        dragVelocity = MAX_DRAG_VELOCITY_X;
+                    }
+                    else if (dragVelocity < -MAX_DRAG_VELOCITY_X)
+                    {
+                        dragVelocity = -MAX_DRAG_VELOCITY_X;
+                    }
                 }
             }
-            dragging = true;
+            else
+            {
+                // Begin dragging
+                if (!dragging)
+                {
+                    // Start of a drag event, record the screen offset, reset the path
+                    dragOffsetStart = screenOffset;
+                    for (int i = 0; i < dragPathX.size(); i++)
+                    {
+                        dragPathX.set(i, Touch.x);
+                    }
+                }
+                dragging = true;
 
-            // Shift the screen offset
-            screenOffset = dragOffsetStart + tDownX - tX;
-            if (screenOffset < 0)
-            {
-                screenOffset = 0;
-            }
-            else if (screenOffset > (31 * LEVELS_SPACING_X))
-            {
-                screenOffset = 31 * LEVELS_SPACING_X;
+                // Shift the screen offset
+                screenOffset = dragOffsetStart + tDownX - tX;
+                if (screenOffset < 0)
+                {
+                    screenOffset = 0;
+                }
+                else if (screenOffset > (31 * LEVELS_SPACING_X))
+                {
+                    screenOffset = 31 * LEVELS_SPACING_X;
+                }
             }
         }
     }
@@ -461,11 +509,7 @@ public class Menu implements InteractiveView
 
         // Draw elements fixed in place on the screen
         canvas.restoreToCount(defaultMatrix);
-
-        // Draw hamburger menu
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
+        defaultMatrix = canvas.save();
 
         // Calculate the distance from being centered on a level
         int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
@@ -569,7 +613,18 @@ public class Menu implements InteractiveView
         textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
         canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
+        // Draw hamburger menu fixed elements
         canvas.restoreToCount(defaultMatrix);
+
+        if (hamburgerMenuOpen)
+        {
+            canvas.drawBitmap(hamburgerBackground, 0, 0, null);
+        }
+
+        // Draw hamburger menu
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
     }
 
     /**
@@ -577,6 +632,11 @@ public class Menu implements InteractiveView
      */
     public void generateBackground()
     {
+        if (hamburgerBackground == null)
+        {
+            hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+            hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
+        }
         if (background == null)
         {
             background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
