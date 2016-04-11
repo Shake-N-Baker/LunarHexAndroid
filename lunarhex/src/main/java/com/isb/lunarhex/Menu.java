@@ -24,14 +24,32 @@ public class Menu implements InteractiveView
      * Constants
      */
     private static final String RANDOM_GAME_TEXT = "RANDOM";
-    private static final String ABOUT_TEXT = "ABOUT";
     private static final String TITLE_TEXT = "LUNAR HEX";
+    private static final String GITHUB_LINK_TEXT = "VIEW SOURCE CODE ON GITHUB";
+    private static final String AUDIO_HEADER_TEXT = "AUDIO";
+    private static final String CREDITS_HEADER_TEXT = "CREDITS";
+    private static final String SOUND_VOLUME_TEXT = "SOUND:";
+    private static final String MUSIC_VOLUME_TEXT = "MUSIC:";
+    private static final String CREATED_BY_TEXT = "CREATED BY:   IAN BAKER";
+    private static final String CREATED_BY_EXTENDED_TEXT = "FOLLOW ME ON TWITTER @IANDEVSGAMES";
+    // TODO: Add music by artist name
+    private static final String MUSIC_BY_TEXT = "MUSIC BY:   TODO";
+    private static final String INSPIRED_BY_TEXT = "INSPIRED BY:   LUNAR LOCKOUT";
     private static final float TITLE_Y_PERCENT = 20f / 100f;
     private static final float HAMBURGER_MENU_X_PERCENT = 90f / 100f;
     private static final float HAMBURGER_MENU_WIDTH_PERCENT = 6f / 100f;
     private static final float HAMBURGER_MENU_Y_PERCENT = 6f / 100f;
     private static final float HAMBURGER_MENU_SPACING_Y_PERCENT = 4f / 100f;
     private static final float HAMBURGER_MENU_TOUCH_BUFFER_PERCENT = 5f / 100f;
+    private static final float HAMBURGER_HEADER_TEXT_X_PERCENT = 8f / 100f;
+    private static final float HAMBURGER_TEXT_X_PERCENT = 12f / 100f;
+    private static final float AUDIO_TEXT_Y_PERCENT = 14f / 100f;
+    private static final float CREDITS_TEXT_Y_PERCENT = 63f / 100f;
+    private static final float SOUND_TEXT_Y_PERCENT = 24f / 100f;
+    private static final float MUSIC_TEXT_Y_PERCENT = 35f / 100f;
+    private static final float GITHUB_LINK_X_PERCENT = 8f / 100f;
+    private static final float GITHUB_LINK_Y_PERCENT = 49f / 100f;
+    private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
@@ -55,6 +73,16 @@ public class Menu implements InteractiveView
     private static int HAMBURGER_MENU_SPACING_Y;
     private static int HAMBURGER_MENU_TOUCH_BUFFER_X;
     private static int HAMBURGER_MENU_TOUCH_BUFFER_Y;
+    private static int HAMBURGER_HEADER_TEXT_X;
+    private static int HAMBURGER_TEXT_X;
+    private static int AUDIO_TEXT_Y;
+    private static int CREDITS_TEXT_Y;
+    private static int SOUND_TEXT_Y;
+    private static int MUSIC_TEXT_Y;
+    private static int GITHUB_LINK_X;
+    private static int GITHUB_LINK_Y;
+    private static int GITHUB_LINK_TOUCH_BUFFER_X;
+    private static int GITHUB_LINK_TOUCH_BUFFER_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
@@ -125,14 +153,29 @@ public class Menu implements InteractiveView
     private Paint hamburgerMenuPaint;
 
     /**
+     * The width of the github link text
+     */
+    private int githubLinkWidth;
+
+    /**
+     * The height of the github link text
+     */
+    private int githubLinkHeight;
+
+    /**
+     * The height of text (non-headers) in the hamburger menu
+     */
+    private int hamburgerTextSpacingY;
+
+    /**
      * The offsets of the level texts in the X direction
      */
-    private List<Integer> textCenterOffsetX;
+    private List<Integer> levelTextCenterOffsetX;
 
     /**
      * The offsets of the level texts in the Y direction
      */
-    private List<Integer> textCenterOffsetY;
+    private List<Integer> levelTextCenterOffsetY;
 
     /**
      * The previous x coordinates of this drag event
@@ -188,6 +231,16 @@ public class Menu implements InteractiveView
         HAMBURGER_MENU_SPACING_Y = Math.round(HAMBURGER_MENU_SPACING_Y_PERCENT * screenHeight);
         HAMBURGER_MENU_TOUCH_BUFFER_X = Math.round(HAMBURGER_MENU_TOUCH_BUFFER_PERCENT * screenWidth);
         HAMBURGER_MENU_TOUCH_BUFFER_Y = Math.round(HAMBURGER_MENU_TOUCH_BUFFER_PERCENT * screenHeight);
+        HAMBURGER_HEADER_TEXT_X = Math.round(HAMBURGER_HEADER_TEXT_X_PERCENT * screenWidth);
+        HAMBURGER_TEXT_X = Math.round(HAMBURGER_TEXT_X_PERCENT * screenWidth);
+        AUDIO_TEXT_Y = Math.round(AUDIO_TEXT_Y_PERCENT * screenHeight);
+        CREDITS_TEXT_Y = Math.round(CREDITS_TEXT_Y_PERCENT * screenHeight);
+        SOUND_TEXT_Y = Math.round(SOUND_TEXT_Y_PERCENT * screenHeight);
+        MUSIC_TEXT_Y = Math.round(MUSIC_TEXT_Y_PERCENT * screenHeight);
+        GITHUB_LINK_X = Math.round(GITHUB_LINK_X_PERCENT * screenWidth);
+        GITHUB_LINK_Y = Math.round(GITHUB_LINK_Y_PERCENT * screenHeight);
+        GITHUB_LINK_TOUCH_BUFFER_X = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
+        GITHUB_LINK_TOUCH_BUFFER_Y = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
@@ -233,23 +286,26 @@ public class Menu implements InteractiveView
         TITLE_X = Math.round((float) screenWidth / 2f) - Math.round((float) temp.width() / 2f);
 
         // Setup the offset from center rectangles for each level text
-        textCenterOffsetX = new ArrayList<Integer>();
-        textCenterOffsetY = new ArrayList<Integer>();
+        levelTextCenterOffsetX = new ArrayList<Integer>();
+        levelTextCenterOffsetY = new ArrayList<Integer>();
         temp = new Rect();
         textPaint.getTextBounds(RANDOM_GAME_TEXT, 0, RANDOM_GAME_TEXT.length(), temp);
-        textCenterOffsetX.add(temp.width() / 2);
-        textCenterOffsetY.add(temp.height() / 2);
+        levelTextCenterOffsetX.add(temp.width() / 2);
+        levelTextCenterOffsetY.add(temp.height() / 2);
         for (int i = 1; i < 31; i++)
         {
             temp = new Rect();
             textPaint.getTextBounds(String.valueOf(i), 0, String.valueOf(i).length(), temp);
-            textCenterOffsetX.add(temp.width() / 2);
-            textCenterOffsetY.add(temp.height() / 2);
+            levelTextCenterOffsetX.add(temp.width() / 2);
+            levelTextCenterOffsetY.add(temp.height() / 2);
         }
         temp = new Rect();
-        textPaint.getTextBounds(ABOUT_TEXT, 0, ABOUT_TEXT.length(), temp);
-        textCenterOffsetX.add(temp.width() / 2);
-        textCenterOffsetY.add(temp.height() / 2);
+        textPaint.getTextBounds(GITHUB_LINK_TEXT, 0, GITHUB_LINK_TEXT.length(), temp);
+        githubLinkWidth = temp.width();
+        githubLinkHeight = temp.height();
+        temp = new Rect();
+        textPaint.getTextBounds(CREATED_BY_TEXT, 0, CREATED_BY_TEXT.length(), temp);
+        hamburgerTextSpacingY = (int) (temp.height() * 1.6f);
 
         // Setup the screen offset and dragging variables
         screenOffset = 0;
@@ -295,6 +351,15 @@ public class Menu implements InteractiveView
                         hamburgerMenuOpen = false;
                     }
                 }
+                if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + githubLinkHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
+                {
+                    if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (GITHUB_LINK_Y + githubLinkHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
+                    {
+                        // View Github page
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                        mainView.getContext().startActivity(browserIntent);
+                    }
+                }
             }
         }
         else
@@ -330,12 +395,6 @@ public class Menu implements InteractiveView
                         {
                             // Random level
                             mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
-                        }
-                        else if (level == 31)
-                        {
-                            // View Github page
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
-                            mainView.getContext().startActivity(browserIntent);
                         }
                         else
                         {
@@ -387,9 +446,9 @@ public class Menu implements InteractiveView
                 {
                     screenOffset = 0;
                 }
-                else if (screenOffset > (31 * LEVELS_SPACING_X))
+                else if (screenOffset > (30 * LEVELS_SPACING_X))
                 {
-                    screenOffset = 31 * LEVELS_SPACING_X;
+                    screenOffset = 30 * LEVELS_SPACING_X;
                 }
             }
         }
@@ -415,9 +474,9 @@ public class Menu implements InteractiveView
                     screenOffset = 0;
                     dragVelocity = 0;
                 }
-                else if (screenOffset > (31 * LEVELS_SPACING_X))
+                else if (screenOffset > (30 * LEVELS_SPACING_X))
                 {
-                    screenOffset = 31 * LEVELS_SPACING_X;
+                    screenOffset = 30 * LEVELS_SPACING_X;
                     dragVelocity = 0;
                 }
 
@@ -594,7 +653,7 @@ public class Menu implements InteractiveView
         // Draw random level text
         float levelsFromText = viewingLevel;
         textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - textCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(0), textPaint);
+        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
 
         // Draw level texts
         for (int level = 1; level < 31; level++)
@@ -605,20 +664,44 @@ public class Menu implements InteractiveView
                 levelsFromText *= -1f;
             }
             textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - textCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(level), textPaint);
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
         }
-
-        // Draw about game text
-        levelsFromText = 31f - viewingLevel;
-        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(ABOUT_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - textCenterOffsetX.get(31), LEVELS_TOP_LEFT_Y + textCenterOffsetY.get(31), textPaint);
 
         // Draw hamburger menu fixed elements
         canvas.restoreToCount(defaultMatrix);
 
         if (hamburgerMenuOpen)
         {
+            // Draw hamburger menu shaded background
             canvas.drawBitmap(hamburgerBackground, 0, 0, null);
+            textPaint.setColor(Color.argb(255, 255, 255, 255));
+            textPaint.setTextSize(MainView.FONT_SIZE_30_SP);
+
+            // Draw Headers
+            canvas.drawText(AUDIO_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, AUDIO_TEXT_Y, textPaint);
+            canvas.drawText(CREDITS_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, CREDITS_TEXT_Y, textPaint);
+            textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+
+            // Draw the sound volume control
+            canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y, textPaint);
+            canvas.drawLine(450, 150, 900, 150, hamburgerMenuPaint);
+
+            // Draw the music volume control
+            canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y, textPaint);
+            canvas.drawLine(450, 250, 900, 250, hamburgerMenuPaint);
+
+            // Draw the link to the github source
+            textPaint.setColor(Color.argb(255, 51, 102, 187));
+            textPaint.setUnderlineText(true);
+            canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
+            textPaint.setColor(Color.argb(255, 255, 255, 255));
+            textPaint.setUnderlineText(false);
+
+            // Draw the credits text
+            canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
+            canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
+            canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
+            canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
         }
 
         // Draw hamburger menu
@@ -639,9 +722,9 @@ public class Menu implements InteractiveView
         }
         if (background == null)
         {
-            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
+            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 30f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
         }
-        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 31f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
+        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 30f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 
     /**
