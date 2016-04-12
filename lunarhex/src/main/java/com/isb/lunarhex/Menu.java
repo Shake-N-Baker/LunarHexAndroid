@@ -47,6 +47,8 @@ public class Menu implements InteractiveView
     private static final float CREDITS_TEXT_Y_PERCENT = 63f / 100f;
     private static final float SOUND_TEXT_Y_PERCENT = 24f / 100f;
     private static final float MUSIC_TEXT_Y_PERCENT = 35f / 100f;
+    private static final float VOLUME_CONTROL_X_PERCENT = 32f / 100f;
+    private static final float VOLUME_CONTROL_WIDTH_PERCENT = 47f / 100f;
     private static final float GITHUB_LINK_X_PERCENT = 8f / 100f;
     private static final float GITHUB_LINK_Y_PERCENT = 49f / 100f;
     private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
@@ -79,6 +81,8 @@ public class Menu implements InteractiveView
     private static int CREDITS_TEXT_Y;
     private static int SOUND_TEXT_Y;
     private static int MUSIC_TEXT_Y;
+    private static int VOLUME_CONTROL_X;
+    private static int VOLUME_CONTROL_WIDTH;
     private static int GITHUB_LINK_X;
     private static int GITHUB_LINK_Y;
     private static int GITHUB_LINK_TOUCH_BUFFER_X;
@@ -158,9 +162,9 @@ public class Menu implements InteractiveView
     private int githubLinkWidth;
 
     /**
-     * The height of the github link text
+     * The height of the hamburger menu texts, measured with github link text
      */
-    private int githubLinkHeight;
+    private int hamburgerMenuTextHeight;
 
     /**
      * The height of text (non-headers) in the hamburger menu
@@ -237,6 +241,8 @@ public class Menu implements InteractiveView
         CREDITS_TEXT_Y = Math.round(CREDITS_TEXT_Y_PERCENT * screenHeight);
         SOUND_TEXT_Y = Math.round(SOUND_TEXT_Y_PERCENT * screenHeight);
         MUSIC_TEXT_Y = Math.round(MUSIC_TEXT_Y_PERCENT * screenHeight);
+        VOLUME_CONTROL_X = Math.round(VOLUME_CONTROL_X_PERCENT * screenWidth);
+        VOLUME_CONTROL_WIDTH = Math.round(VOLUME_CONTROL_WIDTH_PERCENT * screenWidth);
         GITHUB_LINK_X = Math.round(GITHUB_LINK_X_PERCENT * screenWidth);
         GITHUB_LINK_Y = Math.round(GITHUB_LINK_Y_PERCENT * screenHeight);
         GITHUB_LINK_TOUCH_BUFFER_X = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
@@ -302,7 +308,7 @@ public class Menu implements InteractiveView
         temp = new Rect();
         textPaint.getTextBounds(GITHUB_LINK_TEXT, 0, GITHUB_LINK_TEXT.length(), temp);
         githubLinkWidth = temp.width();
-        githubLinkHeight = temp.height();
+        hamburgerMenuTextHeight = temp.height();
         temp = new Rect();
         textPaint.getTextBounds(CREATED_BY_TEXT, 0, CREATED_BY_TEXT.length(), temp);
         hamburgerTextSpacingY = (int) (temp.height() * 1.6f);
@@ -351,9 +357,9 @@ public class Menu implements InteractiveView
                         hamburgerMenuOpen = false;
                     }
                 }
-                if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + githubLinkHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
+                if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
                 {
-                    if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (GITHUB_LINK_Y + githubLinkHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
+                    if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
                     {
                         // View Github page
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
@@ -683,12 +689,12 @@ public class Menu implements InteractiveView
             textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
 
             // Draw the sound volume control
-            canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y, textPaint);
-            canvas.drawLine(450, 150, 900, 150, hamburgerMenuPaint);
+            canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+            canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
 
             // Draw the music volume control
-            canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y, textPaint);
-            canvas.drawLine(450, 250, 900, 250, hamburgerMenuPaint);
+            canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+            canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
 
             // Draw the link to the github source
             textPaint.setColor(Color.argb(255, 51, 102, 187));
