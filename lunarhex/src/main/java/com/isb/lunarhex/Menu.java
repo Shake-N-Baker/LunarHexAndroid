@@ -67,6 +67,7 @@ public class Menu implements InteractiveView
     private static final int BACKGROUND_OFFSET_DAMPENING_MAGNITUDE = 10;
     private static final int DRAGGING_VELOCITY_DAMPENING_MAGNITUDE = 10;
     private static final int SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO = 8;
+    private static final int SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO = 8;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int HAMBURGER_MENU_X;
@@ -147,9 +148,9 @@ public class Menu implements InteractiveView
     private Paint circlePaint;
 
     /**
-     * The paint used for drawing the preview board
+     * The paint used for drawing the preview board and volume controls
      */
-    private Paint previewBoardPaint;
+    private Paint circleFilledPaint;
 
     /**
      * The paint used for drawing the hamburger menu
@@ -210,6 +211,16 @@ public class Menu implements InteractiveView
      * The flag whether the hamburger menu is open
      */
     private boolean hamburgerMenuOpen;
+
+    /**
+     * The sound volume level from 0 to 100
+     */
+    private int soundVolume;
+
+    /**
+     * The music volume level from 0 to 100
+     */
+    private int musicVolume;
 
     /**
      * Constructor for the menu.
@@ -278,9 +289,9 @@ public class Menu implements InteractiveView
         circlePaint.setColor(Color.argb(255, 168, 183, 225));
         circlePaint.setStyle(Paint.Style.STROKE);
         circlePaint.setStrokeWidth(5f);
-        previewBoardPaint = new Paint();
-        previewBoardPaint.setColor(Color.argb(255, 255, 255, 255));
-        previewBoardPaint.setStyle(Paint.Style.FILL);
+        circleFilledPaint = new Paint();
+        circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
+        circleFilledPaint.setStyle(Paint.Style.FILL);
         hamburgerMenuPaint = new Paint();
         hamburgerMenuPaint.setColor(Color.argb(255, 255, 255, 255));
         hamburgerMenuPaint.setStyle(Paint.Style.STROKE);
@@ -325,6 +336,8 @@ public class Menu implements InteractiveView
         }
 
         hamburgerMenuOpen = false;
+        soundVolume = PlayerData.getSoundVolume();
+        musicVolume = PlayerData.getMusicVolume();
     }
 
     /**
@@ -613,7 +626,7 @@ public class Menu implements InteractiveView
                         {
                             if (x == color.get(0) && y == color.get(1))
                             {
-                                previewBoardPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
+                                circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
                                 colorFound = true;
                                 break;
                             }
@@ -624,22 +637,22 @@ public class Menu implements InteractiveView
                         {
                             if (x == 2 && y == 2)
                             {
-                                previewBoardPaint.setColor(Color.argb(transparency, 255, 196, 196));
+                                circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
                             }
                             else
                             {
-                                previewBoardPaint.setColor(Color.argb(transparency, 255, 255, 255));
+                                circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
                             }
                         }
 
                         // Columns of the board alternate in height
                         if (x % 2 == 0)
                         {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                         }
                         else
                         {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, previewBoardPaint);
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                         }
                     }
                 }
@@ -689,12 +702,15 @@ public class Menu implements InteractiveView
             textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
 
             // Draw the sound volume control
+            circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
             canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
             canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
+            canvas.drawCircle(VOLUME_CONTROL_X + ((soundVolume / 100f) * VOLUME_CONTROL_WIDTH), SOUND_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
 
             // Draw the music volume control
             canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
             canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
+            canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
 
             // Draw the link to the github source
             textPaint.setColor(Color.argb(255, 51, 102, 187));

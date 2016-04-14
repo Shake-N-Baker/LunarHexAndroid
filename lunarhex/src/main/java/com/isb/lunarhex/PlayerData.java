@@ -24,6 +24,8 @@ public class PlayerData
     public static void initialize(Activity activity)
     {
         PlayerData.activity = activity;
+        /// TODO: Remove this when finished testing
+        PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
     }
 
     /**
@@ -54,13 +56,61 @@ public class PlayerData
             SharedPreferences.Editor editor = sharedPrefs.edit();
             editor.putInt(PlayerData.activity.getString(R.string.save_levels_cleared), level + 1);
             editor.putInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), moves);
-            editor.commit();
+            editor.apply();
         }
         else if (moves < movesCleared)
         {
             SharedPreferences.Editor editor = sharedPrefs.edit();
             editor.putInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), moves);
-            editor.commit();
+            editor.apply();
         }
+    }
+
+    /**
+     * Returns the sound volume level 0 to 100.
+     *
+     * @return  The sound volume level
+     */
+    public static int getSoundVolume()
+    {
+        SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
+        return sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_sound_volume), 100);
+    }
+
+    /**
+     * Updates the player data with the new sound volume level.
+     *
+     * @param   volume - The sound volume level 0 to 100
+     */
+    public static void setSoundVolume(int volume)
+    {
+        SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(PlayerData.activity.getString(R.string.save_sound_volume), volume);
+        editor.apply();
+    }
+
+    /**
+     * Returns the music volume level 0 to 100.
+     *
+     * @return  The music volume level
+     */
+    public static int getMusicVolume()
+    {
+        SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
+        return sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_music_volume), 100);
+    }
+
+    /**
+     * Updates the player data with the new music volume level.
+     *
+     * @param   volume - The music volume level 0 to 100
+     */
+    public static void setMusicVolume(int volume)
+    {
+        SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(PlayerData.activity.getString(R.string.save_music_volume), volume);
+        editor.apply();
     }
 }
