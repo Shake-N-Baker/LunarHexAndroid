@@ -43,6 +43,7 @@ public class Menu implements InteractiveView
     private static final float HAMBURGER_MENU_TOUCH_BUFFER_PERCENT = 5f / 100f;
     private static final float HAMBURGER_HEADER_TEXT_X_PERCENT = 8f / 100f;
     private static final float HAMBURGER_TEXT_X_PERCENT = 12f / 100f;
+    private static final float VOLUME_TOUCH_BUFFER_PERCENT = 3f / 100f;
     private static final float AUDIO_TEXT_Y_PERCENT = 14f / 100f;
     private static final float CREDITS_TEXT_Y_PERCENT = 63f / 100f;
     private static final float SOUND_TEXT_Y_PERCENT = 24f / 100f;
@@ -84,6 +85,8 @@ public class Menu implements InteractiveView
     private static int MUSIC_TEXT_Y;
     private static int VOLUME_CONTROL_X;
     private static int VOLUME_CONTROL_WIDTH;
+    private static int VOLUME_TOUCH_BUFFER_X;
+    private static int VOLUME_TOUCH_BUFFER_Y;
     private static int GITHUB_LINK_X;
     private static int GITHUB_LINK_Y;
     private static int GITHUB_LINK_TOUCH_BUFFER_X;
@@ -258,6 +261,8 @@ public class Menu implements InteractiveView
         GITHUB_LINK_Y = Math.round(GITHUB_LINK_Y_PERCENT * screenHeight);
         GITHUB_LINK_TOUCH_BUFFER_X = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
         GITHUB_LINK_TOUCH_BUFFER_Y = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
+        VOLUME_TOUCH_BUFFER_X = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenWidth);
+        VOLUME_TOUCH_BUFFER_Y = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
@@ -368,6 +373,8 @@ public class Menu implements InteractiveView
                     {
                         // Close the hamburger menu
                         hamburgerMenuOpen = false;
+                        PlayerData.setSoundVolume(soundVolume);
+                        PlayerData.setMusicVolume(musicVolume);
                     }
                 }
                 if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
@@ -377,6 +384,38 @@ public class Menu implements InteractiveView
                         // View Github page
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
                         mainView.getContext().startActivity(browserIntent);
+                    }
+                }
+            }
+            if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
+            {
+                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
+                {
+                    // Sound volume control
+                    soundVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
+                    if (soundVolume > 100)
+                    {
+                        soundVolume = 100;
+                    }
+                    else if (soundVolume < 0)
+                    {
+                        soundVolume = 0;
+                    }
+                }
+            }
+            if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
+            {
+                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
+                {
+                    // Music volume control
+                    musicVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
+                    if (musicVolume > 100)
+                    {
+                        musicVolume = 100;
+                    }
+                    else if (musicVolume < 0)
+                    {
+                        musicVolume = 0;
                     }
                 }
             }
