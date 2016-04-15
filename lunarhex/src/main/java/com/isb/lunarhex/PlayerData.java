@@ -25,44 +25,40 @@ public class PlayerData
     {
         PlayerData.activity = activity;
         /// TODO: Remove this when finished testing
-        PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
+        //PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
     }
 
     /**
-     * Returns the number of levels cleared.
+     * Returns the level clear states, 0 = not cleared, 1 = cleared, 2 = optimal clear
      *
-     * @return  The number of levels cleared
+     * @return  The level clear states
      */
-    public static int getLevelsCleared()
+    public static String getLevelClearStates()
     {
         SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
-        return sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_levels_cleared), 0);
+        return sharedPrefs.getString(PlayerData.activity.getString(R.string.save_level_clear_states), "000000000000000000000000000000");
     }
 
     /**
-     * Updates the player data to reflect the fact that the level was passed in
-     * the specified number of moves.
+     * Updates the player data if the levels newest state is the best clear achieved.
      *
-     * @param   level - The level that was passed
-     * @param   moves - The number of moves taken to pass the level
+     * @param   level - The level to be updated zero based
+     * @param   state - 0 for not cleared, 1 for cleared, 2 for optimally cleared
      */
-    public static void setSolveMoves(int level, int moves)
+    public static void updateLevelClearStates(int level, int state)
     {
         SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
-        int levelsCleared = sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_levels_cleared), 0);
-        int movesCleared = sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), 99);
-        if (level >= levelsCleared)
+        String currentStates = sharedPrefs.getString(PlayerData.activity.getString(R.string.save_level_clear_states), "000000000000000000000000000000");
+        if (0 <= level && level <= 29)
         {
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putInt(PlayerData.activity.getString(R.string.save_levels_cleared), level + 1);
-            editor.putInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), moves);
-            editor.apply();
-        }
-        else if (moves < movesCleared)
-        {
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.putInt(PlayerData.activity.getString(R.string.save_best_clear_level) + String.valueOf(level), moves);
-            editor.apply();
+            int currentLevelState = Integer.valueOf(currentStates.substring(level, level + 1));
+            if (state > currentLevelState && state <= 2)
+            {
+                String newStates = currentStates.substring(0, level) + String.valueOf(state) + currentStates.substring(level + 1, currentStates.length());
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(PlayerData.activity.getString(R.string.save_level_clear_states), newStates);
+                editor.apply();
+            }
         }
     }
 

@@ -415,6 +415,7 @@ public class MainView extends SurfaceView implements Runnable
         }
         else if (event.isType(CustomEvent.EXIT_GAME))
         {
+            menu.levelClearStates = PlayerData.getLevelClearStates();
             view = menu;
         }
         view.generateBackground();

@@ -436,14 +436,14 @@ public class Game implements InteractiveView
             backgroundPanel.hasLineSeparator = true;
             levelText.isVisible = true;
             levelText.setText("LEVEL: " + (currentLevel + 1));
-            if (PlayerData.getLevelsCleared() > currentLevel && 29 > currentLevel)
-            {
-                buttonNextLevel.isVisible = true;
-            }
-            else
-            {
-                buttonNextLevel.isVisible = false;
-            }
+//            if (PlayerData.getLevelsCleared() > currentLevel && 29 > currentLevel)
+//            {
+//                buttonNextLevel.isVisible = true;
+//            }
+//            else
+//            {
+//                buttonNextLevel.isVisible = false;
+//            }
             if (currentLevel > 0)
             {
                 buttonPreviousLevel.isVisible = true;
@@ -545,7 +545,14 @@ public class Game implements InteractiveView
                 if (playerWon && currentLevel != -1)
                 {
                     // Cleared the board, player wins
-                    PlayerData.setSolveMoves(currentLevel, currentMove);
+                    if (currentMove == (solution.size() - 1))
+                    {
+                        PlayerData.updateLevelClearStates(currentLevel, 2);
+                    }
+                    else
+                    {
+                        PlayerData.updateLevelClearStates(currentLevel, 1);
+                    }
                     updateUIState();
                 }
             }

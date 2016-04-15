@@ -3,8 +3,7 @@
 
     <string name="app_name">LunarHex</string>
     <string name="action_settings">Settings</string>
-    <string name="save_levels_cleared">saveLevelsCleared</string>
-    <string name="save_best_clear_level">saveBestClearLevel</string>
+    <string name="save_level_clear_states">saveLevelClearStates</string>
     <string name="save_sound_volume">saveSoundVolume</string>
     <string name="save_music_volume">saveMusicVolume</string>
 

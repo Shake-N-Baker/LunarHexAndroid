@@ -226,6 +226,11 @@ public class Menu implements InteractiveView
     private int musicVolume;
 
     /**
+     * String representation of the level clear states, 0 = no clear, 1 = clear, 2 = optimal clear
+     */
+    public String levelClearStates;
+
+    /**
      * Constructor for the menu.
      *
      * @param   main - The reference to the main view
@@ -343,6 +348,7 @@ public class Menu implements InteractiveView
         hamburgerMenuOpen = false;
         soundVolume = PlayerData.getSoundVolume();
         musicVolume = PlayerData.getMusicVolume();
+        levelClearStates = PlayerData.getLevelClearStates();
     }
 
     /**
@@ -721,7 +727,21 @@ public class Menu implements InteractiveView
             {
                 levelsFromText *= -1f;
             }
-            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            if (levelClearStates.charAt(Math.round(level) - 1) == '2')
+            {
+                // Level completed optimally
+                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 51, 204, 51));
+            }
+            else if (levelClearStates.charAt(Math.round(level) - 1) == '1')
+            {
+                // Level completed sub-optimally
+                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 89, 174, 202));
+            }
+            else
+            {
+                // Level not completed
+                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            }
             canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
         }
 
