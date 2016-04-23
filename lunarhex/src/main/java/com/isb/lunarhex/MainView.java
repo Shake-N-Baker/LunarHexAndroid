@@ -31,7 +31,6 @@ public class MainView extends SurfaceView implements Runnable
      * Constants
      */
     private static final int FRAME_RATE = 60;
-    public static final int TRANSITION_TOTAL_FRAMES = 10;
     public static int FONT_SIZE_20_SP;
     public static int FONT_SIZE_30_SP;
     public static int FONT_SIZE_60_SP;
@@ -77,29 +76,9 @@ public class MainView extends SurfaceView implements Runnable
     public Menu menu;
 
     /**
-     * The foreground used in transitions
+     * The background image
      */
-    private static Bitmap transitionMask;
-
-    /**
-     * Flag whether a transition animation is being played between game states
-     */
-    private boolean transitioning;
-
-    /**
-     * Flag whether the transition is a fade out
-     */
-    private boolean transitioningOut;
-
-    /**
-     * The number of frame updates since transition started
-     */
-    private int transitionFramesPassed;
-
-    /**
-     * The event that triggered the transition
-     */
-    private CustomEvent transitionEvent;
+    private static Bitmap background;
 
     /// TODO: Remove debug FPS tracking variable
     /**
@@ -154,20 +133,11 @@ public class MainView extends SurfaceView implements Runnable
         SCREEN_HEIGHT = dm.heightPixels;
         SCREEN_WIDTH = dm.widthPixels;
 
-        // Setup transition variables
-        if (transitionMask == null)
-        {
-            transitionMask = Bitmap.createBitmap(SCREEN_WIDTH, SCREEN_HEIGHT, Bitmap.Config.ARGB_8888);
-            transitionMask.eraseColor(Color.rgb(0, 0, 0));
-        }
-        transitioning = false;
-        transitioningOut = false;
-        transitionFramesPassed = 0;
-        transitionEvent = null;
+        generateBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Setup Game and Menu
-        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet);
-        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet);
+        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet, boardSet);
+        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet);
 
         String savedView = "menu";
         if(state != null)
@@ -330,48 +300,7 @@ public class MainView extends SurfaceView implements Runnable
     {
         Canvas canvas = holder.lockCanvas();
         view.update(canvas, framesPerSecond);
-        if (transitioning)
-        {
-            handleTransition(canvas);
-        }
         holder.unlockCanvasAndPost(canvas);
-    }
-
-    /**
-     * Handles the transition between game states, fade in and out.
-     *
-     * @param   canvas - The canvas to draw on
-     */
-    private void handleTransition(Canvas canvas)
-    {
-        int opacity = (int) (255 * ((double) transitionFramesPassed / (double) TRANSITION_TOTAL_FRAMES));
-        if (opacity < 0)
-        {
-            opacity = 0;
-        }
-        else if (opacity > 255)
-        {
-            opacity = 255;
-        }
-        transitionMask.eraseColor(Color.argb(opacity, 0, 0, 0));
-        canvas.drawBitmap(transitionMask, 0, 0, null);
-        if (transitioningOut)
-        {
-            if (transitionFramesPassed > MainView.TRANSITION_TOTAL_FRAMES)
-            {
-                transitioning = false;
-                handleEvent(transitionEvent);
-            }
-            transitionFramesPassed++;
-        }
-        else
-        {
-            if (transitionFramesPassed < 0)
-            {
-                transitioning = false;
-            }
-            transitionFramesPassed--;
-        }
     }
 
     /**
@@ -388,10 +317,7 @@ public class MainView extends SurfaceView implements Runnable
             Touch.downX = (int) motionEvent.getX();
             Touch.downY = (int) motionEvent.getY();
         }
-        if (!transitioning)
-        {
-            view.handleTouch(motionEvent);
-        }
+        view.handleTouch(motionEvent);
     }
 
     /**
@@ -399,7 +325,7 @@ public class MainView extends SurfaceView implements Runnable
      *
      * @param   event - The custom event
      */
-    private void handleEvent(CustomEvent event)
+    public void handleEvent(CustomEvent event)
     {
         if (event.isType(CustomEvent.NEW_CUSTOM_GAME))
         {
@@ -415,35 +341,25 @@ public class MainView extends SurfaceView implements Runnable
         }
         else if (event.isType(CustomEvent.EXIT_GAME))
         {
+            // Update the menu with information on any levels completed
             menu.levelClearStates = PlayerData.getLevelClearStates();
             view = menu;
         }
-        view.generateBackground();
-        initializeFadeIn();
+        /// TODO: Initialize fade-in
     }
 
     /**
-     * Triggers the transition for the custom event.
+     * Generates the background image to use throughout the game.
      *
-     * @param   event - The custom event
+     * @param   screenWidth - The width of the screen
+     * @param   screenHeight - The height of the screen
      */
-    public void triggerEvent(CustomEvent event)
+    private void generateBackground(int screenWidth, int screenHeight)
     {
-        // Start fading out of the current screen
-        transitioning = true;
-        transitioningOut = true;
-        transitionFramesPassed = 0;
-        transitionEvent = event;
-    }
-
-    /**
-     * Initializes a fade in transition.
-     */
-    private void initializeFadeIn()
-    {
-        // Start fading into the current screen
-        transitioning = true;
-        transitioningOut = false;
-        transitionFramesPassed = MainView.TRANSITION_TOTAL_FRAMES;
+        if (background == null)
+        {
+            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
+        }
+        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 }

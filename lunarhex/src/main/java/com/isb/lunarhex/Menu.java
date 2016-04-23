@@ -55,17 +55,19 @@ public class Menu implements InteractiveView
     private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
+    private static final float STAR_WIDTH_PERCENT = 4f / 100f;
+    private static final float STAR_HEIGHT_PERCENT = 7f / 100f;
     private static final float PREVIEW_BOARD_X_PERCENT = 34f / 100f;
     private static final float PREVIEW_BOARD_Y_PERCENT = 15f / 100f;
     private static final float PREVIEW_BOARD_SPACING_X_PERCENT = 8f / 100f;
     private static final float PREVIEW_BOARD_SPACING_Y_PERCENT = 6f / 100f;
     private static final float LEVELS_TOP_LEFT_X_PERCENT = 50f / 100f;
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
-    private static final float LEVELS_SPACING_X_PERCENT = 20f / 100f;
+    public static final float LEVELS_SPACING_X_PERCENT = 20f / 100f;
     private static final float TRANSITION_DISTANCE_X_PERCENT = 2f / 100f;
     private static final float MAX_DRAG_VELOCITY_X_PERCENT = 80f / 1000f;
     private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
-    private static final int BACKGROUND_OFFSET_DAMPENING_MAGNITUDE = 10;
+    public static final int BACKGROUND_OFFSET_DAMPENING_MAGNITUDE = 10;
     private static final int DRAGGING_VELOCITY_DAMPENING_MAGNITUDE = 10;
     private static final int SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO = 8;
     private static final int SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO = 8;
@@ -94,6 +96,8 @@ public class Menu implements InteractiveView
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
+    private static int STAR_WIDTH;
+    private static int STAR_HEIGHT;
     private static int PREVIEW_BOARD_X;
     private static int PREVIEW_BOARD_Y;
     private static int PREVIEW_BOARD_SPACING_X;
@@ -236,13 +240,15 @@ public class Menu implements InteractiveView
      * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
+     * @param   background - The background image to be used
      * @param   mainBoards - The set of main boards
      */
-    public Menu(MainView main, int screenWidth, int screenHeight, List<String> mainBoards)
+    public Menu(MainView main, int screenWidth, int screenHeight, Bitmap background, List<String> mainBoards)
     {
         this.mainView = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this.background = background;
 
         parseBoards(mainBoards);
 
@@ -271,6 +277,8 @@ public class Menu implements InteractiveView
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
         SELECTION_CIRCLE_Y = Math.round(SELECTION_CIRCLE_Y_PERCENT * screenHeight);
         SELECTION_CIRCLE_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 13);
+        STAR_WIDTH = Math.round(STAR_WIDTH_PERCENT * screenWidth);
+        STAR_HEIGHT = Math.round(STAR_HEIGHT_PERCENT * screenHeight);
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
@@ -359,7 +367,11 @@ public class Menu implements InteractiveView
      */
     public void initialize(Bundle state)
     {
-        generateBackground();
+        if (hamburgerBackground == null)
+        {
+            hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+            hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
+        }
     }
 
     /**
@@ -458,12 +470,14 @@ public class Menu implements InteractiveView
                         if (level == 0)
                         {
                             // Random level
-                            mainView.triggerEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
+                            dragVelocity = 0;
+                            mainView.handleEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
                         }
                         else
                         {
                             // Play selected level
-                            mainView.triggerEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
+                            dragVelocity = 0;
+                            mainView.handleEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
                         }
                     }
                 }
@@ -727,21 +741,8 @@ public class Menu implements InteractiveView
             {
                 levelsFromText *= -1f;
             }
-            if (levelClearStates.charAt(Math.round(level) - 1) == '2')
-            {
-                // Level completed optimally
-                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 51, 204, 51));
-            }
-            else if (levelClearStates.charAt(Math.round(level) - 1) == '1')
-            {
-                // Level completed sub-optimally
-                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 89, 174, 202));
-            }
-            else
-            {
-                // Level not completed
-                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            }
+            Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) ((1f - (levelsFromText / 2.3f)) * 255)));
+            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
             canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
         }
 
@@ -789,23 +790,6 @@ public class Menu implements InteractiveView
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
-    }
-
-    /**
-     * Generates a new background.
-     */
-    public void generateBackground()
-    {
-        if (hamburgerBackground == null)
-        {
-            hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-            hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
-        }
-        if (background == null)
-        {
-            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 30f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
-        }
-        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((LEVELS_SPACING_X_PERCENT * 30f) / (float) BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 
     /**

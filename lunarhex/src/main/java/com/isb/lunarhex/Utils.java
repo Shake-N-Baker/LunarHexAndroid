@@ -30,6 +30,16 @@ public class Utils
     private static final int HEX_OUTLINE_DIVISOR = 75;
 
     /**
+     * The paint to use with drawing stars
+     */
+    private static Paint starPaint;
+
+    /**
+     * The paint to use with drawing filled in stars
+     */
+    private static Paint starFilledPaint;
+
+    /**
      * The paint to use with drawing hexagons
      */
     private static Paint hexFillPaint;
@@ -355,6 +365,64 @@ public class Utils
             }
         }
         return -1;
+    }
+
+    /**
+     * Draws a star at the specified location with the given size.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   x - X coordinate of top left bounding box
+     * @param   y - Y coordinate of top left bounding box
+     * @param   width - The width of the star
+     * @param   height - The height of the star
+     * @param   completeness - The level of completeness, 0 = none, 1 = complete, 2 = perfect
+     * @param   transparency - The alpha value of the star, 0 to 255
+     */
+    public static void drawStar(Canvas canvas, float x, float y, float width, float height, int completeness, int transparency)
+    {
+        if (starPaint == null)
+        {
+            starPaint = new Paint();
+            starPaint.setStyle(Paint.Style.STROKE);
+            starPaint.setStrokeWidth(2f);
+        }
+        if (starFilledPaint == null)
+        {
+            starFilledPaint = new Paint();
+            starFilledPaint.setStyle(Paint.Style.FILL);
+        }
+        if (completeness == 0)
+        {
+            // Draw more transparent blue star
+            starPaint.setColor(Color.argb(transparency / 2, 89, 116, 146));
+            starFilledPaint.setColor(Color.argb(transparency / 2, 46, 67, 94));
+        }
+        else if (completeness == 1)
+        {
+            // Draw silver star
+            starPaint.setColor(Color.argb(transparency, 255, 255, 255));
+            starFilledPaint.setColor(Color.argb(transparency, 190, 200, 200));
+        }
+        else
+        {
+            // Draw gold star
+            starPaint.setColor(Color.argb(transparency, 255, 255, 255));
+            starFilledPaint.setColor(Color.argb(transparency, 255, 215, 45));
+        }
+        Path starPath = new Path();
+        starPath.moveTo(x + ((50f / 100f) * width), y);
+        starPath.lineTo(x + ((62f / 100f) * width), y + ((38f / 100) * height));
+        starPath.lineTo(x + width, y + ((38f / 100) * height));
+        starPath.lineTo(x + ((70f / 100f) * width), y + ((62f / 100) * height));
+        starPath.lineTo(x + ((80f / 100f) * width), y + height);
+        starPath.lineTo(x + ((50f / 100f) * width), y + ((78f / 100) * height));
+        starPath.lineTo(x + ((20f / 100f) * width), y + height);
+        starPath.lineTo(x + ((30f / 100f) * width), y + ((62f / 100) * height));
+        starPath.lineTo(x, y + ((38f / 100) * height));
+        starPath.lineTo(x + ((38f / 100f) * width), y + ((38f / 100) * height));
+        starPath.close();
+        canvas.drawPath(starPath, starFilledPaint);
+        canvas.drawPath(starPath, starPaint);
     }
 
     /**

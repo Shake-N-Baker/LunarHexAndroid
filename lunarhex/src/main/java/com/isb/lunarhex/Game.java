@@ -311,14 +311,16 @@ public class Game implements InteractiveView
      * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
+     * @param   background - The background image to use
      * @param   mainBoardSet - The set of main boards
      * @param   boardSet - The set of random boards
      */
-    public Game(MainView main, int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet)
+    public Game(MainView main, int screenWidth, int screenHeight, Bitmap background, List<String> mainBoardSet, List<List<String>> boardSet)
     {
         this.mainView = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this.background = background;
         this.mainBoardSet = mainBoardSet;
         this.boardSet = boardSet;
         HEX_WIDTH = Math.round(HEX_WIDTH_PERCENT * screenWidth);
@@ -419,7 +421,6 @@ public class Game implements InteractiveView
 
         // Update UI for levels vs custom and generate a background to use
         updateUIState();
-        generateBackground();
     }
 
     /**
@@ -494,7 +495,6 @@ public class Game implements InteractiveView
             randomBoardState(minMoves, maxMoves);
         }
         updateUIState();
-        generateBackground();
     }
 
     /**
@@ -681,7 +681,7 @@ public class Game implements InteractiveView
                 else if (buttonExit.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Exit game
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
-                    mainView.triggerEvent(new CustomEvent(CustomEvent.EXIT_GAME));
+                    mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
                 }
                 else if (buttonNextLevel.isToggled(Touch.downX, Touch.downY, Touch.x, Touch.y)) // Next level
                 {
@@ -909,8 +909,18 @@ public class Game implements InteractiveView
      */
     private void drawBoard(Canvas canvas)
     {
+        int defaultMatrix = canvas.save();
+
         // Clear board
+        canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
+
+        // Draw the background shifted based on the current level
+        canvas.translate(-1 * getBackgroundOffset(), 0);
         canvas.drawBitmap(background, 0, 0, null);
+
+        // Remove the translation shift before drawing the rest of the game
+        canvas.restoreToCount(defaultMatrix);
+        defaultMatrix = canvas.save();
 
         // Draw the hexagon tiles from back to front
         float width = HEX_WIDTH;
@@ -1124,14 +1134,12 @@ public class Game implements InteractiveView
     }
 
     /**
-     * Generates a new background.
+     * Returns the background translation offset based on the current level.
+     *
+     * @return  The background offset
      */
-    public void generateBackground()
+    private int getBackgroundOffset()
     {
-        if (background == null)
-        {
-            background = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-        }
-        Utils.generateBackground(background, screenWidth, screenHeight);
+        return (int) (((currentLevel + 1) * Menu.LEVELS_SPACING_X_PERCENT * screenWidth) / Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE);
     }
 }
