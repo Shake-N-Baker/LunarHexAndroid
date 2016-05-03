@@ -663,14 +663,6 @@ public class Menu implements InteractiveView
             dragPathX.remove(dragPathX.size() - 1);
         }
 
-        // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
-        float titleTransparency = 1 - ((float) screenOffset / (float) LEVELS_SPACING_X);
-        if (titleTransparency < 0f)
-        {
-            titleTransparency = 0f;
-        }
-        titlePaint.setColor(Color.argb((int) (titleTransparency * 255), 255, 255, 255));
-
         // Draw the menu
         drawMenu(canvas);
     }
@@ -695,151 +687,176 @@ public class Menu implements InteractiveView
         canvas.restoreToCount(defaultMatrix);
         defaultMatrix = canvas.save();
 
-        if (!fadingIn && !fadingOut)
+        // Add transparency for fade transition
+        float fadeTransparencyPercent = 1f;
+        if (fadingIn || fadingOut)
         {
-            // Calculate the distance from being centered on a level
-            int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
-            if (differenceFromCenter > (LEVELS_SPACING_X / 2))
+            fadeTransparencyPercent = (float) fadeFrame / (float) MainView.TRANSITION_FRAMES;
+            if (fadingIn)
             {
-                differenceFromCenter -= LEVELS_SPACING_X;
-                differenceFromCenter *= -1;
+                fadeTransparencyPercent = 1 - fadeTransparencyPercent;
             }
-            float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
-
-            if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
+            if (fadeTransparencyPercent < 0f)
             {
-                int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
+                fadeTransparencyPercent = 0f;
+            }
+            else if (fadeTransparencyPercent > 1f)
+            {
+                fadeTransparencyPercent = 1f;
+            }
+        }
 
-                // Draw the preview board
-                if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
+        // Calculate the distance from being centered on a level
+        int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
+        if (differenceFromCenter > (LEVELS_SPACING_X / 2))
+        {
+            differenceFromCenter -= LEVELS_SPACING_X;
+            differenceFromCenter *= -1;
+        }
+        float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
+
+        if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
+        {
+              int transparency = (int) (fadeTransparencyPercent * (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))));
+
+            // Draw the preview board
+            if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
+            {
+                List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+
+                for (int x = 0; x < 5; x++)
                 {
-                    List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
-
-                    for (int x = 0; x < 5; x++)
+                    for (int y = 0; y < 6; y++)
                     {
-                        for (int y = 0; y < 6; y++)
+                        // The final row only has 2 spaces instead of 5
+                        if (y == 5)
                         {
-                            // The final row only has 2 spaces instead of 5
-                            if (y == 5)
+                            if (x != 1 && x != 3)
                             {
-                                if (x != 1 && x != 3)
-                                {
-                                    continue;
-                                }
+                                continue;
                             }
+                        }
 
-                            // Search the colors to see if this index matches their coordinates
-                            boolean colorFound = false;
-                            for (List<Integer> color : board)
+                        // Search the colors to see if this index matches their coordinates
+                        boolean colorFound = false;
+                        for (List<Integer> color : board)
+                        {
+                            if (x == color.get(0) && y == color.get(1))
                             {
-                                if (x == color.get(0) && y == color.get(1))
-                                {
-                                    circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
-                                    colorFound = true;
-                                    break;
-                                }
+                                circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
+                                colorFound = true;
+                                break;
                             }
+                        }
 
-                            // Tint the center red and color the rest of the spaces white
-                            if (!colorFound)
+                        // Tint the center red and color the rest of the spaces white
+                        if (!colorFound)
+                        {
+                            if (x == 2 && y == 2)
                             {
-                                if (x == 2 && y == 2)
-                                {
-                                    circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
-                                }
-                                else
-                                {
-                                    circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
-                                }
-                            }
-
-                            // Columns of the board alternate in height
-                            if (x % 2 == 0)
-                            {
-                                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                                circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
                             }
                             else
                             {
-                                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                                circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
                             }
+                        }
+
+                        // Columns of the board alternate in height
+                        if (x % 2 == 0)
+                        {
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                        }
+                        else
+                        {
+                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                         }
                     }
                 }
-
-                // Draw the selection circle
-                circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
-                canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
             }
 
-            // Shift everything else the full screen offset amount
-            canvas.translate(-1 * screenOffset, 0);
-
-            // Draw title text
-            canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
-
-            // Draw random level text
-            float levelsFromText = viewingLevel;
-            textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
-
-            // Draw level texts
-            for (int level = 1; level < 31; level++)
-            {
-                levelsFromText = viewingLevel - (float) level;
-                if (levelsFromText < 0f)
-                {
-                    levelsFromText *= -1f;
-                }
-                Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) ((1f - (levelsFromText / 2.3f)) * 255)));
-                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-                canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
-            }
-
-            // Draw hamburger menu fixed elements
-            canvas.restoreToCount(defaultMatrix);
-
-            if (hamburgerMenuOpen)
-            {
-                // Draw hamburger menu shaded background
-                canvas.drawBitmap(hamburgerBackground, 0, 0, null);
-                textPaint.setColor(Color.argb(255, 255, 255, 255));
-                textPaint.setTextSize(MainView.FONT_SIZE_30_SP);
-
-                // Draw Headers
-                canvas.drawText(AUDIO_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, AUDIO_TEXT_Y, textPaint);
-                canvas.drawText(CREDITS_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, CREDITS_TEXT_Y, textPaint);
-                textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
-
-                // Draw the sound volume control
-                circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
-                canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
-                canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
-                canvas.drawCircle(VOLUME_CONTROL_X + ((soundVolume / 100f) * VOLUME_CONTROL_WIDTH), SOUND_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
-
-                // Draw the music volume control
-                canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
-                canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
-                canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
-
-                // Draw the link to the github source
-                textPaint.setColor(Color.argb(255, 51, 102, 187));
-                textPaint.setUnderlineText(true);
-                canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
-                textPaint.setColor(Color.argb(255, 255, 255, 255));
-                textPaint.setUnderlineText(false);
-
-                // Draw the credits text
-                canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
-                canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
-                canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
-                canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
-            }
-
-            // Draw hamburger menu
-            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
-            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
-            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
+            // Draw the selection circle
+            circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
+            canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
+
+        // Shift everything else the full screen offset amount
+        canvas.translate(-1 * screenOffset, 0);
+
+        // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
+        float titleTransparency = 1 - (viewingLevel);
+        if (titleTransparency < 0f)
+        {
+            titleTransparency = 0f;
+        }
+        titlePaint.setColor(Color.argb((int) (fadeTransparencyPercent * titleTransparency * 255), 255, 255, 255));
+
+        // Draw title text
+        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
+
+        // Draw random level text
+        float levelsFromText = viewingLevel;
+        textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
+
+        // Draw level texts
+        for (int level = 1; level < 31; level++)
+        {
+            levelsFromText = viewingLevel - (float) level;
+            if (levelsFromText < 0f)
+            {
+                levelsFromText *= -1f;
+            }
+            Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) (fadeTransparencyPercent * (1f - (levelsFromText / 2.3f)) * 255)));
+            textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+        }
+
+        // Draw hamburger menu fixed elements
+        canvas.restoreToCount(defaultMatrix);
+
+        if (hamburgerMenuOpen)
+        {
+            // Draw hamburger menu shaded background
+            canvas.drawBitmap(hamburgerBackground, 0, 0, null);
+            textPaint.setColor(Color.argb(255, 255, 255, 255));
+            textPaint.setTextSize(MainView.FONT_SIZE_30_SP);
+
+            // Draw Headers
+            canvas.drawText(AUDIO_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, AUDIO_TEXT_Y, textPaint);
+            canvas.drawText(CREDITS_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, CREDITS_TEXT_Y, textPaint);
+            textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+
+            // Draw the sound volume control
+            circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
+            canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+            canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
+            canvas.drawCircle(VOLUME_CONTROL_X + ((soundVolume / 100f) * VOLUME_CONTROL_WIDTH), SOUND_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
+
+            // Draw the music volume control
+            canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+            canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
+            canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
+
+            // Draw the link to the github source
+            textPaint.setColor(Color.argb(255, 51, 102, 187));
+            textPaint.setUnderlineText(true);
+            canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
+            textPaint.setColor(Color.argb(255, 255, 255, 255));
+            textPaint.setUnderlineText(false);
+
+            // Draw the credits text
+            canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
+            canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
+            canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
+            canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
+        }
+
+        // Draw hamburger menu
+        hamburgerMenuPaint.setColor(Color.argb((int) (fadeTransparencyPercent * 255), 255, 255, 255));
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
+        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
     }
 
     /**
