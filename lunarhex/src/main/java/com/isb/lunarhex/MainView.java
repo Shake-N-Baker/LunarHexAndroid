@@ -31,6 +31,7 @@ public class MainView extends SurfaceView implements Runnable
      * Constants
      */
     private static final int FRAME_RATE = 60;
+    public static final int TRANSITION_FRAMES = 10;
     public static int FONT_SIZE_20_SP;
     public static int FONT_SIZE_30_SP;
     public static int FONT_SIZE_60_SP;
@@ -345,7 +346,7 @@ public class MainView extends SurfaceView implements Runnable
             menu.levelClearStates = PlayerData.getLevelClearStates();
             view = menu;
         }
-        /// TODO: Initialize fade-in
+        view.startFadeIn();
     }
 
     /**

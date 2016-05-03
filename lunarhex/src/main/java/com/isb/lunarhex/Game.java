@@ -1142,4 +1142,12 @@ public class Game implements InteractiveView
     {
         return (int) (((currentLevel + 1) * Menu.LEVELS_SPACING_X_PERCENT * screenWidth) / Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE);
     }
+
+    /**
+     * Starts the fade in transition.
+     */
+    public void startFadeIn()
+    {
+
+    }
 }

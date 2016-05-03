@@ -220,6 +220,26 @@ public class Menu implements InteractiveView
     private boolean hamburgerMenuOpen;
 
     /**
+     * Whether the menu is fading in
+     */
+    private boolean fadingIn;
+
+    /**
+     * Whether the menu is fading out
+     */
+    private boolean fadingOut;
+
+    /**
+     * The number of frames left before the fade is finished
+     */
+    private int fadeFrame;
+
+    /**
+     * The event to send when finished fading out of the menu
+     */
+    private CustomEvent fadeOutEvent;
+
+    /**
      * The sound volume level from 0 to 100
      */
     private int soundVolume;
@@ -381,152 +401,161 @@ public class Menu implements InteractiveView
      */
     public void handleTouch(MotionEvent motionEvent)
     {
-        if (hamburgerMenuOpen)
+        if (!fadingIn && !fadingOut)
         {
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP)
+            if (hamburgerMenuOpen)
             {
-                if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP)
                 {
-                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
+                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                     {
-                        // Close the hamburger menu
-                        hamburgerMenuOpen = false;
-                        PlayerData.setSoundVolume(soundVolume);
-                        PlayerData.setMusicVolume(musicVolume);
-                    }
-                }
-                if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
-                {
-                    if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
-                    {
-                        // View Github page
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
-                        mainView.getContext().startActivity(browserIntent);
-                    }
-                }
-            }
-            if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
-            {
-                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
-                {
-                    // Sound volume control
-                    soundVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
-                    if (soundVolume > 100)
-                    {
-                        soundVolume = 100;
-                    }
-                    else if (soundVolume < 0)
-                    {
-                        soundVolume = 0;
-                    }
-                }
-            }
-            if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
-            {
-                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
-                {
-                    // Music volume control
-                    musicVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
-                    if (musicVolume > 100)
-                    {
-                        musicVolume = 100;
-                    }
-                    else if (musicVolume < 0)
-                    {
-                        musicVolume = 0;
-                    }
-                }
-            }
-        }
-        else
-        {
-            int tX = Touch.x + screenOffset;
-            int tDownX = Touch.downX + screenOffset;
-
-            if (motionEvent.getAction() == MotionEvent.ACTION_UP)
-            {
-                dragging = false;
-                boolean nothingClicked = true;
-                if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
-                {
-                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
-                    {
-                        // Selected the hamburger menu
-                        nothingClicked = false;
-                        hamburgerMenuOpen = true;
-                    }
-                }
-                if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
-                {
-                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
-                    {
-                        // Clicked the selection circle
-                        nothingClicked = false;
-                        int level = screenOffset / LEVELS_SPACING_X;
-                        if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                        if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                         {
-                            level++;
+                            // Close the hamburger menu
+                            hamburgerMenuOpen = false;
+                            PlayerData.setSoundVolume(soundVolume);
+                            PlayerData.setMusicVolume(musicVolume);
                         }
-                        if (level == 0)
+                    }
+                    if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
+                    {
+                        if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
                         {
-                            // Random level
-                            dragVelocity = 0;
-                            mainView.handleEvent(new CustomEvent(CustomEvent.NEW_CUSTOM_GAME));
-                        }
-                        else
-                        {
-                            // Play selected level
-                            dragVelocity = 0;
-                            mainView.handleEvent(new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1)));
+                            // View Github page
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                            mainView.getContext().startActivity(browserIntent);
                         }
                     }
                 }
-                if (nothingClicked)
+                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
                 {
-                    // Finished dragging, update momentum
-                    if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
+                    if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((SOUND_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (SOUND_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
                     {
-                        // Dragging in the same direction, add onto the velocity
-                        dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
+                        // Sound volume control
+                        soundVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
+                        if (soundVolume > 100)
+                        {
+                            soundVolume = 100;
+                        }
+                        else if (soundVolume < 0)
+                        {
+                            soundVolume = 0;
+                        }
                     }
-                    else
+                }
+                if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
+                {
+                    if (((VOLUME_CONTROL_X - VOLUME_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH + VOLUME_TOUCH_BUFFER_X)) && ((MUSIC_TEXT_Y - VOLUME_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (MUSIC_TEXT_Y + VOLUME_TOUCH_BUFFER_Y)))
                     {
-                        // Dragging in opposite direction, reset the velocity
-                        dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
-                    }
-                    if (dragVelocity > MAX_DRAG_VELOCITY_X)
-                    {
-                        dragVelocity = MAX_DRAG_VELOCITY_X;
-                    }
-                    else if (dragVelocity < -MAX_DRAG_VELOCITY_X)
-                    {
-                        dragVelocity = -MAX_DRAG_VELOCITY_X;
+                        // Music volume control
+                        musicVolume = (int) (((float) (Touch.x - VOLUME_CONTROL_X) / (float) VOLUME_CONTROL_WIDTH) * 100);
+                        if (musicVolume > 100)
+                        {
+                            musicVolume = 100;
+                        }
+                        else if (musicVolume < 0)
+                        {
+                            musicVolume = 0;
+                        }
                     }
                 }
             }
             else
             {
-                // Begin dragging
-                if (!dragging)
+                int tX = Touch.x + screenOffset;
+                int tDownX = Touch.downX + screenOffset;
+
+                if (motionEvent.getAction() == MotionEvent.ACTION_UP)
                 {
-                    // Start of a drag event, record the screen offset, reset the path
-                    dragOffsetStart = screenOffset;
-                    for (int i = 0; i < dragPathX.size(); i++)
+                    dragging = false;
+                    boolean nothingClicked = true;
+                    if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
                     {
-                        dragPathX.set(i, Touch.x);
+                        if (((HAMBURGER_MENU_X - HAMBURGER_MENU_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH + HAMBURGER_MENU_TOUCH_BUFFER_X)) && ((HAMBURGER_MENU_Y - HAMBURGER_MENU_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (HAMBURGER_MENU_Y + (HAMBURGER_MENU_SPACING_Y * 2) + HAMBURGER_MENU_TOUCH_BUFFER_Y)))
+                        {
+                            // Selected the hamburger menu
+                            nothingClicked = false;
+                            hamburgerMenuOpen = true;
+                        }
+                    }
+                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                    {
+                        if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                        {
+                            // Clicked the selection circle
+                            nothingClicked = false;
+                            int level = screenOffset / LEVELS_SPACING_X;
+                            if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                            {
+                                level++;
+                            }
+                            if (level == 0)
+                            {
+                                // Random level
+                                dragVelocity = 0;
+                                dragging = false;
+                                fadingOut = true;
+                                fadeFrame = MainView.TRANSITION_FRAMES;
+                                fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
+                            }
+                            else
+                            {
+                                // Play selected level
+                                dragVelocity = 0;
+                                dragging = false;
+                                fadingOut = true;
+                                fadeFrame = MainView.TRANSITION_FRAMES;
+                                fadeOutEvent = new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1));
+                            }
+                        }
+                    }
+                    if (nothingClicked)
+                    {
+                        // Finished dragging, update momentum
+                        if (dragVelocity * ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) > 0)
+                        {
+                            // Dragging in the same direction, add onto the velocity
+                            dragVelocity += ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
+                        }
+                        else
+                        {
+                            // Dragging in opposite direction, reset the velocity
+                            dragVelocity = ((dragPathX.get(dragPathX.size() - 1) + screenOffset) - tX) / DRAGGING_VELOCITY_DAMPENING_MAGNITUDE;
+                        }
+                        if (dragVelocity > MAX_DRAG_VELOCITY_X)
+                        {
+                            dragVelocity = MAX_DRAG_VELOCITY_X;
+                        }
+                        else if (dragVelocity < -MAX_DRAG_VELOCITY_X)
+                        {
+                            dragVelocity = -MAX_DRAG_VELOCITY_X;
+                        }
                     }
                 }
-                dragging = true;
+                else
+                {
+                    // Begin dragging
+                    if (!dragging)
+                    {
+                        // Start of a drag event, record the screen offset, reset the path
+                        dragOffsetStart = screenOffset;
+                        for (int i = 0; i < dragPathX.size(); i++)
+                        {
+                            dragPathX.set(i, Touch.x);
+                        }
+                    }
+                    dragging = true;
 
-                // Shift the screen offset
-                screenOffset = dragOffsetStart + tDownX - tX;
-                if (screenOffset < 0)
-                {
-                    screenOffset = 0;
-                }
-                else if (screenOffset > (30 * LEVELS_SPACING_X))
-                {
-                    screenOffset = 30 * LEVELS_SPACING_X;
+                    // Shift the screen offset
+                    screenOffset = dragOffsetStart + tDownX - tX;
+                    if (screenOffset < 0)
+                    {
+                        screenOffset = 0;
+                    }
+                    else if (screenOffset > (30 * LEVELS_SPACING_X))
+                    {
+                        screenOffset = 30 * LEVELS_SPACING_X;
+                    }
                 }
             }
         }
@@ -540,6 +569,24 @@ public class Menu implements InteractiveView
      */
     public void update(Canvas canvas, float framesPerSecond)
     {
+        if (fadingIn || fadingOut)
+        {
+            fadeFrame--;
+            if (fadeFrame <= 0)
+            {
+                if (fadingIn)
+                {
+                    fadingIn = false;
+                    fadingOut = false;
+                }
+                else
+                {
+                    fadingIn = false;
+                    fadingOut = false;
+                    mainView.handleEvent(fadeOutEvent);
+                }
+            }
+        }
         if (!dragging)
         {
             // Continue moving with the momentum of the finished drag events or scroll to the nearest level
@@ -648,148 +695,151 @@ public class Menu implements InteractiveView
         canvas.restoreToCount(defaultMatrix);
         defaultMatrix = canvas.save();
 
-        // Calculate the distance from being centered on a level
-        int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
-        if (differenceFromCenter > (LEVELS_SPACING_X / 2))
+        if (!fadingIn && !fadingOut)
         {
-            differenceFromCenter -= LEVELS_SPACING_X;
-            differenceFromCenter *= -1;
-        }
-        float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
-
-        if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
-        {
-            int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
-
-            // Draw the preview board
-            if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
+            // Calculate the distance from being centered on a level
+            int differenceFromCenter = screenOffset % LEVELS_SPACING_X;
+            if (differenceFromCenter > (LEVELS_SPACING_X / 2))
             {
-                List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+                differenceFromCenter -= LEVELS_SPACING_X;
+                differenceFromCenter *= -1;
+            }
+            float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
 
-                for (int x = 0; x < 5; x++)
+            if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
+            {
+                int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
+
+                // Draw the preview board
+                if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
                 {
-                    for (int y = 0; y < 6; y++)
+                    List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+
+                    for (int x = 0; x < 5; x++)
                     {
-                        // The final row only has 2 spaces instead of 5
-                        if (y == 5)
+                        for (int y = 0; y < 6; y++)
                         {
-                            if (x != 1 && x != 3)
+                            // The final row only has 2 spaces instead of 5
+                            if (y == 5)
                             {
-                                continue;
+                                if (x != 1 && x != 3)
+                                {
+                                    continue;
+                                }
                             }
-                        }
 
-                        // Search the colors to see if this index matches their coordinates
-                        boolean colorFound = false;
-                        for (List<Integer> color : board)
-                        {
-                            if (x == color.get(0) && y == color.get(1))
+                            // Search the colors to see if this index matches their coordinates
+                            boolean colorFound = false;
+                            for (List<Integer> color : board)
                             {
-                                circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
-                                colorFound = true;
-                                break;
+                                if (x == color.get(0) && y == color.get(1))
+                                {
+                                    circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
+                                    colorFound = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        // Tint the center red and color the rest of the spaces white
-                        if (!colorFound)
-                        {
-                            if (x == 2 && y == 2)
+                            // Tint the center red and color the rest of the spaces white
+                            if (!colorFound)
                             {
-                                circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
+                                if (x == 2 && y == 2)
+                                {
+                                    circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
+                                }
+                                else
+                                {
+                                    circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
+                                }
+                            }
+
+                            // Columns of the board alternate in height
+                            if (x % 2 == 0)
+                            {
+                                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                             }
                             else
                             {
-                                circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
+                                canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                             }
-                        }
-
-                        // Columns of the board alternate in height
-                        if (x % 2 == 0)
-                        {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
-                        }
-                        else
-                        {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                         }
                     }
                 }
+
+                // Draw the selection circle
+                circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
+                canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
             }
 
-            // Draw the selection circle
-            circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
-            canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
-        }
+            // Shift everything else the full screen offset amount
+            canvas.translate(-1 * screenOffset, 0);
 
-        // Shift everything else the full screen offset amount
-        canvas.translate(-1 * screenOffset, 0);
+            // Draw title text
+            canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
 
-        // Draw title text
-        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
-
-        // Draw random level text
-        float levelsFromText = viewingLevel;
-        textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
-
-        // Draw level texts
-        for (int level = 1; level < 31; level++)
-        {
-            levelsFromText = viewingLevel - (float) level;
-            if (levelsFromText < 0f)
-            {
-                levelsFromText *= -1f;
-            }
-            Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) ((1f - (levelsFromText / 2.3f)) * 255)));
+            // Draw random level text
+            float levelsFromText = viewingLevel;
             textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+            canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
+
+            // Draw level texts
+            for (int level = 1; level < 31; level++)
+            {
+                levelsFromText = viewingLevel - (float) level;
+                if (levelsFromText < 0f)
+                {
+                    levelsFromText *= -1f;
+                }
+                Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) ((1f - (levelsFromText / 2.3f)) * 255)));
+                textPaint.setColor(Color.argb((int) ((1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+                canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+            }
+
+            // Draw hamburger menu fixed elements
+            canvas.restoreToCount(defaultMatrix);
+
+            if (hamburgerMenuOpen)
+            {
+                // Draw hamburger menu shaded background
+                canvas.drawBitmap(hamburgerBackground, 0, 0, null);
+                textPaint.setColor(Color.argb(255, 255, 255, 255));
+                textPaint.setTextSize(MainView.FONT_SIZE_30_SP);
+
+                // Draw Headers
+                canvas.drawText(AUDIO_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, AUDIO_TEXT_Y, textPaint);
+                canvas.drawText(CREDITS_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, CREDITS_TEXT_Y, textPaint);
+                textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+
+                // Draw the sound volume control
+                circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
+                canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+                canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
+                canvas.drawCircle(VOLUME_CONTROL_X + ((soundVolume / 100f) * VOLUME_CONTROL_WIDTH), SOUND_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
+
+                // Draw the music volume control
+                canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
+                canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
+                canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
+
+                // Draw the link to the github source
+                textPaint.setColor(Color.argb(255, 51, 102, 187));
+                textPaint.setUnderlineText(true);
+                canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
+                textPaint.setColor(Color.argb(255, 255, 255, 255));
+                textPaint.setUnderlineText(false);
+
+                // Draw the credits text
+                canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
+                canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
+                canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
+                canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
+            }
+
+            // Draw hamburger menu
+            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
+            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
+            canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
         }
-
-        // Draw hamburger menu fixed elements
-        canvas.restoreToCount(defaultMatrix);
-
-        if (hamburgerMenuOpen)
-        {
-            // Draw hamburger menu shaded background
-            canvas.drawBitmap(hamburgerBackground, 0, 0, null);
-            textPaint.setColor(Color.argb(255, 255, 255, 255));
-            textPaint.setTextSize(MainView.FONT_SIZE_30_SP);
-
-            // Draw Headers
-            canvas.drawText(AUDIO_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, AUDIO_TEXT_Y, textPaint);
-            canvas.drawText(CREDITS_HEADER_TEXT, HAMBURGER_HEADER_TEXT_X, CREDITS_TEXT_Y, textPaint);
-            textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
-
-            // Draw the sound volume control
-            circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
-            canvas.drawText(SOUND_VOLUME_TEXT, HAMBURGER_TEXT_X, SOUND_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
-            canvas.drawLine(VOLUME_CONTROL_X, SOUND_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, SOUND_TEXT_Y, hamburgerMenuPaint);
-            canvas.drawCircle(VOLUME_CONTROL_X + ((soundVolume / 100f) * VOLUME_CONTROL_WIDTH), SOUND_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
-
-            // Draw the music volume control
-            canvas.drawText(MUSIC_VOLUME_TEXT, HAMBURGER_TEXT_X, MUSIC_TEXT_Y + (hamburgerMenuTextHeight / 2), textPaint);
-            canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
-            canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
-
-            // Draw the link to the github source
-            textPaint.setColor(Color.argb(255, 51, 102, 187));
-            textPaint.setUnderlineText(true);
-            canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
-            textPaint.setColor(Color.argb(255, 255, 255, 255));
-            textPaint.setUnderlineText(false);
-
-            // Draw the credits text
-            canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
-            canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
-            canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
-            canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
-        }
-
-        // Draw hamburger menu
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
-        canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
     }
 
     /**
@@ -860,5 +910,15 @@ public class Menu implements InteractiveView
             }
             boards.add(levelColors);
         }
+    }
+
+    /**
+     * Starts the fade in transition.
+     */
+    public void startFadeIn()
+    {
+        fadingIn = true;
+        fadingOut = false;
+        fadeFrame = MainView.TRANSITION_FRAMES;
     }
 }
