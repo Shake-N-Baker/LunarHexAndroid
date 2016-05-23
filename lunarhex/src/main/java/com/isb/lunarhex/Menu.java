@@ -377,16 +377,7 @@ public class Menu implements InteractiveView
         soundVolume = PlayerData.getSoundVolume();
         musicVolume = PlayerData.getMusicVolume();
         levelClearStates = PlayerData.getLevelClearStates();
-    }
 
-    /**
-     * Initializes or re-initializes the menu with the given state.
-     * Called on start up and when brought from background.
-     *
-     * @param   state - The state of the menu
-     */
-    public void initialize(Bundle state)
-    {
         if (hamburgerBackground == null)
         {
             hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);

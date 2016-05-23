@@ -137,7 +137,7 @@ public class MainView extends SurfaceView implements Runnable
         generateBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Setup Game and Menu
-        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet, boardSet);
+        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet, boardSet, state);
         menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet);
 
         String savedView = "menu";
@@ -153,7 +153,6 @@ public class MainView extends SurfaceView implements Runnable
         {
             view = game;
         }
-        view.initialize(state);
     }
 
     /**

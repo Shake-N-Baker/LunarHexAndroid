@@ -45,6 +45,11 @@ public class Utils
     private static Paint hexFillPaint;
 
     /**
+     * The paint to use with drawing icons
+     */
+    private static Paint iconPaint;
+
+    /**
      * The hexagon outline border, initialized on first draw
      */
     private static int hexOutlineBorder = -1;
@@ -543,6 +548,40 @@ public class Utils
                 canvas.drawPath(topTotalPath, hexFillPaint);
             }
         }
+    }
+
+    /**
+     * Draws an icon at the specified location with the given size.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   x - X coordinate of center of the icon
+     * @param   y - Y coordinate of center of the icon
+     * @param   radius - The icon radius
+     */
+    public static void drawIconHome(Canvas canvas, float x, float y, float radius)
+    {
+        if (iconPaint == null)
+        {
+            iconPaint = new Paint();
+            iconPaint.setStyle(Paint.Style.STROKE);
+            iconPaint.setStrokeWidth(5f);
+            iconPaint.setColor(Color.argb(255, 168, 183, 225));
+        }
+        canvas.drawCircle(x, y, radius, iconPaint);
+
+        float diameter = radius * 2f;
+        float width = (float) Math.sqrt((diameter * diameter) / 2f);
+        float height = width;
+
+        x -= (width / 2f);
+        y -= (height / 2f);
+        Path iconPath = new Path();
+        iconPath.moveTo(x, y);
+        iconPath.lineTo(x + width, y);
+        iconPath.lineTo(x + width, y + height);
+        iconPath.lineTo(x, y + height);
+        iconPath.close();
+        canvas.drawPath(iconPath, iconPaint);
     }
 
     /**
