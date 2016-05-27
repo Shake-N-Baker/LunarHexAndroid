@@ -27,22 +27,22 @@ public class Game implements InteractiveView
     /**
      * Constants
      */
-    private static final float HEX_WIDTH_PERCENT = 17f / 100f;
+    private static final float HEX_WIDTH_PERCENT = 18f / 100f;
     private static final float HEX_HEIGHT_PERCENT = 14f / 100f;
-    private static final float BOARD_X_PERCENT = 16f / 100f;
+    private static final float BOARD_X_PERCENT = 14f / 100f;
     private static final float BOARD_Y_PERCENT = 8f / 100f;
-    private static final float EXIT_X_PERCENT = 8f / 100f;
-    private static final float EXIT_Y_PERCENT = 13f / 100f;
+    private static final float EXIT_X_PERCENT = 7f / 100f;
+    private static final float EXIT_Y_PERCENT = 12f / 100f;
     private static final float GENERATE_X_PERCENT = 92f / 100f;
-    private static final float GENERATE_Y_PERCENT = 13f / 100f;
+    private static final float GENERATE_Y_PERCENT = 12f / 100f;
     private static final float RETRY_X_PERCENT = 92f / 100f;
-    private static final float RETRY_Y_PERCENT = 39f / 100f;
+    private static final float RETRY_Y_PERCENT = 37f / 100f;
     private static final float HINT_X_PERCENT = 92f / 100f;
-    private static final float HINT_Y_PERCENT = 65f / 100f;
+    private static final float HINT_Y_PERCENT = 62f / 100f;
     private static final float MOVES_PLUS_X_PERCENT = 92f / 100f;
-    private static final float MOVES_PLUS_Y_PERCENT = 13f / 100f;
+    private static final float MOVES_PLUS_Y_PERCENT = 12f / 100f;
     private static final float MOVES_MINUS_X_PERCENT = 92f / 100f;
-    private static final float MOVES_MINUS_Y_PERCENT = 91f / 100f;
+    private static final float MOVES_MINUS_Y_PERCENT = 87f / 100f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
@@ -245,7 +245,7 @@ public class Game implements InteractiveView
         HEX_DEPTH = Math.round(HEX_HEIGHT / 10.0f);
         BOARD_X = Math.round(BOARD_X_PERCENT * screenWidth);
         BOARD_Y = Math.round(BOARD_Y_PERCENT * screenHeight);
-        BUTTON_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 15);
+        BUTTON_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 20);
         EXIT_X = Math.round(EXIT_X_PERCENT * screenWidth);
         EXIT_Y = Math.round(EXIT_Y_PERCENT * screenHeight);
         RETRY_X = Math.round(RETRY_X_PERCENT * screenWidth);
@@ -326,20 +326,20 @@ public class Game implements InteractiveView
 
             // Draw only level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
-            Utils.drawIconHome(new Canvas(iconBitmap), EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), RETRY_X, RETRY_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), HINT_X, HINT_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", RETRY_X, RETRY_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", HINT_X, HINT_Y, BUTTON_RADIUS);
         }
         else
         {
             // Draw only non-level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
-            Utils.drawIconHome(new Canvas(iconBitmap), EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), RETRY_X, RETRY_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), GENERATE_X, GENERATE_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), HINT_X, HINT_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS);
-            Utils.drawIconHome(new Canvas(iconBitmap), MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", RETRY_X, RETRY_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "plus", GENERATE_X, GENERATE_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", HINT_X, HINT_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS);
         }
     }
 

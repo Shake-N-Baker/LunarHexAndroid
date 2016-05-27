@@ -554,34 +554,73 @@ public class Utils
      * Draws an icon at the specified location with the given size.
      *
      * @param   canvas - The canvas to draw on
+     * @param   type - The type of icon to draw
      * @param   x - X coordinate of center of the icon
      * @param   y - Y coordinate of center of the icon
      * @param   radius - The icon radius
      */
-    public static void drawIconHome(Canvas canvas, float x, float y, float radius)
+    public static void drawIcon(Canvas canvas, String type, float x, float y, float radius)
     {
         if (iconPaint == null)
         {
             iconPaint = new Paint();
-            iconPaint.setStyle(Paint.Style.STROKE);
-            iconPaint.setStrokeWidth(5f);
-            iconPaint.setColor(Color.argb(255, 168, 183, 225));
+            iconPaint.setStyle(Paint.Style.FILL);
+            iconPaint.setColor(Color.argb(255, 255, 255, 255));
         }
-        canvas.drawCircle(x, y, radius, iconPaint);
 
         float diameter = radius * 2f;
         float width = (float) Math.sqrt((diameter * diameter) / 2f);
         float height = width;
-
         x -= (width / 2f);
         y -= (height / 2f);
-        Path iconPath = new Path();
-        iconPath.moveTo(x, y);
-        iconPath.lineTo(x + width, y);
-        iconPath.lineTo(x + width, y + height);
-        iconPath.lineTo(x, y + height);
-        iconPath.close();
-        canvas.drawPath(iconPath, iconPaint);
+
+        Path iconPath;
+        if (type.toLowerCase().equals("home"))
+        {
+            iconPath = new Path();
+            iconPath.moveTo(x, y + (height / 2f));
+            iconPath.lineTo(x + (width / 2f), y);
+            iconPath.lineTo(x + ((70f * width) / 100f), y + ((19f * height) / 100f));
+            iconPath.lineTo(x + ((70f * width) / 100f), y);
+            iconPath.lineTo(x + ((83f * width) / 100f), y);
+            iconPath.lineTo(x + ((83f * width) / 100f), y + ((34f * height) / 100f));
+            iconPath.lineTo(x + width, y + (height / 2f));
+            iconPath.lineTo(x + ((94f * width) / 100f), y + ((58f * height) / 100f));
+            iconPath.lineTo(x + (width / 2f), y + ((13f * height) / 100f));
+            iconPath.lineTo(x + ((6f * width) / 100f), y + ((58f * height) / 100f));
+            iconPath.close();
+            canvas.drawPath(iconPath, iconPaint);
+            iconPath = new Path();
+            iconPath.moveTo(x + ((17f * width) / 100f), y + ((58f * height) / 100f));
+            iconPath.lineTo(x + ((50f * width) / 100f), y + ((24f * height) / 100f));
+            iconPath.lineTo(x + ((83f * width) / 100f), y + ((58f * height) / 100f));
+            iconPath.lineTo(x + ((83f * width) / 100f), y + height);
+            iconPath.lineTo(x + ((60f * width) / 100f), y + height);
+            iconPath.lineTo(x + ((60f * width) / 100f), y + ((70f * height) / 100f));
+            iconPath.lineTo(x + ((40f * width) / 100f), y + ((70f * height) / 100f));
+            iconPath.lineTo(x + ((40f * width) / 100f), y + height);
+            iconPath.lineTo(x + ((17f * width) / 100f), y + height);
+            iconPath.close();
+            canvas.drawPath(iconPath, iconPaint);
+        }
+        else if (type.toLowerCase().equals("plus"))
+        {
+            iconPath = new Path();
+            iconPath.moveTo(x, y + ((45f * height) / 100f));
+            iconPath.lineTo(x, y + ((55f * height) / 100f));
+            iconPath.lineTo(x + ((45f * width) / 100f), y + ((55f * height) / 100f));
+            iconPath.lineTo(x + ((45f * width) / 100f), y + height);
+            iconPath.lineTo(x + ((55f * width) / 100f), y + height);
+            iconPath.lineTo(x + ((55f * width) / 100f), y + ((55f * height) / 100f));
+            iconPath.lineTo(x + width, y + ((55f * height) / 100f));
+            iconPath.lineTo(x + width, y + ((45f * height) / 100f));
+            iconPath.lineTo(x + ((55f * width) / 100f), y + ((45f * height) / 100f));
+            iconPath.lineTo(x + ((55f * width) / 100f), y);
+            iconPath.lineTo(x + ((45f * width) / 100f), y);
+            iconPath.lineTo(x + ((45f * width) / 100f), y + ((45f * height) / 100f));
+            iconPath.close();
+            canvas.drawPath(iconPath, iconPaint);
+        }
     }
 
     /**
