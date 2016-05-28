@@ -33,16 +33,15 @@ public class Game implements InteractiveView
     private static final float BOARD_Y_PERCENT = 8f / 100f;
     private static final float EXIT_X_PERCENT = 7f / 100f;
     private static final float EXIT_Y_PERCENT = 12f / 100f;
-    private static final float GENERATE_X_PERCENT = 92f / 100f;
-    private static final float GENERATE_Y_PERCENT = 12f / 100f;
-    private static final float RETRY_X_PERCENT = 92f / 100f;
-    private static final float RETRY_Y_PERCENT = 37f / 100f;
-    private static final float HINT_X_PERCENT = 92f / 100f;
-    private static final float HINT_Y_PERCENT = 62f / 100f;
-    private static final float MOVES_PLUS_X_PERCENT = 92f / 100f;
-    private static final float MOVES_PLUS_Y_PERCENT = 12f / 100f;
-    private static final float MOVES_MINUS_X_PERCENT = 92f / 100f;
-    private static final float MOVES_MINUS_Y_PERCENT = 87f / 100f;
+    private static final float BUTTON_X_PERCENT = 92f / 100f;
+    private static final float BUTTON_Y_PERCENT = 12f / 100f;
+    private static final float BUTTON_SPACING_Y_PERCENT = 25f / 100f;
+    private static final float CLOSE_OPTIONS_X_PERCENT = 70f / 100f;
+    private static final float CLOSE_OPTIONS_Y_PERCENT = 20f / 100f;
+    private static final float MOVES_PLUS_X_PERCENT = 60f / 100f;
+    private static final float MOVES_PLUS_Y_PERCENT = 60f / 100f;
+    private static final float MOVES_MINUS_X_PERCENT = 40f / 100f;
+    private static final float MOVES_MINUS_Y_PERCENT = 60f / 100f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
@@ -51,16 +50,39 @@ public class Game implements InteractiveView
     private static int BUTTON_RADIUS;
     private static int EXIT_X;
     private static int EXIT_Y;
-    private static int GENERATE_X;
-    private static int GENERATE_Y;
-    private static int RETRY_X;
-    private static int RETRY_Y;
-    private static int HINT_X;
-    private static int HINT_Y;
+    private static int CLOSE_OPTIONS_X;
+    private static int CLOSE_OPTIONS_Y;
     private static int MOVES_PLUS_X;
     private static int MOVES_PLUS_Y;
     private static int MOVES_MINUS_X;
     private static int MOVES_MINUS_Y;
+    private static int BUTTON_X;
+    private static int BUTTON_1_Y;
+    private static int BUTTON_2_Y;
+    private static int BUTTON_3_Y;
+    private static int BUTTON_4_Y;
+
+    /**
+     * The locations of the various buttons on screen
+     */
+    private int generateX;
+    private int generateY;
+    private int generateOptionsX;
+    private int generateOptionsY;
+    private int retryX;
+    private int retryY;
+    private int hintX;
+    private int hintY;
+
+    /**
+     * The options menu background image
+     */
+    private static Bitmap optionsBackground;
+
+    /**
+     * Flag whether the generate options is open
+     */
+    public boolean optionsOpen;
 
     /**
      * The screen width
@@ -246,18 +268,23 @@ public class Game implements InteractiveView
         BOARD_X = Math.round(BOARD_X_PERCENT * screenWidth);
         BOARD_Y = Math.round(BOARD_Y_PERCENT * screenHeight);
         BUTTON_RADIUS = (int) (Utils.distanceBetweenPoints(0, 0, screenWidth, screenHeight) / 20);
+        BUTTON_X = Math.round(BUTTON_X_PERCENT * screenWidth);
+        BUTTON_1_Y = Math.round(BUTTON_Y_PERCENT * screenHeight);
+        BUTTON_2_Y = Math.round((BUTTON_Y_PERCENT + BUTTON_SPACING_Y_PERCENT) * screenHeight);
+        BUTTON_3_Y = Math.round((BUTTON_Y_PERCENT + (2f * BUTTON_SPACING_Y_PERCENT)) * screenHeight);
+        BUTTON_4_Y = Math.round((BUTTON_Y_PERCENT + (3f * BUTTON_SPACING_Y_PERCENT)) * screenHeight);
         EXIT_X = Math.round(EXIT_X_PERCENT * screenWidth);
         EXIT_Y = Math.round(EXIT_Y_PERCENT * screenHeight);
-        RETRY_X = Math.round(RETRY_X_PERCENT * screenWidth);
-        RETRY_Y = Math.round(RETRY_Y_PERCENT * screenHeight);
-        GENERATE_X = Math.round(GENERATE_X_PERCENT * screenWidth);
-        GENERATE_Y = Math.round(GENERATE_Y_PERCENT * screenHeight);
-        HINT_X = Math.round(HINT_X_PERCENT * screenWidth);
-        HINT_Y = Math.round(HINT_Y_PERCENT * screenHeight);
+        CLOSE_OPTIONS_X = Math.round(CLOSE_OPTIONS_X_PERCENT * screenWidth);
+        CLOSE_OPTIONS_Y = Math.round(CLOSE_OPTIONS_Y_PERCENT * screenHeight);
         MOVES_PLUS_X = Math.round(MOVES_PLUS_X_PERCENT * screenWidth);
         MOVES_PLUS_Y = Math.round(MOVES_PLUS_Y_PERCENT * screenHeight);
         MOVES_MINUS_X = Math.round(MOVES_MINUS_X_PERCENT * screenWidth);
         MOVES_MINUS_Y = Math.round(MOVES_MINUS_Y_PERCENT * screenHeight);
+        retryX = BUTTON_X;
+        generateX = BUTTON_X;
+        generateOptionsX = BUTTON_X;
+        hintX = BUTTON_X;
 
         boundingBoxes = Utils.getBoundingBoxes(HEX_WIDTH, HEX_HEIGHT, BOARD_X, BOARD_Y);
 
@@ -270,6 +297,8 @@ public class Game implements InteractiveView
 
         moveIndices = new ArrayList<Integer>();
         stopIndices = new ArrayList<Integer>();
+
+        optionsOpen = false;
 
         // Setup the paint for text boxes
         textPaint = new Paint();
@@ -305,7 +334,17 @@ public class Game implements InteractiveView
                 boardState = state.getString(MainActivity.STATE_BOARD);
                 initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
                 solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
+                optionsOpen = state.getBoolean(MainActivity.STATE_GAME_OPTIONS_OPEN);
             }
+        }
+
+        if (optionsBackground == null)
+        {
+            optionsBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+            optionsBackground.eraseColor(Color.argb(192, 0, 0, 0));
+            Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS);
         }
 
         // Update UI for levels vs random
@@ -324,22 +363,31 @@ public class Game implements InteractiveView
             /// Lv 1 - Slide the red piece to the middle to win
             /// Lv 2 - Pieces may only slide into other pieces
 
+            generateY = Math.round(2f * screenHeight);
+            generateOptionsY = Math.round(2f * screenHeight);
+            retryY = BUTTON_1_Y;
+            hintY = BUTTON_2_Y;
+
             // Draw only level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
             Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", RETRY_X, RETRY_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", HINT_X, HINT_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", retryX, retryY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "home", hintX, hintY, BUTTON_RADIUS);
         }
         else
         {
+            generateY = BUTTON_1_Y;
+            generateOptionsY = BUTTON_2_Y;
+            retryY = BUTTON_3_Y;
+            hintY = BUTTON_4_Y;
+
             // Draw only non-level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
             Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", RETRY_X, RETRY_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "plus", GENERATE_X, GENERATE_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", HINT_X, HINT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "plus", generateX, generateY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "minus", generateOptionsX, generateOptionsY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "plus", retryX, retryY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "minus", hintX, hintY, BUTTON_RADIUS);
         }
     }
 
@@ -374,6 +422,7 @@ public class Game implements InteractiveView
         drawBoard(canvas);
         drawHighlight(canvas);
         drawObjectsOnBoard(canvas);
+        drawOptionsMenu(canvas);
 
         /// TODO: Remove draw debug down cursor
         Paint paint = new Paint();
@@ -445,7 +494,7 @@ public class Game implements InteractiveView
         {
             case MotionEvent.ACTION_DOWN:
                 tapping = true;
-                if (foundHex != -1)
+                if (!optionsOpen && foundHex != -1)
                 {
                     // Select the hexagon if a piece exists on top of it and its not already selected
                     if(hexSelect != foundHex)
@@ -460,23 +509,25 @@ public class Game implements InteractiveView
                         }
                     }
                 }
-                else // Selecting outside of the board, clear selection
+                else if (!optionsOpen) // Selecting outside of the board, clear selection
                 {
                     hexSelect = -1;
                     moveIndices.clear();
                     stopIndices.clear();
                 }
                 break;
-            case MotionEvent.ACTION_MOVE:
-                /// TODO: Slide response
-                break;
             case MotionEvent.ACTION_UP:
-                if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, GENERATE_X, GENERATE_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, GENERATE_X, GENERATE_Y) < BUTTON_RADIUS)) // Generate New Board
+                if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateX, generateY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateX, generateY) < BUTTON_RADIUS))) // Generate New Board
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     newBoardState();
                 }
-                else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, RETRY_X, RETRY_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, RETRY_X, RETRY_Y) < BUTTON_RADIUS)) // Reset
+                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateOptionsX, generateOptionsY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateOptionsX, generateOptionsY) < BUTTON_RADIUS))) // Open Board Options
+                {
+//                    SoundManager.play(SoundManager.BUTTON);
+                    optionsOpen = true;
+                }
+                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, retryX, retryY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, retryX, retryY) < BUTTON_RADIUS))) // Reset
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     boardState = initialBoardState;
@@ -485,7 +536,7 @@ public class Game implements InteractiveView
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, HINT_X, HINT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, HINT_X, HINT_Y) < BUTTON_RADIUS)) // Step Hint
+                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, hintX, hintY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, hintX, hintY) < BUTTON_RADIUS))) // Step Hint
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     int solutionIndex = solution.indexOf(boardState);
@@ -499,7 +550,12 @@ public class Game implements InteractiveView
                     moveIndices.clear();
                     stopIndices.clear();
                 }
-                else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS)) // Moves minus
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS))) // Close Board Options
+                {
+//                    SoundManager.play(SoundManager.BUTTON);
+                    optionsOpen = false;
+                }
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS))) // Moves minus
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     generationMoves--;
@@ -513,19 +569,19 @@ public class Game implements InteractiveView
 //                        textMovesRangeMax.setText("at most " + String.valueOf(generationMoves) + " move");
 //                    }
                 }
-                else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS)) // Moves plus
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS))) // Moves plus
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     generationMoves++;
                     if (generationMoves > 20) generationMoves = 20;
 //                    textMovesRangeMax.setText("at most " + String.valueOf(generationMoves) + " moves");
                 }
-                else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS)) // Exit game
+                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
                 }
-                else if (foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
+                else if (!optionsOpen && foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
                 {
                     if (moveIndices.indexOf(foundHex) != -1)
                     {
@@ -760,6 +816,7 @@ public class Game implements InteractiveView
             }
             y += (height * 0.5);
         }
+
         // Draw icons and text
         canvas.drawBitmap(iconBitmap, 0, 0, null);
         if (playerWon)
@@ -923,6 +980,20 @@ public class Game implements InteractiveView
                 }
                 Utils.drawHex(canvas, tx, ty, HEX_WIDTH / 2, HEX_HEIGHT / 2, colorValue, HEX_DEPTH / 2, true);
             }
+        }
+    }
+
+    /**
+     * Draws the options menu if it is open.
+     *
+     * @param canvas - The canvas to draw on
+     */
+    private void drawOptionsMenu(Canvas canvas)
+    {
+        // Draw options menu
+        if (optionsOpen)
+        {
+            canvas.drawBitmap(optionsBackground, 0, 0, null);
         }
     }
 

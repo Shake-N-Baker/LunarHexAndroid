@@ -21,6 +21,7 @@ public class MainActivity extends Activity
     public static final String STATE_BOARD = "board";
     public static final String STATE_INITIAL_BOARD = "initialBoard";
     public static final String STATE_SOLUTION = "solution";
+    public static final String STATE_GAME_OPTIONS_OPEN = "gameOptionsOpen";
 
     /**
      * The view of the game.
@@ -71,6 +72,7 @@ public class MainActivity extends Activity
             outState.putString(STATE_BOARD, mainView.game.boardState);
             outState.putString(STATE_INITIAL_BOARD, mainView.game.initialBoardState);
             outState.putStringArrayList(STATE_SOLUTION, mainView.game.solution);
+            outState.putBoolean(STATE_GAME_OPTIONS_OPEN, mainView.game.optionsOpen);
         }
         else
         {
