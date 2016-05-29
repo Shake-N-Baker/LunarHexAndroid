@@ -36,12 +36,16 @@ public class Game implements InteractiveView
     private static final float BUTTON_X_PERCENT = 92f / 100f;
     private static final float BUTTON_Y_PERCENT = 12f / 100f;
     private static final float BUTTON_SPACING_Y_PERCENT = 25f / 100f;
-    private static final float CLOSE_OPTIONS_X_PERCENT = 70f / 100f;
-    private static final float CLOSE_OPTIONS_Y_PERCENT = 20f / 100f;
-    private static final float MOVES_PLUS_X_PERCENT = 60f / 100f;
-    private static final float MOVES_PLUS_Y_PERCENT = 60f / 100f;
-    private static final float MOVES_MINUS_X_PERCENT = 40f / 100f;
-    private static final float MOVES_MINUS_Y_PERCENT = 60f / 100f;
+    private static final float CLOSE_OPTIONS_X_PERCENT = 69f / 100f;
+    private static final float CLOSE_OPTIONS_Y_PERCENT = 27f / 100f;
+    private static final float MOVES_PLUS_X_PERCENT = 62f / 100f;
+    private static final float MOVES_PLUS_Y_PERCENT = 70f / 100f;
+    private static final float MOVES_MINUS_X_PERCENT = 37f / 100f;
+    private static final float MOVES_MINUS_Y_PERCENT = 70f / 100f;
+    private static final float OPTIONS_PANEL_X_PERCENT = 27f / 100f;
+    private static final float OPTIONS_PANEL_Y_PERCENT = 20f / 100f;
+    private static final float OPTIONS_PANEL_WIDTH_PERCENT = 46f / 100f;
+    private static final float OPTIONS_PANEL_HEIGHT_PERCENT = 60f / 100f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
@@ -56,6 +60,10 @@ public class Game implements InteractiveView
     private static int MOVES_PLUS_Y;
     private static int MOVES_MINUS_X;
     private static int MOVES_MINUS_Y;
+    private static int OPTIONS_PANEL_X;
+    private static int OPTIONS_PANEL_Y;
+    private static int OPTIONS_PANEL_WIDTH;
+    private static int OPTIONS_PANEL_HEIGHT;
     private static int BUTTON_X;
     private static int BUTTON_1_Y;
     private static int BUTTON_2_Y;
@@ -83,6 +91,11 @@ public class Game implements InteractiveView
      * Flag whether the generate options is open
      */
     public boolean optionsOpen;
+
+    /**
+     * The rectangle containing the coordinates for the options panel
+     */
+    private Rect optionsPanelRect;
 
     /**
      * The screen width
@@ -126,6 +139,11 @@ public class Game implements InteractiveView
      * The paint used for text
      */
     private Paint textPaint;
+
+    /**
+     * The paint used for the options panel
+     */
+    private Paint optionsPaint;
 
     /// TODO: Remove me!
     private Paint debugPaint;
@@ -281,6 +299,10 @@ public class Game implements InteractiveView
         MOVES_PLUS_Y = Math.round(MOVES_PLUS_Y_PERCENT * screenHeight);
         MOVES_MINUS_X = Math.round(MOVES_MINUS_X_PERCENT * screenWidth);
         MOVES_MINUS_Y = Math.round(MOVES_MINUS_Y_PERCENT * screenHeight);
+        OPTIONS_PANEL_X = Math.round(OPTIONS_PANEL_X_PERCENT * screenWidth);
+        OPTIONS_PANEL_Y = Math.round(OPTIONS_PANEL_Y_PERCENT * screenHeight);
+        OPTIONS_PANEL_WIDTH = Math.round(OPTIONS_PANEL_WIDTH_PERCENT * screenWidth);
+        OPTIONS_PANEL_HEIGHT = Math.round(OPTIONS_PANEL_HEIGHT_PERCENT * screenHeight);
         retryX = BUTTON_X;
         generateX = BUTTON_X;
         generateOptionsX = BUTTON_X;
@@ -299,12 +321,16 @@ public class Game implements InteractiveView
         stopIndices = new ArrayList<Integer>();
 
         optionsOpen = false;
+        optionsPanelRect = new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT);
 
         // Setup the paint for text boxes
         textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
         textPaint.setTextSize(mainView.FONT_SIZE_20_SP);
         textPaint.setTypeface(mainView.LATO_FONT);
+        optionsPaint = new Paint();
+        optionsPaint.setColor(Color.argb(196, 0, 0, 0));
+        optionsPaint.setStyle(Paint.Style.FILL);
         debugPaint = new Paint();
         debugPaint.setColor(Color.GREEN);
         debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
@@ -341,10 +367,12 @@ public class Game implements InteractiveView
         if (optionsBackground == null)
         {
             optionsBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-            optionsBackground.eraseColor(Color.argb(192, 0, 0, 0));
-            Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS);
+            optionsBackground.eraseColor(Color.argb(128, 0, 0, 0));
+            Canvas c = new Canvas(optionsBackground);
+            c.drawRect(new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT), optionsPaint);
+            Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS / 2f);
+            Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS / 2f);
+            Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS / 2f);
         }
 
         // Update UI for levels vs random
@@ -580,6 +608,10 @@ public class Game implements InteractiveView
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
                     mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
+                }
+                else if (optionsOpen && (!optionsPanelRect.contains(Touch.x, Touch.y) && !optionsPanelRect.contains(Touch.downX, Touch.downY))) // Touching outside options panel
+                {
+                    optionsOpen = false;
                 }
                 else if (!optionsOpen && foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
                 {
