@@ -325,7 +325,7 @@ public class Game implements InteractiveView
 
         // Setup the paint for text boxes
         textPaint = new Paint();
-        textPaint.setColor(Color.BLACK);
+        textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(mainView.FONT_SIZE_20_SP);
         textPaint.setTypeface(mainView.LATO_FONT);
         optionsPaint = new Paint();
@@ -399,8 +399,8 @@ public class Game implements InteractiveView
             // Draw only level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
             Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", retryX, retryY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "home", hintX, hintY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "retry", retryX, retryY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
         }
         else
         {
@@ -412,10 +412,10 @@ public class Game implements InteractiveView
             // Draw only non-level icons
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
             Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "plus", generateX, generateY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "minus", generateOptionsX, generateOptionsY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "plus", retryX, retryY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "minus", hintX, hintY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "new", generateX, generateY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "options", generateOptionsX, generateOptionsY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "retry", retryX, retryY, BUTTON_RADIUS);
+            Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
         }
     }
 
@@ -1026,6 +1026,10 @@ public class Game implements InteractiveView
         if (optionsOpen)
         {
             canvas.drawBitmap(optionsBackground, 0, 0, null);
+            canvas.drawText("Newly generated boards", 350, 220, textPaint);
+            canvas.drawText("should be solvable in the", 350, 280, textPaint);
+            canvas.drawText("following move range:", 350, 340, textPaint);
+            canvas.drawText(String.valueOf(generationMoves), 600, 500, textPaint);
         }
     }
 
