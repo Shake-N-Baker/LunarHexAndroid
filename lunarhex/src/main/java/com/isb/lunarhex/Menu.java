@@ -115,16 +115,6 @@ public class Menu implements InteractiveView
     MainView mainView;
 
     /**
-     * The screen width
-     */
-    private int screenWidth;
-
-    /**
-     * The screen height
-     */
-    private int screenHeight;
-
-    /**
      * List of levels, each level is a list of colors, each color is a list of x, y, color value.
      */
     private List<List<List<Integer>>> boards;
@@ -271,12 +261,61 @@ public class Menu implements InteractiveView
     public Menu(MainView main, int screenWidth, int screenHeight, Bitmap background, List<String> mainBoards)
     {
         this.mainView = main;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
         this.background = background;
 
         parseBoards(mainBoards);
 
+        // Setup the paints used for text
+        titlePaint = new Paint();
+        titlePaint.setColor(Color.argb(255, 255, 255, 255));
+        titlePaint.setTextSize(MainView.FONT_SIZE_60_SP);
+        titlePaint.setTypeface(MainView.LATO_HEAVY_FONT);
+        textPaint = new Paint();
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
+        textPaint.setTypeface(MainView.LATO_FONT);
+        circlePaint = new Paint();
+        circlePaint.setColor(Color.argb(255, 168, 183, 225));
+        circlePaint.setStyle(Paint.Style.STROKE);
+        circlePaint.setStrokeWidth(5f);
+        circleFilledPaint = new Paint();
+        circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
+        circleFilledPaint.setStyle(Paint.Style.FILL);
+        hamburgerMenuPaint = new Paint();
+        hamburgerMenuPaint.setColor(Color.argb(255, 255, 255, 255));
+        hamburgerMenuPaint.setStyle(Paint.Style.STROKE);
+        hamburgerMenuPaint.setStrokeWidth(12f);
+        hamburgerMenuPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        // Setup the screen offset and dragging variables
+        screenOffset = 0;
+        dragging = false;
+        dragVelocity = 0;
+        dragOffsetStart = screenOffset;
+        dragDuration = 0;
+        dragPathX = new ArrayList<Integer>();
+        for (int i = 0; i < 15; i++)
+        {
+            dragPathX.add(0);
+        }
+
+        hamburgerMenuOpen = false;
+        soundVolume = PlayerData.getSoundVolume();
+        musicVolume = PlayerData.getMusicVolume();
+        levelClearStates = PlayerData.getLevelClearStates();
+
+        setSize(screenWidth, screenHeight);
+    }
+
+    /**
+     * Sets the sizes of the elements in the menu based on
+     * the screen dimensions.
+     *
+     * @param   screenWidth - The screen width
+     * @param   screenHeight - The screen height
+     */
+    public void setSize(int screenWidth, int screenHeight)
+    {
         // Calculate the values based on screen measurements
         TITLE_Y = Math.round(TITLE_Y_PERCENT * screenHeight);
         HAMBURGER_MENU_X = Math.round(HAMBURGER_MENU_X_PERCENT * screenWidth);
@@ -319,28 +358,7 @@ public class Menu implements InteractiveView
             DRAG_VELOCITY_RESISTANCE_X = 1;
         }
 
-        // Setup the paints used for text
-        titlePaint = new Paint();
-        titlePaint.setColor(Color.argb(255, 255, 255, 255));
-        titlePaint.setTextSize(MainView.FONT_SIZE_60_SP);
-        titlePaint.setTypeface(MainView.LATO_HEAVY_FONT);
-        textPaint = new Paint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(MainView.FONT_SIZE_20_SP);
-        textPaint.setTypeface(MainView.LATO_FONT);
-        circlePaint = new Paint();
-        circlePaint.setColor(Color.argb(255, 168, 183, 225));
-        circlePaint.setStyle(Paint.Style.STROKE);
-        circlePaint.setStrokeWidth(5f);
-        circleFilledPaint = new Paint();
-        circleFilledPaint.setColor(Color.argb(255, 255, 255, 255));
-        circleFilledPaint.setStyle(Paint.Style.FILL);
-        hamburgerMenuPaint = new Paint();
-        hamburgerMenuPaint.setColor(Color.argb(255, 255, 255, 255));
-        hamburgerMenuPaint.setStyle(Paint.Style.STROKE);
-        hamburgerMenuPaint.setStrokeWidth(12f);
-        hamburgerMenuPaint.setStrokeCap(Paint.Cap.ROUND);
-
+        // Center the title text on the screen
         Rect temp = new Rect();
         titlePaint.getTextBounds(TITLE_TEXT, 0, TITLE_TEXT.length(), temp);
         TITLE_X = Math.round((float) screenWidth / 2f) - Math.round((float) temp.width() / 2f);
@@ -367,28 +385,9 @@ public class Menu implements InteractiveView
         textPaint.getTextBounds(CREATED_BY_TEXT, 0, CREATED_BY_TEXT.length(), temp);
         hamburgerTextSpacingY = (int) (temp.height() * 1.6f);
 
-        // Setup the screen offset and dragging variables
-        screenOffset = 0;
-        dragging = false;
-        dragVelocity = 0;
-        dragOffsetStart = screenOffset;
-        dragDuration = 0;
-        dragPathX = new ArrayList<Integer>();
-        for (int i = 0; i < 15; i++)
-        {
-            dragPathX.add(0);
-        }
-
-        hamburgerMenuOpen = false;
-        soundVolume = PlayerData.getSoundVolume();
-        musicVolume = PlayerData.getMusicVolume();
-        levelClearStates = PlayerData.getLevelClearStates();
-
-        if (hamburgerBackground == null)
-        {
-            hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-            hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
-        }
+        // Generate the hamburger menu tinted background
+        hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
     }
 
     /**
@@ -476,7 +475,7 @@ public class Menu implements InteractiveView
                             hamburgerMenuOpen = true;
                         }
                     }
-                    if (dragDuration < 15)
+                    if (dragDuration < 12)
                     {
                         if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
                         {
