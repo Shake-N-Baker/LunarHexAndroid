@@ -79,7 +79,7 @@ public class MainView extends SurfaceView implements Runnable
     /**
      * The background image
      */
-    private static Bitmap background;
+    public static Bitmap background;
 
     /// TODO: Remove debug FPS tracking variable
     /**
@@ -137,8 +137,8 @@ public class MainView extends SurfaceView implements Runnable
         generateBackground(SCREEN_WIDTH, SCREEN_HEIGHT);
 
         // Setup Game and Menu
-        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet, boardSet, state);
-        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, background, mainBoardSet);
+        game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet, state);
+        menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet);
 
         String savedView = "menu";
         if(state != null)
@@ -356,10 +356,7 @@ public class MainView extends SurfaceView implements Runnable
      */
     private void generateBackground(int screenWidth, int screenHeight)
     {
-        if (background == null)
-        {
-            background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
-        }
+        background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
         Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 }

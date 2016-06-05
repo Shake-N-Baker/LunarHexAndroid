@@ -108,6 +108,8 @@ public class Menu implements InteractiveView
     private static int TRANSITION_DISTANCE_X;
     private static int MAX_DRAG_VELOCITY_X;
     private static int DRAG_VELOCITY_RESISTANCE_X;
+    private static int DRAG_VELOCITY_JUMP_1_LEVEL;
+    private static int DRAG_VELOCITY_JUMP_2_LEVELS;
 
     /**
      * Reference to the main view.
@@ -118,11 +120,6 @@ public class Menu implements InteractiveView
      * List of levels, each level is a list of colors, each color is a list of x, y, color value.
      */
     private List<List<List<Integer>>> boards;
-
-    /**
-     * The background image
-     */
-    private static Bitmap background;
 
     /**
      * The hamburger menu shading background image
@@ -255,13 +252,11 @@ public class Menu implements InteractiveView
      * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
-     * @param   background - The background image to be used
      * @param   mainBoards - The set of main boards
      */
-    public Menu(MainView main, int screenWidth, int screenHeight, Bitmap background, List<String> mainBoards)
+    public Menu(MainView main, int screenWidth, int screenHeight, List<String> mainBoards)
     {
         this.mainView = main;
-        this.background = background;
 
         parseBoards(mainBoards);
 
@@ -357,6 +352,24 @@ public class Menu implements InteractiveView
         {
             DRAG_VELOCITY_RESISTANCE_X = 1;
         }
+        int sum = 0;
+        int goal = LEVELS_SPACING_X;
+        int velocity = 0;
+        while (sum < goal)
+        {
+            velocity += DRAG_VELOCITY_RESISTANCE_X;
+            sum += velocity;
+        }
+        velocity -= DRAG_VELOCITY_RESISTANCE_X;
+        DRAG_VELOCITY_JUMP_1_LEVEL = velocity;
+        goal *= 2;
+        while (sum < goal)
+        {
+            velocity += DRAG_VELOCITY_RESISTANCE_X;
+            sum += velocity;
+        }
+        velocity -= DRAG_VELOCITY_RESISTANCE_X;
+        DRAG_VELOCITY_JUMP_2_LEVELS = velocity;
 
         // Center the title text on the screen
         Rect temp = new Rect();
@@ -522,19 +535,19 @@ public class Menu implements InteractiveView
                                             nothingClicked = false;
                                             if (i == 0)
                                             {
-                                                dragVelocity = (int) (-MAX_DRAG_VELOCITY_X / 3.2f);
+                                                dragVelocity = -DRAG_VELOCITY_JUMP_2_LEVELS;
                                             }
                                             else if (i == 1)
                                             {
-                                                dragVelocity = (int) (-MAX_DRAG_VELOCITY_X / 4.5f);
+                                                dragVelocity = -DRAG_VELOCITY_JUMP_1_LEVEL;
                                             }
                                             else if (i == 2)
                                             {
-                                                dragVelocity = (int) (MAX_DRAG_VELOCITY_X / 4.5f);
+                                                dragVelocity = DRAG_VELOCITY_JUMP_1_LEVEL;
                                             }
                                             else if (i == 3)
                                             {
-                                                dragVelocity = (int) (MAX_DRAG_VELOCITY_X / 3.2f);
+                                                dragVelocity = DRAG_VELOCITY_JUMP_2_LEVELS;
                                             }
                                         }
                                     }
@@ -716,7 +729,7 @@ public class Menu implements InteractiveView
 
         // Draw the background shifted to a smaller degree
         canvas.translate(-1 * (screenOffset / BACKGROUND_OFFSET_DAMPENING_MAGNITUDE), 0);
-        canvas.drawBitmap(background, 0, 0, null);
+        canvas.drawBitmap(MainView.background, 0, 0, null);
 
         // Draw elements fixed in place on the screen
         canvas.restoreToCount(defaultMatrix);

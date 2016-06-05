@@ -125,11 +125,6 @@ public class Game implements InteractiveView
     private static int SLIDE_FRAMES = 20;
 
     /**
-     * The background image
-     */
-    private static Bitmap background;
-
-    /**
      * Boolean for ignoring the current touch event, used when a slide animation occurs to ignore
      * all events until the next touch down event.
      */
@@ -267,17 +262,15 @@ public class Game implements InteractiveView
      * @param   main - The reference to the main view
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
-     * @param   background - The background image to use
      * @param   mainBoardSet - The set of main boards
      * @param   boardSet - The set of random boards
      * @param   state - The bundle state of the game
      */
-    public Game(MainView main, int screenWidth, int screenHeight, Bitmap background, List<String> mainBoardSet, List<List<String>> boardSet, Bundle state)
+    public Game(MainView main, int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet, Bundle state)
     {
         this.mainView = main;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
-        this.background = background;
         this.mainBoardSet = mainBoardSet;
         this.boardSet = boardSet;
         HEX_WIDTH = Math.round(HEX_WIDTH_PERCENT * screenWidth);
@@ -805,7 +798,7 @@ public class Game implements InteractiveView
 
         // Draw the background shifted based on the current level
         canvas.translate(-1 * getBackgroundOffset(), 0);
-        canvas.drawBitmap(background, 0, 0, null);
+        canvas.drawBitmap(MainView.background, 0, 0, null);
 
         // Remove the translation shift before drawing the rest of the game
         canvas.restoreToCount(defaultMatrix);
