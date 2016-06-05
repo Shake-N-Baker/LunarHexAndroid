@@ -31,6 +31,7 @@ public class MainView extends SurfaceView implements Runnable
      * Constants
      */
     private static final int FRAME_RATE = 60;
+    private static final int DIMENSIONS_CHECK_FRAME = 10;
     public static final int TRANSITION_FRAMES = 10;
     public static int FONT_SIZE_20_SP;
     public static int FONT_SIZE_30_SP;
@@ -81,6 +82,11 @@ public class MainView extends SurfaceView implements Runnable
      */
     public static Bitmap background;
 
+    /**
+     * The total number of frames/cycles that have transpired
+     */
+    private int totalFrames;
+
     /// TODO: Remove debug FPS tracking variable
     /**
      * Float measurement of the frames per second
@@ -110,6 +116,7 @@ public class MainView extends SurfaceView implements Runnable
         super(context, attrs);
         MS_PER_CYCLE = 1000 / FRAME_RATE;
         holder = getHolder();
+        totalFrames = 0;
 
         // Set up fonts
         FONT_SIZE_20_SP = getContext().getResources().getDimensionPixelSize(R.dimen.font_size_20);
@@ -298,6 +305,7 @@ public class MainView extends SurfaceView implements Runnable
      */
     private void cycle()
     {
+        checkResize();
         Canvas canvas = holder.lockCanvas();
         view.update(canvas, framesPerSecond);
         holder.unlockCanvasAndPost(canvas);
@@ -346,6 +354,30 @@ public class MainView extends SurfaceView implements Runnable
             view = menu;
         }
         view.startFadeIn();
+    }
+
+    /**
+     * Checks and updates the game and menu if the dimensions of
+     * the screen were not initially accurate.
+     */
+    private void checkResize()
+    {
+        totalFrames++;
+        if (totalFrames == DIMENSIONS_CHECK_FRAME)
+        {
+            DisplayMetrics dm = getContext().getResources().getDisplayMetrics();
+            int height = dm.heightPixels;
+            int width = dm.widthPixels;
+            if (width != SCREEN_WIDTH || height != SCREEN_HEIGHT)
+            {
+                // Resize the game and menu
+                SCREEN_WIDTH = width;
+                SCREEN_HEIGHT = height;
+                generateBackground(width, height);
+                menu.setSize(width, height);
+                game.setSize(width, height);
+            }
+        }
     }
 
     /**

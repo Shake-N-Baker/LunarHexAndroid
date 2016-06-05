@@ -269,10 +269,68 @@ public class Game implements InteractiveView
     public Game(MainView main, int screenWidth, int screenHeight, List<String> mainBoardSet, List<List<String>> boardSet, Bundle state)
     {
         this.mainView = main;
-        this.screenWidth = screenWidth;
-        this.screenHeight = screenHeight;
         this.mainBoardSet = mainBoardSet;
         this.boardSet = boardSet;
+
+        solution = new ArrayList<String>();
+        slideFrame = 0;
+        slideStart = -1;
+        slideEnd = -1;
+        slideDirection = -1;
+        moving = false;
+
+        moveIndices = new ArrayList<Integer>();
+        stopIndices = new ArrayList<Integer>();
+
+        optionsOpen = false;
+
+        // Setup the paint for text boxes
+        textPaint = new Paint();
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(mainView.FONT_SIZE_20_SP);
+        textPaint.setTypeface(mainView.LATO_FONT);
+        optionsPaint = new Paint();
+        optionsPaint.setColor(Color.argb(196, 0, 0, 0));
+        optionsPaint.setStyle(Paint.Style.FILL);
+        debugPaint = new Paint();
+        debugPaint.setColor(Color.GREEN);
+        debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
+        debugPaint.setTypeface(mainView.LATO_FONT);
+
+        // Reload the bundle state if the app was on the game view prior to going to the background or similar event
+        if(state != null)
+        {
+            String savedView = state.getString(MainActivity.STATE_VIEW);
+            if (savedView.equals("game"))
+            {
+                // Reload the bundle state, re-setup all variables involved in tracking the state
+                currentLevel = state.getInt(MainActivity.STATE_LEVEL);
+                currentMove = state.getInt(MainActivity.STATE_MOVES_TAKEN);
+                shortestMoves = state.getInt(MainActivity.STATE_SHORTEST_MOVES);
+                boardState = state.getString(MainActivity.STATE_BOARD);
+                initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
+                solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
+                optionsOpen = state.getBoolean(MainActivity.STATE_GAME_OPTIONS_OPEN);
+            }
+        }
+
+        setSize(screenWidth, screenHeight);
+
+        // Update UI for levels vs random
+        updateUIState();
+    }
+
+    /**
+     * Sets the sizes of the elements in the game based on
+     * the screen dimensions.
+     *
+     * @param   screenWidth - The screen width
+     * @param   screenHeight - The screen height
+     */
+    public void setSize(int screenWidth, int screenHeight)
+    {
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
         HEX_WIDTH = Math.round(HEX_WIDTH_PERCENT * screenWidth);
         HEX_HEIGHT = Math.round(HEX_HEIGHT_PERCENT * screenHeight);
         HEX_DEPTH = Math.round(HEX_HEIGHT / 10.0f);
@@ -302,32 +360,7 @@ public class Game implements InteractiveView
         hintX = BUTTON_X;
 
         boundingBoxes = Utils.getBoundingBoxes(HEX_WIDTH, HEX_HEIGHT, BOARD_X, BOARD_Y);
-
-        solution = new ArrayList<String>();
-        slideFrame = 0;
-        slideStart = -1;
-        slideEnd = -1;
-        slideDirection = -1;
-        moving = false;
-
-        moveIndices = new ArrayList<Integer>();
-        stopIndices = new ArrayList<Integer>();
-
-        optionsOpen = false;
         optionsPanelRect = new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT);
-
-        // Setup the paint for text boxes
-        textPaint = new Paint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(mainView.FONT_SIZE_20_SP);
-        textPaint.setTypeface(mainView.LATO_FONT);
-        optionsPaint = new Paint();
-        optionsPaint.setColor(Color.argb(196, 0, 0, 0));
-        optionsPaint.setStyle(Paint.Style.FILL);
-        debugPaint = new Paint();
-        debugPaint.setColor(Color.GREEN);
-        debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
-        debugPaint.setTypeface(mainView.LATO_FONT);
 
         // Construct checking hex to compare taps to when determining which hexagon is selected
         hexCheck = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -335,41 +368,15 @@ public class Game implements InteractiveView
         Utils.drawHex(temp, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFF0000, 0, false);
 
         // Generate the icon bitmap to draw all the icons at once
-        if (iconBitmap == null)
-        {
-            iconBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-        }
+        iconBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
 
-        // Reload the bundle state if the app was on the game view prior to going to the background or similar event
-        if(state != null)
-        {
-            String savedView = state.getString(MainActivity.STATE_VIEW);
-            if (savedView.equals("game"))
-            {
-                // Reload the bundle state, re-setup all variables involved in tracking the state
-                currentLevel = state.getInt(MainActivity.STATE_LEVEL);
-                currentMove = state.getInt(MainActivity.STATE_MOVES_TAKEN);
-                shortestMoves = state.getInt(MainActivity.STATE_SHORTEST_MOVES);
-                boardState = state.getString(MainActivity.STATE_BOARD);
-                initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
-                solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
-                optionsOpen = state.getBoolean(MainActivity.STATE_GAME_OPTIONS_OPEN);
-            }
-        }
-
-        if (optionsBackground == null)
-        {
-            optionsBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
-            optionsBackground.eraseColor(Color.argb(128, 0, 0, 0));
-            Canvas c = new Canvas(optionsBackground);
-            c.drawRect(new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT), optionsPaint);
-            Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS / 2f);
-            Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS / 2f);
-            Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS / 2f);
-        }
-
-        // Update UI for levels vs random
-        updateUIState();
+        optionsBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        optionsBackground.eraseColor(Color.argb(128, 0, 0, 0));
+        Canvas c = new Canvas(optionsBackground);
+        c.drawRect(new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT), optionsPaint);
+        Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS / 2f);
     }
 
     /**
