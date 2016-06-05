@@ -195,6 +195,11 @@ public class Menu implements InteractiveView
     private List<Integer> dragPathX;
 
     /**
+     * Tracks how long the drag touch event has gone on
+     */
+    private int dragDuration;
+
+    /**
      * Flag whether the player is dragging his finger across the screen
      */
     private boolean dragging;
@@ -367,6 +372,7 @@ public class Menu implements InteractiveView
         dragging = false;
         dragVelocity = 0;
         dragOffsetStart = screenOffset;
+        dragDuration = 0;
         dragPathX = new ArrayList<Integer>();
         for (int i = 0; i < 15; i++)
         {
@@ -455,6 +461,7 @@ public class Menu implements InteractiveView
             {
                 int tX = Touch.x + screenOffset;
                 int tDownX = Touch.downX + screenOffset;
+                float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
 
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP)
                 {
@@ -469,34 +476,70 @@ public class Menu implements InteractiveView
                             hamburgerMenuOpen = true;
                         }
                     }
-                    if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                    if (dragDuration < 15)
                     {
-                        if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                        if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
                         {
-                            // Clicked the selection circle
-                            nothingClicked = false;
-                            int level = screenOffset / LEVELS_SPACING_X;
-                            if (screenOffset % LEVELS_SPACING_X > (LEVELS_SPACING_X / 2))
+                            if (Utils.distanceBetweenPoints(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
                             {
-                                level++;
+                                // Clicked the selection circle
+                                nothingClicked = false;
+                                if (Math.round(viewingLevel) == 0)
+                                {
+                                    // Random level
+                                    dragVelocity = 0;
+                                    fadingOut = true;
+                                    fadeFrame = MainView.TRANSITION_FRAMES;
+                                    fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
+                                }
+                                else
+                                {
+                                    // Play selected level
+                                    dragVelocity = 0;
+                                    fadingOut = true;
+                                    fadeFrame = MainView.TRANSITION_FRAMES;
+                                    fadeOutEvent = new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(Math.round(viewingLevel) - 1));
+                                }
                             }
-                            if (level == 0)
+                        }
+                        if (dragVelocity == 0 && (((viewingLevel - Math.round(viewingLevel)) < 0.2f) || ((viewingLevel - Math.round(viewingLevel)) > 0.8f)))
+                        {
+                            // Check for tapping levels on the sides when not moving and near centered
+                            for (int i = 0; i < 4; i++)
                             {
-                                // Random level
-                                dragVelocity = 0;
-                                dragging = false;
-                                fadingOut = true;
-                                fadeFrame = MainView.TRANSITION_FRAMES;
-                                fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
-                            }
-                            else
-                            {
-                                // Play selected level
-                                dragVelocity = 0;
-                                dragging = false;
-                                fadingOut = true;
-                                fadeFrame = MainView.TRANSITION_FRAMES;
-                                fadeOutEvent = new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(level - 1));
+                                int levelOffset = i;
+                                if (i == 2 || i == 3)
+                                {
+                                    levelOffset += 1;
+                                }
+                                if ((0 <= (Math.round(viewingLevel) + levelOffset - 2)) && ((Math.round(viewingLevel) + levelOffset - 2) <= 30))
+                                {
+                                    int x = SELECTION_CIRCLE_X + ((levelOffset - 2) * LEVELS_SPACING_X);
+                                    if (Utils.distanceBetweenPoints(x, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)
+                                    {
+                                        if (Utils.distanceBetweenPoints(x, SELECTION_CIRCLE_Y, Touch.downX, Touch.downY) < SELECTION_CIRCLE_RADIUS)
+                                        {
+                                            // Tapped one of the side levels, move the level to the center
+                                            nothingClicked = false;
+                                            if (i == 0)
+                                            {
+                                                dragVelocity = (int) (-MAX_DRAG_VELOCITY_X / 3.2f);
+                                            }
+                                            else if (i == 1)
+                                            {
+                                                dragVelocity = (int) (-MAX_DRAG_VELOCITY_X / 4.5f);
+                                            }
+                                            else if (i == 2)
+                                            {
+                                                dragVelocity = (int) (MAX_DRAG_VELOCITY_X / 4.5f);
+                                            }
+                                            else if (i == 3)
+                                            {
+                                                dragVelocity = (int) (MAX_DRAG_VELOCITY_X / 3.2f);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -529,6 +572,7 @@ public class Menu implements InteractiveView
                     if (!dragging)
                     {
                         // Start of a drag event, record the screen offset, reset the path
+                        dragDuration = 0;
                         dragOffsetStart = screenOffset;
                         for (int i = 0; i < dragPathX.size(); i++)
                         {
@@ -652,6 +696,7 @@ public class Menu implements InteractiveView
             // Update the recent dragging path
             dragPathX.add(0, Touch.x);
             dragPathX.remove(dragPathX.size() - 1);
+            dragDuration += 1;
         }
 
         // Draw the menu
