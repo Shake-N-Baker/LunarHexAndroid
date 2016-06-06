@@ -43,9 +43,9 @@ public class Game implements InteractiveView
     private static final float CLOSE_OPTIONS_X_PERCENT = 69f / 100f;
     private static final float CLOSE_OPTIONS_Y_PERCENT = 27f / 100f;
     private static final float MOVES_PLUS_X_PERCENT = 62f / 100f;
-    private static final float MOVES_PLUS_Y_PERCENT = 70f / 100f;
     private static final float MOVES_MINUS_X_PERCENT = 37f / 100f;
-    private static final float MOVES_MINUS_Y_PERCENT = 70f / 100f;
+    private static final float MOVES_MIN_Y_PERCENT = 70f / 100f;
+    private static final float MOVES_MAX_Y_PERCENT = 53f / 100f;
     private static final float OPTIONS_PANEL_X_PERCENT = 27f / 100f;
     private static final float OPTIONS_PANEL_Y_PERCENT = 20f / 100f;
     private static final float OPTIONS_PANEL_WIDTH_PERCENT = 46f / 100f;
@@ -65,9 +65,9 @@ public class Game implements InteractiveView
     private static int CLOSE_OPTIONS_X;
     private static int CLOSE_OPTIONS_Y;
     private static int MOVES_PLUS_X;
-    private static int MOVES_PLUS_Y;
     private static int MOVES_MINUS_X;
-    private static int MOVES_MINUS_Y;
+    private static int MOVES_MIN_Y;
+    private static int MOVES_MAX_Y;
     private static int OPTIONS_PANEL_X;
     private static int OPTIONS_PANEL_Y;
     private static int OPTIONS_PANEL_WIDTH;
@@ -80,6 +80,10 @@ public class Game implements InteractiveView
     private static int OPTIONS_PANEL_TEXT_MAX_Y;
     private static int OPTIONS_PANEL_TEXT_MIN_X;
     private static int OPTIONS_PANEL_TEXT_MIN_Y;
+    private static int OPTIONS_PANEL_VALUE_X;
+    private static int OPTIONS_PANEL_VALUE_2_DIGIT_X;
+    private static int OPTIONS_PANEL_VALUE_MAX_Y;
+    private static int OPTIONS_PANEL_VALUE_MIN_Y;
     private static int BUTTON_X;
     private static int BUTTON_1_Y;
     private static int BUTTON_2_Y;
@@ -232,9 +236,14 @@ public class Game implements InteractiveView
     private String slideToBoard;
 
     /**
-     * The number of moves (shortest path) a newly generated board will take
+     * The minimum number of moves (shortest path) a newly generated board will take
      */
-    private int generationMoves = 4;
+    public int generationMinMoves = 4;
+
+    /**
+     * The maximum number of moves (shortest path) a newly generated board will take
+     */
+    public int generationMaxMoves = 8;
 
     /**
      * The current level that the player is on (zero based) or -1 if random
@@ -327,6 +336,8 @@ public class Game implements InteractiveView
                 initialBoardState = state.getString(MainActivity.STATE_INITIAL_BOARD);
                 solution = state.getStringArrayList(MainActivity.STATE_SOLUTION);
                 optionsOpen = state.getBoolean(MainActivity.STATE_GAME_OPTIONS_OPEN);
+                generationMaxMoves = state.getInt(MainActivity.STATE_GENERATE_MAX_SOLVE);
+                generationMinMoves = state.getInt(MainActivity.STATE_GENERATE_MIN_SOLVE);
             }
         }
 
@@ -363,9 +374,9 @@ public class Game implements InteractiveView
         CLOSE_OPTIONS_X = Math.round(CLOSE_OPTIONS_X_PERCENT * screenWidth);
         CLOSE_OPTIONS_Y = Math.round(CLOSE_OPTIONS_Y_PERCENT * screenHeight);
         MOVES_PLUS_X = Math.round(MOVES_PLUS_X_PERCENT * screenWidth);
-        MOVES_PLUS_Y = Math.round(MOVES_PLUS_Y_PERCENT * screenHeight);
         MOVES_MINUS_X = Math.round(MOVES_MINUS_X_PERCENT * screenWidth);
-        MOVES_MINUS_Y = Math.round(MOVES_MINUS_Y_PERCENT * screenHeight);
+        MOVES_MIN_Y = Math.round(MOVES_MIN_Y_PERCENT * screenHeight);
+        MOVES_MAX_Y = Math.round(MOVES_MAX_Y_PERCENT * screenHeight);
         OPTIONS_PANEL_X = Math.round(OPTIONS_PANEL_X_PERCENT * screenWidth);
         OPTIONS_PANEL_Y = Math.round(OPTIONS_PANEL_Y_PERCENT * screenHeight);
         OPTIONS_PANEL_WIDTH = Math.round(OPTIONS_PANEL_WIDTH_PERCENT * screenWidth);
@@ -383,6 +394,12 @@ public class Game implements InteractiveView
         textPaint.getTextBounds(OPTIONS_MINIMUM, 0, OPTIONS_MINIMUM.length(), tempRect);
         OPTIONS_PANEL_TEXT_MIN_X = Math.round(0.5f * screenWidth) - Math.round(tempRect.width() / 2f);
         OPTIONS_PANEL_TEXT_MIN_Y = Math.round(OPTIONS_PANEL_TEXT_MIN_Y_PERCENT * screenHeight);
+        textPaint.getTextBounds("1", 0, "1".length(), tempRect);
+        OPTIONS_PANEL_VALUE_X = MOVES_MINUS_X + (int) ((MOVES_PLUS_X - MOVES_MINUS_X) / 2f) - (int) (tempRect.width() / 2f);
+        textPaint.getTextBounds("20", 0, "20".length(), tempRect);
+        OPTIONS_PANEL_VALUE_2_DIGIT_X = MOVES_MINUS_X + (int) ((MOVES_PLUS_X - MOVES_MINUS_X) / 2f) - (int) (tempRect.width() / 2f);
+        OPTIONS_PANEL_VALUE_MAX_Y = MOVES_MAX_Y + (int) (tempRect.height() / 2f);
+        OPTIONS_PANEL_VALUE_MIN_Y = MOVES_MIN_Y + (int) (tempRect.height() / 2f);
         retryX = BUTTON_X;
         generateX = BUTTON_X;
         generateOptionsX = BUTTON_X;
@@ -403,8 +420,10 @@ public class Game implements InteractiveView
         optionsBackground.eraseColor(Color.argb(128, 0, 0, 0));
         Canvas c = new Canvas(optionsBackground);
         c.drawRect(new Rect(OPTIONS_PANEL_X, OPTIONS_PANEL_Y, OPTIONS_PANEL_X + OPTIONS_PANEL_WIDTH, OPTIONS_PANEL_Y + OPTIONS_PANEL_HEIGHT), optionsPaint);
-        Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_PLUS_Y, BUTTON_RADIUS / 2f);
-        Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MINUS_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_MIN_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MIN_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_MAX_Y, BUTTON_RADIUS / 2f);
+        Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MAX_Y, BUTTON_RADIUS / 2f);
         Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS / 2f);
     }
 
@@ -459,7 +478,7 @@ public class Game implements InteractiveView
         }
         else
         {
-            randomBoardState(generationMoves, generationMoves);
+            randomBoardState(generationMinMoves, generationMaxMoves);
         }
         updateUIState();
     }
@@ -612,26 +631,49 @@ public class Game implements InteractiveView
 //                    SoundManager.play(SoundManager.BUTTON);
                     optionsOpen = false;
                 }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MINUS_Y) < BUTTON_RADIUS))) // Moves minus
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
-                    generationMoves--;
-                    if (generationMoves < 1) generationMoves = 1;
-//                    if (generationMoves > 1)
-//                    {
-//                        textMovesRangeMax.setText("at most " + String.valueOf(generationMoves) + " moves");
-//                    }
-//                    else
-//                    {
-//                        textMovesRangeMax.setText("at most " + String.valueOf(generationMoves) + " move");
-//                    }
+                    generationMinMoves--;
+                    if (generationMinMoves < 1)
+                    {
+                        generationMinMoves = 1;
+                    }
                 }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_PLUS_Y) < BUTTON_RADIUS))) // Moves plus
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
                 {
 //                    SoundManager.play(SoundManager.BUTTON);
-                    generationMoves++;
-                    if (generationMoves > 20) generationMoves = 20;
-//                    textMovesRangeMax.setText("at most " + String.valueOf(generationMoves) + " moves");
+                    generationMinMoves++;
+                    if (generationMinMoves > 20)
+                    {
+                        generationMinMoves = 20;
+                    }
+                    if (generationMaxMoves < generationMinMoves)
+                    {
+                        generationMaxMoves = generationMinMoves;
+                    }
+                }
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
+                {
+//                    SoundManager.play(SoundManager.BUTTON);
+                    generationMaxMoves--;
+                    if (generationMaxMoves < 1)
+                    {
+                        generationMaxMoves = 1;
+                    }
+                    if (generationMaxMoves < generationMinMoves)
+                    {
+                        generationMinMoves = generationMaxMoves;
+                    }
+                }
+                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
+                {
+//                    SoundManager.play(SoundManager.BUTTON);
+                    generationMaxMoves++;
+                    if (generationMaxMoves > 20)
+                    {
+                        generationMaxMoves = 20;
+                    }
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
                 {
@@ -1059,7 +1101,22 @@ public class Game implements InteractiveView
             canvas.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
             canvas.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
             canvas.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
-            canvas.drawText(String.valueOf(generationMoves), MOVES_MINUS_X + ((MOVES_PLUS_X - MOVES_MINUS_X) / 2f), MOVES_PLUS_Y, textPaint);
+            if (generationMaxMoves > 9)
+            {
+                canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
+            }
+            else
+            {
+                canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
+            }
+            if (generationMinMoves > 9)
+            {
+                canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
+            }
+            else
+            {
+                canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
+            }
         }
     }
 
