@@ -27,6 +27,10 @@ public class Game implements InteractiveView
     /**
      * Constants
      */
+    private static final String OPTIONS_TITLE_1 = "NEW BOARDS";
+    private static final String OPTIONS_TITLE_2 = "SOLVABLE IN";
+    private static final String OPTIONS_MAXIMUM = "MAXIMUM MOVES:";
+    private static final String OPTIONS_MINIMUM = "MINIMUM MOVES:";
     private static final float HEX_WIDTH_PERCENT = 18f / 100f;
     private static final float HEX_HEIGHT_PERCENT = 14f / 100f;
     private static final float BOARD_X_PERCENT = 14f / 100f;
@@ -46,6 +50,10 @@ public class Game implements InteractiveView
     private static final float OPTIONS_PANEL_Y_PERCENT = 20f / 100f;
     private static final float OPTIONS_PANEL_WIDTH_PERCENT = 46f / 100f;
     private static final float OPTIONS_PANEL_HEIGHT_PERCENT = 60f / 100f;
+    private static final float OPTIONS_PANEL_TEXT_TITLE_1_Y_PERCENT = 30f / 100f;
+    private static final float OPTIONS_PANEL_TEXT_TITLE_2_Y_PERCENT = 38f / 100f;
+    private static final float OPTIONS_PANEL_TEXT_MAX_Y_PERCENT = 47f / 100f;
+    private static final float OPTIONS_PANEL_TEXT_MIN_Y_PERCENT = 63f / 100f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
@@ -64,6 +72,14 @@ public class Game implements InteractiveView
     private static int OPTIONS_PANEL_Y;
     private static int OPTIONS_PANEL_WIDTH;
     private static int OPTIONS_PANEL_HEIGHT;
+    private static int OPTIONS_PANEL_TEXT_TITLE_1_X;
+    private static int OPTIONS_PANEL_TEXT_TITLE_1_Y;
+    private static int OPTIONS_PANEL_TEXT_TITLE_2_X;
+    private static int OPTIONS_PANEL_TEXT_TITLE_2_Y;
+    private static int OPTIONS_PANEL_TEXT_MAX_X;
+    private static int OPTIONS_PANEL_TEXT_MAX_Y;
+    private static int OPTIONS_PANEL_TEXT_MIN_X;
+    private static int OPTIONS_PANEL_TEXT_MIN_Y;
     private static int BUTTON_X;
     private static int BUTTON_1_Y;
     private static int BUTTON_2_Y;
@@ -354,6 +370,19 @@ public class Game implements InteractiveView
         OPTIONS_PANEL_Y = Math.round(OPTIONS_PANEL_Y_PERCENT * screenHeight);
         OPTIONS_PANEL_WIDTH = Math.round(OPTIONS_PANEL_WIDTH_PERCENT * screenWidth);
         OPTIONS_PANEL_HEIGHT = Math.round(OPTIONS_PANEL_HEIGHT_PERCENT * screenHeight);
+        Rect tempRect = new Rect();
+        textPaint.getTextBounds(OPTIONS_TITLE_1, 0, OPTIONS_TITLE_1.length(), tempRect);
+        OPTIONS_PANEL_TEXT_TITLE_1_X = Math.round(0.5f * screenWidth) - Math.round(tempRect.width() / 2f);
+        OPTIONS_PANEL_TEXT_TITLE_1_Y = Math.round(OPTIONS_PANEL_TEXT_TITLE_1_Y_PERCENT * screenHeight);
+        textPaint.getTextBounds(OPTIONS_TITLE_2, 0, OPTIONS_TITLE_2.length(), tempRect);
+        OPTIONS_PANEL_TEXT_TITLE_2_X = Math.round(0.5f * screenWidth) - Math.round(tempRect.width() / 2f);
+        OPTIONS_PANEL_TEXT_TITLE_2_Y = Math.round(OPTIONS_PANEL_TEXT_TITLE_2_Y_PERCENT * screenHeight);
+        textPaint.getTextBounds(OPTIONS_MAXIMUM, 0, OPTIONS_MAXIMUM.length(), tempRect);
+        OPTIONS_PANEL_TEXT_MAX_X = Math.round(0.5f * screenWidth) - Math.round(tempRect.width() / 2f);
+        OPTIONS_PANEL_TEXT_MAX_Y = Math.round(OPTIONS_PANEL_TEXT_MAX_Y_PERCENT * screenHeight);
+        textPaint.getTextBounds(OPTIONS_MINIMUM, 0, OPTIONS_MINIMUM.length(), tempRect);
+        OPTIONS_PANEL_TEXT_MIN_X = Math.round(0.5f * screenWidth) - Math.round(tempRect.width() / 2f);
+        OPTIONS_PANEL_TEXT_MIN_Y = Math.round(OPTIONS_PANEL_TEXT_MIN_Y_PERCENT * screenHeight);
         retryX = BUTTON_X;
         generateX = BUTTON_X;
         generateOptionsX = BUTTON_X;
@@ -1026,10 +1055,11 @@ public class Game implements InteractiveView
         if (optionsOpen)
         {
             canvas.drawBitmap(optionsBackground, 0, 0, null);
-            canvas.drawText("Newly generated boards", 350, 220, textPaint);
-            canvas.drawText("should be solvable in the", 350, 280, textPaint);
-            canvas.drawText("following move range:", 350, 340, textPaint);
-            canvas.drawText(String.valueOf(generationMoves), 600, 500, textPaint);
+            canvas.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
+            canvas.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
+            canvas.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
+            canvas.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
+            canvas.drawText(String.valueOf(generationMoves), MOVES_MINUS_X + ((MOVES_PLUS_X - MOVES_MINUS_X) / 2f), MOVES_PLUS_Y, textPaint);
         }
     }
 
