@@ -448,7 +448,10 @@ public class Game implements InteractiveView
             iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
             Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
             Utils.drawIcon(new Canvas(iconBitmap), "retry", retryX, retryY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
+            if (PlayerData.getLevelClearStates().charAt(currentLevel) == '2')
+            {
+                Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
+            }
         }
         else
         {
@@ -614,17 +617,28 @@ public class Game implements InteractiveView
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, hintX, hintY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, hintX, hintY) < BUTTON_RADIUS))) // Step Hint
                 {
-//                    SoundManager.play(SoundManager.BUTTON);
-                    int solutionIndex = solution.indexOf(boardState);
-                    if (solutionIndex == -1) {
-                        boardState = solution.get(0);
-                    } else if (solutionIndex != solution.size() - 1) {
-                        List<Integer> move_index = Utils.getMoveIndices(boardState, solution.get(solutionIndex + 1));
-                        attemptMove(move_index.get(0), move_index.get(1));
+                    boolean enabled = true;
+                    if (currentLevel != -1)
+                    {
+                        if (PlayerData.getLevelClearStates().charAt(currentLevel) != '2')
+                        {
+                            enabled = false;
+                        }
                     }
-                    hexSelect = -1;
-                    moveIndices.clear();
-                    stopIndices.clear();
+                    if (enabled)
+                    {
+//                        SoundManager.play(SoundManager.BUTTON);
+                        int solutionIndex = solution.indexOf(boardState);
+                        if (solutionIndex == -1) {
+                            boardState = solution.get(0);
+                        } else if (solutionIndex != solution.size() - 1) {
+                            List<Integer> move_index = Utils.getMoveIndices(boardState, solution.get(solutionIndex + 1));
+                            attemptMove(move_index.get(0), move_index.get(1));
+                        }
+                        hexSelect = -1;
+                        moveIndices.clear();
+                        stopIndices.clear();
+                    }
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS))) // Close Board Options
                 {
@@ -924,6 +938,7 @@ public class Game implements InteractiveView
         canvas.drawBitmap(iconBitmap, 0, 0, null);
         if (playerWon)
         {
+            /// TODO: Center this and instructions, distinguish between perfect and non-perfect clears
             canvas.drawText("Cleared!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
         }
     }

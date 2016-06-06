@@ -514,7 +514,7 @@ public class Menu implements InteractiveView
                                 }
                             }
                         }
-                        if (dragVelocity == 0 && (((viewingLevel - Math.round(viewingLevel)) < 0.2f) || ((viewingLevel - Math.round(viewingLevel)) > 0.8f)))
+                        if (dragVelocity == 0 && (Utils.distanceBetweenPoints(Touch.x, Touch.y, Touch.downX, Touch.downY) <= (SELECTION_CIRCLE_RADIUS / 5)))
                         {
                             // Check for tapping levels on the sides when not moving and near centered
                             for (int i = 0; i < 4; i++)
