@@ -939,7 +939,14 @@ public class Game implements InteractiveView
         if (playerWon)
         {
             /// TODO: Center this and instructions, distinguish between perfect and non-perfect clears
-            canvas.drawText("Cleared!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
+            if (currentMove == (solution.size() - 1))
+            {
+                canvas.drawText("Perfect!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
+            }
+            else
+            {
+                canvas.drawText("Cleared!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
+            }
         }
     }
 

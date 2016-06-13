@@ -760,6 +760,19 @@ public class Utils
             iconPath.close();
             canvas.drawPath(iconPath, iconPaint);
         }
+        else if (type.toLowerCase().equals("arrow"))
+        {
+            iconPath = new Path();
+            iconPath.moveTo(x + ((0f / 100f) * width), y + ((50f / 100f) * height));
+            iconPath.lineTo(x + ((25f / 100f) * width), y + ((50f / 100f) * height));
+            iconPath.lineTo(x + ((25f / 100f) * width), y + ((0f / 100f) * height));
+            iconPath.lineTo(x + ((75f / 100f) * width), y + ((0f / 100f) * height));
+            iconPath.lineTo(x + ((75f / 100f) * width), y + ((50f / 100f) * height));
+            iconPath.lineTo(x + ((100f / 100f) * width), y + ((50f / 100f) * height));
+            iconPath.lineTo(x + ((50f / 100f) * width), y + ((100f / 100f) * height));
+            iconPath.close();
+            canvas.drawPath(iconPath, iconPaint);
+        }
     }
 
     /**

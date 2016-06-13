@@ -25,7 +25,7 @@ public class PlayerData
     {
         PlayerData.activity = activity;
         /// TODO: Remove this when finished testing
-        //PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
+        PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
     }
 
     /**
@@ -37,6 +37,18 @@ public class PlayerData
     {
         SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
         return sharedPrefs.getString(PlayerData.activity.getString(R.string.save_level_clear_states), "000000000000000000000000000000");
+    }
+
+    /**
+     * Returns whether the player is considered a new player or not based on level clear states.
+     *
+     * @return  Whether the player is new
+     */
+    public static boolean getNewPlayerStatus()
+    {
+        SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
+        String clearStates = sharedPrefs.getString(PlayerData.activity.getString(R.string.save_level_clear_states), "000000000000000000000000000000");
+        return clearStates.equals("000000000000000000000000000000");
     }
 
     /**

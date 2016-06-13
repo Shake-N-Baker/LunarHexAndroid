@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Bundle;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -64,6 +63,8 @@ public class Menu implements InteractiveView
     private static final float LEVELS_TOP_LEFT_X_PERCENT = 50f / 100f;
     private static final float LEVELS_TOP_LEFT_Y_PERCENT = 74f / 100f;
     public static final float LEVELS_SPACING_X_PERCENT = 20f / 100f;
+    private static final float NEW_PLAYER_ARROW_Y_PERCENT = 583f / 1000f;
+    private static final float NEW_PLAYER_ARROW_FLUCTUATING_Y_PERCENT = 65f / 1000f;
     private static final float TRANSITION_DISTANCE_X_PERCENT = 2f / 100f;
     private static final float MAX_DRAG_VELOCITY_X_PERCENT = 80f / 1000f;
     private static final float DRAG_VELOCITY_RESISTANCE_X_PERCENT = 1f / 1000f;
@@ -71,6 +72,7 @@ public class Menu implements InteractiveView
     private static final int DRAGGING_VELOCITY_DAMPENING_MAGNITUDE = 10;
     private static final int SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO = 8;
     private static final int SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO = 8;
+    private static final int NEW_PLAYER_ARROW_CYCLE_FRAMES = 60;
     private static int TITLE_X;
     private static int TITLE_Y;
     private static int HAMBURGER_MENU_X;
@@ -105,6 +107,9 @@ public class Menu implements InteractiveView
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
     private static int LEVELS_SPACING_X;
+    private static int NEW_PLAYER_ARROW_X;
+    private static int NEW_PLAYER_ARROW_Y;
+    private static int NEW_PLAYER_ARROW_FLUCTUATING_Y;
     private static int TRANSITION_DISTANCE_X;
     private static int MAX_DRAG_VELOCITY_X;
     private static int DRAG_VELOCITY_RESISTANCE_X;
@@ -247,6 +252,16 @@ public class Menu implements InteractiveView
     public String levelClearStates;
 
     /**
+     * Flag whether or not the player is considered new, with no clears and should see instructions
+     */
+    public boolean newPlayer = true;
+
+    /**
+     * The new player arrow cycle frame for animating up and down motion
+     */
+    private int arrowCycleFrame;
+
+    /**
      * Constructor for the menu.
      *
      * @param   main - The reference to the main view
@@ -341,6 +356,8 @@ public class Menu implements InteractiveView
         LEVELS_TOP_LEFT_X = Math.round(LEVELS_TOP_LEFT_X_PERCENT * screenWidth);
         LEVELS_TOP_LEFT_Y = Math.round(LEVELS_TOP_LEFT_Y_PERCENT * screenHeight);
         LEVELS_SPACING_X = Math.round(LEVELS_SPACING_X_PERCENT * screenWidth);
+        NEW_PLAYER_ARROW_Y = Math.round(NEW_PLAYER_ARROW_Y_PERCENT * screenHeight);
+        NEW_PLAYER_ARROW_FLUCTUATING_Y = Math.round(NEW_PLAYER_ARROW_FLUCTUATING_Y_PERCENT * screenHeight);
         PREVIEW_BOARD_X = Math.round(PREVIEW_BOARD_X_PERCENT * screenWidth);
         PREVIEW_BOARD_Y = Math.round(PREVIEW_BOARD_Y_PERCENT * screenHeight);
         PREVIEW_BOARD_SPACING_X = Math.round(PREVIEW_BOARD_SPACING_X_PERCENT * screenWidth);
@@ -375,6 +392,12 @@ public class Menu implements InteractiveView
         Rect temp = new Rect();
         titlePaint.getTextBounds(TITLE_TEXT, 0, TITLE_TEXT.length(), temp);
         TITLE_X = Math.round((float) screenWidth / 2f) - Math.round((float) temp.width() / 2f);
+
+        // Center the new player arrow on the first level
+        temp = new Rect();
+        textPaint.getTextBounds("1", 0, "1".length(), temp);
+        // Center of "1" looks dumb so use left of center by dividing by 4
+        NEW_PLAYER_ARROW_X = LEVELS_SPACING_X + LEVELS_TOP_LEFT_X + Math.round((float) temp.width() / 4f);
 
         // Setup the offset from center rectangles for each level text
         levelTextCenterOffsetX = new ArrayList<Integer>();
@@ -856,8 +879,24 @@ public class Menu implements InteractiveView
                 levelsFromText *= -1f;
             }
             Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) (fadeTransparencyPercent * (1f - (levelsFromText / 2.3f)) * 255)));
-            textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            if (newPlayer && level == 1)
+            {
+                textPaint.setColor(Color.argb(255, 255, 255, 255));
+            }
+            else
+            {
+                textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            }
             canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+        }
+
+        // Draw new player arrow above first level and animate up and down motion
+        if (newPlayer)
+        {
+            arrowCycleFrame++;
+            arrowCycleFrame %= NEW_PLAYER_ARROW_CYCLE_FRAMES;
+            int arrowHeight = (int) (Math.cos(Math.toRadians(arrowCycleFrame * (360 / NEW_PLAYER_ARROW_CYCLE_FRAMES))) * NEW_PLAYER_ARROW_FLUCTUATING_Y);
+            Utils.drawIcon(canvas, "arrow", NEW_PLAYER_ARROW_X, NEW_PLAYER_ARROW_Y - arrowHeight, SELECTION_CIRCLE_RADIUS / 2);
         }
 
         // Draw hamburger menu fixed elements

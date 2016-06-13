@@ -146,6 +146,7 @@ public class MainView extends SurfaceView implements Runnable
         // Setup Game and Menu
         game = new Game(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet, boardSet, state);
         menu = new Menu(this, SCREEN_WIDTH, SCREEN_HEIGHT, mainBoardSet);
+        menu.newPlayer = PlayerData.getNewPlayerStatus();
 
         String savedView = "menu";
         if(state != null)
@@ -351,6 +352,7 @@ public class MainView extends SurfaceView implements Runnable
         {
             // Update the menu with information on any levels completed
             menu.levelClearStates = PlayerData.getLevelClearStates();
+            menu.newPlayer = PlayerData.getNewPlayerStatus();
             view = menu;
         }
         view.startFadeIn();
