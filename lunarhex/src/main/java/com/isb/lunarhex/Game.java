@@ -31,6 +31,10 @@ public class Game implements InteractiveView
     private static final String OPTIONS_TITLE_2 = "SOLVABLE IN";
     private static final String OPTIONS_MAXIMUM = "MAXIMUM MOVES:";
     private static final String OPTIONS_MINIMUM = "MINIMUM MOVES:";
+    private static final String CLEAR = "CLEARED!";
+    private static final String PERFECT_CLEAR = "PERFECT!";
+    private static final String INSTRUCTIONS_1 = "SLIDE THE RED PIECE TO THE MIDDLE TO WIN";
+    private static final String INSTRUCTIONS_2 = "PIECES MAY ONLY SLIDE INTO OTHER PIECES";
     private static final float HEX_WIDTH_PERCENT = 18f / 100f;
     private static final float HEX_HEIGHT_PERCENT = 14f / 100f;
     private static final float BOARD_X_PERCENT = 14f / 100f;
@@ -54,6 +58,7 @@ public class Game implements InteractiveView
     private static final float OPTIONS_PANEL_TEXT_TITLE_2_Y_PERCENT = 38f / 100f;
     private static final float OPTIONS_PANEL_TEXT_MAX_Y_PERCENT = 47f / 100f;
     private static final float OPTIONS_PANEL_TEXT_MIN_Y_PERCENT = 63f / 100f;
+    private static final float TEXT_BACKGROUND_PANEL_HEIGHT_PERCENT = 1f / 8f;
     private static int HEX_WIDTH;
     private static int HEX_HEIGHT;
     private static int HEX_DEPTH;
@@ -89,6 +94,11 @@ public class Game implements InteractiveView
     private static int BUTTON_2_Y;
     private static int BUTTON_3_Y;
     private static int BUTTON_4_Y;
+    private static int TEXT_Y;
+    private static int CLEAR_X;
+    private static int PERFECT_CLEAR_X;
+    private static int INSTRUCTIONS_1_X;
+    private static int INSTRUCTIONS_2_X;
 
     /**
      * The locations of the various buttons on screen
@@ -106,6 +116,11 @@ public class Game implements InteractiveView
      * The options menu background image
      */
     private static Bitmap optionsBackground;
+
+    /**
+     * The text background panel for the clear and instruction texts
+     */
+    private static Bitmap textBackground;
 
     /**
      * Flag whether the generate options is open
@@ -400,6 +415,15 @@ public class Game implements InteractiveView
         OPTIONS_PANEL_VALUE_2_DIGIT_X = MOVES_MINUS_X + (int) ((MOVES_PLUS_X - MOVES_MINUS_X) / 2f) - (int) (tempRect.width() / 2f);
         OPTIONS_PANEL_VALUE_MAX_Y = MOVES_MAX_Y + (int) (tempRect.height() / 2f);
         OPTIONS_PANEL_VALUE_MIN_Y = MOVES_MIN_Y + (int) (tempRect.height() / 2f);
+        textPaint.getTextBounds(CLEAR, 0, CLEAR.length(), tempRect);
+        TEXT_Y = (int) ((Math.round(TEXT_BACKGROUND_PANEL_HEIGHT_PERCENT * screenHeight) / 2f) + (tempRect.height() / 2f));
+        CLEAR_X = (int) ((screenWidth / 2f) - (tempRect.width() / 2f));
+        textPaint.getTextBounds(PERFECT_CLEAR, 0, PERFECT_CLEAR.length(), tempRect);
+        PERFECT_CLEAR_X = (int) ((screenWidth / 2f) - (tempRect.width() / 2f));
+        textPaint.getTextBounds(INSTRUCTIONS_1, 0, INSTRUCTIONS_1.length(), tempRect);
+        INSTRUCTIONS_1_X = (int) ((screenWidth / 2f) - (tempRect.width() / 2f));
+        textPaint.getTextBounds(INSTRUCTIONS_2, 0, INSTRUCTIONS_2.length(), tempRect);
+        INSTRUCTIONS_2_X = (int) ((screenWidth / 2f) - (tempRect.width() / 2f));
         retryX = BUTTON_X;
         generateX = BUTTON_X;
         generateOptionsX = BUTTON_X;
@@ -425,6 +449,9 @@ public class Game implements InteractiveView
         Utils.drawIcon(new Canvas(optionsBackground), "plus", MOVES_PLUS_X, MOVES_MAX_Y, BUTTON_RADIUS / 2f);
         Utils.drawIcon(new Canvas(optionsBackground), "minus", MOVES_MINUS_X, MOVES_MAX_Y, BUTTON_RADIUS / 2f);
         Utils.drawIcon(new Canvas(optionsBackground), "close", CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y, BUTTON_RADIUS / 2f);
+
+        textBackground = Bitmap.createBitmap(screenWidth, (int) (screenHeight * TEXT_BACKGROUND_PANEL_HEIGHT_PERCENT), Bitmap.Config.ARGB_8888);
+        textBackground.eraseColor(Color.argb(128, 0, 0, 0));
     }
 
     /**
@@ -435,10 +462,6 @@ public class Game implements InteractiveView
         playerWon = Utils.boardSolved(boardState);
         if (currentLevel != -1)
         {
-            /// TODO: Add instructions
-            /// Lv 1 - Slide the red piece to the middle to win
-            /// Lv 2 - Pieces may only slide into other pieces
-
             generateY = Math.round(2f * screenHeight);
             generateOptionsY = Math.round(2f * screenHeight);
             retryY = BUTTON_1_Y;
@@ -935,18 +958,48 @@ public class Game implements InteractiveView
         }
 
         // Draw icons and text
-        canvas.drawBitmap(iconBitmap, 0, 0, null);
+        String textToDraw = "";
+        int textX = 0;
+        boolean textDrawn = false;
         if (playerWon)
         {
-            /// TODO: Center this and instructions, distinguish between perfect and non-perfect clears
             if (currentMove == (solution.size() - 1))
             {
-                canvas.drawText("Perfect!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
+                textToDraw = PERFECT_CLEAR;
+                textX = PERFECT_CLEAR_X;
+                textDrawn = true;
             }
             else
             {
-                canvas.drawText("Cleared!", (28 * screenWidth) / 100, screenHeight / 10, debugPaint);
+                textToDraw = CLEAR;
+                textX = CLEAR_X;
+                textDrawn = true;
             }
+        }
+        else
+        {
+            if (currentLevel == 0)
+            {
+                textToDraw = INSTRUCTIONS_1;
+                textX = INSTRUCTIONS_1_X;
+                textDrawn = true;
+            }
+            else if (currentLevel == 1)
+            {
+                textToDraw = INSTRUCTIONS_2;
+                textX = INSTRUCTIONS_2_X;
+                textDrawn = true;
+            }
+        }
+        if (textDrawn)
+        {
+            canvas.drawBitmap(textBackground, 0, 0, null);
+            canvas.drawBitmap(iconBitmap, 0, 0, null);
+            canvas.drawText(textToDraw, textX, TEXT_Y, textPaint);
+        }
+        else
+        {
+            canvas.drawBitmap(iconBitmap, 0, 0, null);
         }
     }
 
