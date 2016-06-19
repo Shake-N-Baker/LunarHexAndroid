@@ -261,6 +261,16 @@ public class Game implements InteractiveView
     public int generationMaxMoves = 8;
 
     /**
+     * The name of the button being held down
+     */
+    private String buttonHeldDown;
+
+    /**
+     * The length of time the button has been held down for
+     */
+    private int buttonHeldDownFrames;
+
+    /**
      * The current level that the player is on (zero based) or -1 if random
      */
     public int currentLevel = -1;
@@ -268,7 +278,6 @@ public class Game implements InteractiveView
     /**
      * The current number of moves the player has taken since the initial board state
      */
-    /// TODO: Update current move
     public int currentMove = 0;
 
     /**
@@ -323,6 +332,8 @@ public class Game implements InteractiveView
         stopIndices = new ArrayList<Integer>();
 
         optionsOpen = false;
+        buttonHeldDown = "";
+        buttonHeldDownFrames = 0;
 
         // Setup the paint for text boxes
         textPaint = new Paint();
@@ -518,6 +529,7 @@ public class Game implements InteractiveView
     public void update(Canvas canvas, float framesPerSecond)
     {
         // Update
+        handleButtonHeldDown();
         processSlide();
 
         // Draw
@@ -537,6 +549,61 @@ public class Game implements InteractiveView
         canvas.drawCircle(Touch.x, Touch.y, 5, paint);
         /// TODO: Remove draw debug frames per second, ALSO remove framesPerSecond argument (also in interface)
         canvas.drawText(String.valueOf(framesPerSecond), 10, screenHeight - 10, debugPaint);
+    }
+
+    /**
+     * Handles holding a button down, such as generate board min/max solvable moves.
+     */
+    private void handleButtonHeldDown()
+    {
+        if (!buttonHeldDown.equals(""))
+        {
+            buttonHeldDownFrames++;
+            if (buttonHeldDown.equals("movesMinMinus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
+            {
+                AudioManager.play(R.raw.button);
+                generationMinMoves--;
+                if (generationMinMoves < 1)
+                {
+                    generationMinMoves = 1;
+                }
+            }
+            else if (buttonHeldDown.equals("movesMinPlus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
+            {
+                AudioManager.play(R.raw.button);
+                generationMinMoves++;
+                if (generationMinMoves > 20)
+                {
+                    generationMinMoves = 20;
+                }
+                if (generationMaxMoves < generationMinMoves)
+                {
+                    generationMaxMoves = generationMinMoves;
+                }
+            }
+            else if (buttonHeldDown.equals("movesMaxMinus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
+            {
+                AudioManager.play(R.raw.button);
+                generationMaxMoves--;
+                if (generationMaxMoves < 1)
+                {
+                    generationMaxMoves = 1;
+                }
+                if (generationMaxMoves < generationMinMoves)
+                {
+                    generationMinMoves = generationMaxMoves;
+                }
+            }
+            else if (buttonHeldDown.equals("movesMaxPlus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
+            {
+                AudioManager.play(R.raw.button);
+                generationMaxMoves++;
+                if (generationMaxMoves > 20)
+                {
+                    generationMaxMoves = 20;
+                }
+            }
+        }
     }
 
     /**
@@ -617,8 +684,30 @@ public class Game implements InteractiveView
                     moveIndices.clear();
                     stopIndices.clear();
                 }
+                else if (optionsOpen) // Start tracking which options button is being held down
+                {
+                    if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min minus
+                    {
+                        buttonHeldDown = "movesMinMinus";
+                    }
+                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min plus
+                    {
+                        buttonHeldDown = "movesMinPlus";
+                    }
+                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max minus
+                    {
+                        buttonHeldDown = "movesMaxMinus";
+                    }
+                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max plus
+                    {
+                        buttonHeldDown = "movesMaxPlus";
+                    }
+                }
                 break;
             case MotionEvent.ACTION_UP:
+                // Clear held button
+                buttonHeldDown = "";
+                buttonHeldDownFrames = 0;
                 if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateX, generateY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateX, generateY) < BUTTON_RADIUS))) // Generate New Board
                 {
                     AudioManager.play(R.raw.button);
@@ -751,6 +840,44 @@ public class Game implements InteractiveView
                 tapping = false;
                 playerWon = Utils.boardSolved(boardState);
                 break;
+            case MotionEvent.ACTION_MOVE:
+                // Check for touchs moving off a held button
+                if (optionsOpen)
+                {
+                    if (buttonHeldDown == "movesMinMinus")
+                    {
+                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
+                        {
+                            buttonHeldDown = "";
+                            buttonHeldDownFrames = 0;
+                        }
+                    }
+                    else if (buttonHeldDown == "movesMinPlus")
+                    {
+                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
+                        {
+                            buttonHeldDown = "";
+                            buttonHeldDownFrames = 0;
+                        }
+                    }
+                    else if (buttonHeldDown == "movesMaxMinus")
+                    {
+                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
+                        {
+                            buttonHeldDown = "";
+                            buttonHeldDownFrames = 0;
+                        }
+                    }
+                    else if (buttonHeldDown == "movesMaxPlus")
+                    {
+                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
+                        {
+                            buttonHeldDown = "";
+                            buttonHeldDownFrames = 0;
+                        }
+                    }
+                }
+                break;
         }
     }
 
@@ -862,7 +989,6 @@ public class Game implements InteractiveView
     private void parseSolution(String compressedBoard)
     {
         shortestMoves = Integer.parseInt(String.valueOf(compressedBoard.charAt(0)), 36);
-        /// TODO: Setup text here for the Shortest moves to clear textfield(s)
         List<Integer> encodedMoves = new ArrayList<Integer>();
         int i;
         for (i = 1; i <= shortestMoves; i++)
