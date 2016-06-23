@@ -118,6 +118,11 @@ public class Game implements InteractiveView
     private static Bitmap optionsBackground;
 
     /**
+     * The cached image of the current game with options menu open to speed up drawing
+     */
+    private static Bitmap cachedGameSceneWithOptionsOpen;
+
+    /**
      * The text background panel for the clear and instruction texts
      */
     private static Bitmap textBackground;
@@ -386,9 +391,6 @@ public class Game implements InteractiveView
         }
 
         setSize(screenWidth, screenHeight);
-
-        // Update UI for levels vs random
-        updateUIState();
     }
 
     /**
@@ -524,6 +526,25 @@ public class Game implements InteractiveView
         hexPurpleBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
         c = new Canvas(hexPurpleBitmap);
         Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0x9900AA, HEX_DEPTH / 2, true);
+
+        // Update button UI for levels vs random
+        updateUIState();
+
+        // Cache image of the current game scene with options menu open to speed up drawing
+        cachedGameSceneWithOptionsOpen = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
+        c = new Canvas(cachedGameSceneWithOptionsOpen);
+        drawBoard(c);
+        drawHighlight(c);
+        if (!boardState.equals(""))
+        {
+            drawObjectsOnBoard(c);
+        }
+        c.drawBitmap(optionsBackground, 0, 0, null);
+        c.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
+        c.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
+        c.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
+        c.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
     }
 
     /**
@@ -594,10 +615,16 @@ public class Game implements InteractiveView
         processSlide();
 
         // Draw
-        drawBoard(canvas);
-        drawHighlight(canvas);
-        drawObjectsOnBoard(canvas);
-        drawOptionsMenu(canvas);
+        if (optionsOpen)
+        {
+            drawOptionsMenu(canvas);
+        }
+        else
+        {
+            drawBoard(canvas);
+            drawHighlight(canvas);
+            drawObjectsOnBoard(canvas);
+        }
 
         /// TODO: Remove draw debug down cursor
         Paint paint = new Paint();
@@ -622,20 +649,26 @@ public class Game implements InteractiveView
             buttonHeldDownFrames++;
             if (buttonHeldDown.equals("movesMinMinus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
             {
-                AudioManager.play(R.raw.button);
                 generationMinMoves--;
                 if (generationMinMoves < 1)
                 {
                     generationMinMoves = 1;
                 }
+                else
+                {
+                    AudioManager.play(R.raw.button);
+                }
             }
             else if (buttonHeldDown.equals("movesMinPlus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
             {
-                AudioManager.play(R.raw.button);
                 generationMinMoves++;
                 if (generationMinMoves > 20)
                 {
                     generationMinMoves = 20;
+                }
+                else
+                {
+                    AudioManager.play(R.raw.button);
                 }
                 if (generationMaxMoves < generationMinMoves)
                 {
@@ -644,11 +677,14 @@ public class Game implements InteractiveView
             }
             else if (buttonHeldDown.equals("movesMaxMinus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
             {
-                AudioManager.play(R.raw.button);
                 generationMaxMoves--;
                 if (generationMaxMoves < 1)
                 {
                     generationMaxMoves = 1;
+                }
+                else
+                {
+                    AudioManager.play(R.raw.button);
                 }
                 if (generationMaxMoves < generationMinMoves)
                 {
@@ -657,11 +693,14 @@ public class Game implements InteractiveView
             }
             else if (buttonHeldDown.equals("movesMaxPlus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
             {
-                AudioManager.play(R.raw.button);
                 generationMaxMoves++;
                 if (generationMaxMoves > 20)
                 {
                     generationMaxMoves = 20;
+                }
+                else
+                {
+                    AudioManager.play(R.raw.button);
                 }
             }
         }
@@ -778,6 +817,18 @@ public class Game implements InteractiveView
                 {
                     AudioManager.play(R.raw.button);
                     optionsOpen = true;
+
+                    // Cache image of the current game scene with options menu open to speed up drawing
+                    cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
+                    Canvas c = new Canvas(cachedGameSceneWithOptionsOpen);
+                    drawBoard(c);
+                    drawHighlight(c);
+                    drawObjectsOnBoard(c);
+                    c.drawBitmap(optionsBackground, 0, 0, null);
+                    c.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
+                    c.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
+                    c.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
+                    c.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, retryX, retryY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, retryX, retryY) < BUTTON_RADIUS))) // Reset
                 {
@@ -800,7 +851,6 @@ public class Game implements InteractiveView
                     }
                     if (enabled)
                     {
-                        AudioManager.play(R.raw.button);
                         int solutionIndex = solution.indexOf(boardState);
                         if (solutionIndex == -1) {
                             boardState = solution.get(0);
@@ -820,20 +870,26 @@ public class Game implements InteractiveView
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
                 {
-                    AudioManager.play(R.raw.button);
                     generationMinMoves--;
                     if (generationMinMoves < 1)
                     {
                         generationMinMoves = 1;
                     }
+                    else
+                    {
+                        AudioManager.play(R.raw.button);
+                    }
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
                 {
-                    AudioManager.play(R.raw.button);
                     generationMinMoves++;
                     if (generationMinMoves > 20)
                     {
                         generationMinMoves = 20;
+                    }
+                    else
+                    {
+                        AudioManager.play(R.raw.button);
                     }
                     if (generationMaxMoves < generationMinMoves)
                     {
@@ -842,11 +898,14 @@ public class Game implements InteractiveView
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
                 {
-                    AudioManager.play(R.raw.button);
                     generationMaxMoves--;
                     if (generationMaxMoves < 1)
                     {
                         generationMaxMoves = 1;
+                    }
+                    else
+                    {
+                        AudioManager.play(R.raw.button);
                     }
                     if (generationMaxMoves < generationMinMoves)
                     {
@@ -855,11 +914,14 @@ public class Game implements InteractiveView
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
                 {
-                    AudioManager.play(R.raw.button);
                     generationMaxMoves++;
                     if (generationMaxMoves > 20)
                     {
                         generationMaxMoves = 20;
+                    }
+                    else
+                    {
+                        AudioManager.play(R.raw.button);
                     }
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
@@ -1354,30 +1416,24 @@ public class Game implements InteractiveView
      */
     private void drawOptionsMenu(Canvas canvas)
     {
-        // Draw options menu
-        if (optionsOpen)
+        // Draw cached game scene with options menu open
+        canvas.drawBitmap(cachedGameSceneWithOptionsOpen, 0, 0, null);
+
+        if (generationMaxMoves > 9)
         {
-            canvas.drawBitmap(optionsBackground, 0, 0, null);
-            canvas.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
-            canvas.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
-            canvas.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
-            canvas.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
-            if (generationMaxMoves > 9)
-            {
-                canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
-            }
-            else
-            {
-                canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
-            }
-            if (generationMinMoves > 9)
-            {
-                canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
-            }
-            else
-            {
-                canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
-            }
+            canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
+        }
+        else
+        {
+            canvas.drawText(String.valueOf(generationMaxMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MAX_Y, textPaint);
+        }
+        if (generationMinMoves > 9)
+        {
+            canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_2_DIGIT_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
+        }
+        else
+        {
+            canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
         }
     }
 
