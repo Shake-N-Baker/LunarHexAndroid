@@ -318,17 +318,17 @@ public class Utils
             for (int j = 0; j < 5; j++)
             {
                 list.add(new Rect(Math.round(x), Math.round(y), Math.round(x + hexWidth), Math.round(y + hexHeight)));
-                x += Math.round(hexWidth * 0.75f);
-                if (j % 2 == 0) y -= Math.round(hexHeight * 0.5f);
-                else y += Math.round(hexHeight * 0.5f);
+                x += (hexWidth - 1) * 0.75f;
+                if (j % 2 == 0) y -= (hexHeight * 0.5f);
+                else y += (hexHeight * 0.5f);
             }
             x = startX;
             y += hexHeight * 1.5;
         }
-        x = startX + Math.round(0.75f * hexWidth);
+        x = startX + (0.75f * (hexWidth - 1));
         y -= hexHeight * 0.5;
         list.add(new Rect(Math.round(x), Math.round(y), Math.round(x + hexWidth), Math.round(y + hexHeight)));
-        x = startX + Math.round(2.25f * hexWidth);
+        x = startX + (2.25f * (hexWidth - 1));
         list.add(new Rect(Math.round(x), Math.round(y), Math.round(x + hexWidth), Math.round(y + hexHeight)));
         return list;
     }
@@ -444,12 +444,8 @@ public class Utils
      */
     public static void drawHex(Canvas canvas, float x, float y, float width, float height, int color, int depth, boolean hasOutline)
     {
-        x = Math.round(x);
-        y = Math.round(y);
-        width = Math.round(width);
-        height = Math.round(height);
-        float width_side_length = Math.round(width / 2f);
-        float width_center_offset = Math.round(width / 4f);
+        float width_side_length = width / 2f;
+        float width_center_offset = width / 4f;
 
         if (hexFillPaint == null)
         {

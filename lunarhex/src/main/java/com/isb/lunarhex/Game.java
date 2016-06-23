@@ -306,6 +306,24 @@ public class Game implements InteractiveView
     private static Bitmap iconBitmap;
 
     /**
+     * Bitmaps containing the various hexagons to draw for pieces and the board
+     */
+    private static Bitmap hexBoardWhiteBitmap;
+    private static Bitmap hexBoardRedBitmap;
+    private static Bitmap hexBoardLightGreyBitmap;
+    private static Bitmap hexBoardDarkGreyBitmap;
+    private static Bitmap hexBoardYellowBitmap;
+    private static Bitmap hexBoardOrangeBitmap;
+    private static Bitmap hexBoardHighlightYellowBitmap;
+    private static Bitmap hexBoardHighlightOrangeBitmap;
+    private static Bitmap hexRedBitmap;
+    private static Bitmap hexGreenBitmap;
+    private static Bitmap hexBlueBitmap;
+    private static Bitmap hexOrangeBitmap;
+    private static Bitmap hexYellowBitmap;
+    private static Bitmap hexPurpleBitmap;
+
+    /**
      * Constructor for the game.
      *
      * @param   main - The reference to the main view
@@ -463,6 +481,49 @@ public class Game implements InteractiveView
 
         textBackground = Bitmap.createBitmap(screenWidth, (int) (screenHeight * TEXT_BACKGROUND_PANEL_HEIGHT_PERCENT), Bitmap.Config.ARGB_8888);
         textBackground.eraseColor(Color.argb(128, 0, 0, 0));
+
+        hexBoardWhiteBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardWhiteBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFFFFFF, HEX_DEPTH, true);
+        hexBoardRedBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardRedBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFF0000, HEX_DEPTH, true);
+        hexBoardDarkGreyBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardDarkGreyBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0x707070, HEX_DEPTH, true);
+        hexBoardLightGreyBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardLightGreyBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xD8D8D8, HEX_DEPTH, true);
+        hexBoardYellowBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardYellowBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFFCC00, HEX_DEPTH, true);
+        hexBoardOrangeBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT + HEX_DEPTH, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardOrangeBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xDD7700, HEX_DEPTH, true);
+        hexBoardHighlightYellowBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardHighlightYellowBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFFCC00, 0, true);
+        hexBoardHighlightOrangeBitmap = Bitmap.createBitmap(HEX_WIDTH, HEX_HEIGHT, Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBoardHighlightOrangeBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xDD7700, 0, true);
+        hexRedBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexRedBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0xAA0000, HEX_DEPTH / 2, true);
+        hexGreenBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexGreenBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0x009900, HEX_DEPTH / 2, true);
+        hexBlueBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexBlueBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0x333399, HEX_DEPTH / 2, true);
+        hexYellowBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexYellowBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0xFFFF00, HEX_DEPTH / 2, true);
+        hexOrangeBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexOrangeBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0xDD7700, HEX_DEPTH / 2, true);
+        hexPurpleBitmap = Bitmap.createBitmap(HEX_WIDTH / 2, (HEX_HEIGHT / 2) + (HEX_DEPTH / 2), Bitmap.Config.ARGB_8888);
+        c = new Canvas(hexPurpleBitmap);
+        Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0x9900AA, HEX_DEPTH / 2, true);
     }
 
     /**
@@ -1054,18 +1115,17 @@ public class Game implements InteractiveView
         float startY = BOARD_Y;
         float x = startX + (width * 0.75f);
         float y = startY;
-        int depth = HEX_DEPTH;
         int index = 1;
         for (int y_index = 0; y_index < 11; y_index++)
         {
             for (int x_index = 0; x_index < 3; x_index++)
             {
                 if ((y_index % 2 == 0) && x_index == 2) break;
-                if (hexSelect == index) Utils.drawHex(canvas, x, y, width, height, 0xFFCC00, depth, true);
-                else if (stopIndices.indexOf(index) != -1) Utils.drawHex(canvas, x, y, width, height, 0x707070, depth, true);
-                else if (moveIndices.indexOf(index) != -1) Utils.drawHex(canvas, x, y, width, height, 0xD8D8D8, depth, true);
-                else if (index == 12) Utils.drawHex(canvas, x, y, width, height, 0xFF0000, depth, true);
-                else Utils.drawHex(canvas, x, y, width, height, 0xFFFFFF, depth, true);
+                if (hexSelect == index) canvas.drawBitmap(hexBoardYellowBitmap, x, y, null);
+                else if (stopIndices.indexOf(index) != -1) canvas.drawBitmap(hexBoardDarkGreyBitmap, x, y, null);
+                else if (moveIndices.indexOf(index) != -1) canvas.drawBitmap(hexBoardLightGreyBitmap, x, y, null);
+                else if (index == 12) canvas.drawBitmap(hexBoardRedBitmap, x, y, null);
+                else canvas.drawBitmap(hexBoardWhiteBitmap, x, y, null);
                 x += (placementWidth * 1.5);
                 if (index == 25) index++;
                 else index += 2;
@@ -1149,14 +1209,14 @@ public class Game implements InteractiveView
                     {
                         if (Utils.getMoveDirection(hexSelect, moveIndices.get(i)) == dir)
                         {
-                            Utils.drawHex(canvas, boundingBoxes.get(moveIndices.get(i)).left, boundingBoxes.get(moveIndices.get(i)).top, HEX_WIDTH, HEX_HEIGHT, 0xFFCC00, 0, true);
+                            canvas.drawBitmap(hexBoardHighlightYellowBitmap, boundingBoxes.get(moveIndices.get(i)).left, boundingBoxes.get(moveIndices.get(i)).top, null);
                         }
                     }
                     for (i = 0; i < stopIndices.size(); i++)
                     {
                         if (Utils.getMoveDirection(hexSelect, stopIndices.get(i)) == dir)
                         {
-                            Utils.drawHex(canvas, boundingBoxes.get(stopIndices.get(i)).left, boundingBoxes.get(stopIndices.get(i)).top, HEX_WIDTH, HEX_HEIGHT, 0xDD7700, 0, true);
+                            canvas.drawBitmap(hexBoardHighlightOrangeBitmap, boundingBoxes.get(stopIndices.get(i)).left, boundingBoxes.get(stopIndices.get(i)).top, null);
                         }
                     }
                 }
@@ -1177,35 +1237,35 @@ public class Game implements InteractiveView
             Character color = pairs[i].split("-")[0].charAt(0);
             String index = pairs[i].split("-")[1];
             int intIndex = Integer.parseInt(index);
-            int colorValue;
+            Bitmap colorHex;
             switch (color)
             {
                 case 'R':
-                    colorValue = 0xFFAA0000;
+                    colorHex = hexRedBitmap;
                     break;
                 case 'G':
-                    colorValue = 0xFF009900;
+                    colorHex = hexGreenBitmap;
                     break;
                 case 'B':
-                    colorValue = 0xFF333399;
+                    colorHex = hexBlueBitmap;
                     break;
                 case 'Y':
-                    colorValue = 0xFFFFFF00;
+                    colorHex = hexYellowBitmap;
                     break;
                 case 'O':
-                    colorValue = 0xFFDD7700;
+                    colorHex = hexOrangeBitmap;
                     break;
                 case 'P':
-                    colorValue = 0xFF9900AA;
+                    colorHex = hexPurpleBitmap;
                     break;
                 default:
-                    colorValue = 0xFF808080;
+                    colorHex = hexPurpleBitmap;
                     break;
             }
             if (slideFrame <= 0 || slideStart != intIndex)
             {
                 // Draw the piece if it is not currently sliding
-                Utils.drawHex(canvas, boundingBoxes.get(intIndex).left + (HEX_WIDTH / 4), boundingBoxes.get(intIndex).top + (HEX_HEIGHT / 4) - (HEX_DEPTH / 2), HEX_WIDTH / 2, HEX_HEIGHT / 2, colorValue, HEX_DEPTH / 2, true);
+                canvas.drawBitmap(colorHex, boundingBoxes.get(intIndex).left + (HEX_WIDTH / 4), boundingBoxes.get(intIndex).top + (HEX_HEIGHT / 4) - (HEX_DEPTH / 2), null);
             }
             else
             {
@@ -1282,7 +1342,7 @@ public class Game implements InteractiveView
                     tx = (int) Utils.easeIn(SLIDE_FRAMES - slideFrame, startX, endX - startX, totalTime);
                     ty = (int) Utils.easeIn(SLIDE_FRAMES - slideFrame, startY, endY - startY, totalTime);
                 }
-                Utils.drawHex(canvas, tx, ty, HEX_WIDTH / 2, HEX_HEIGHT / 2, colorValue, HEX_DEPTH / 2, true);
+                canvas.drawBitmap(colorHex, tx, ty, null);
             }
         }
     }
