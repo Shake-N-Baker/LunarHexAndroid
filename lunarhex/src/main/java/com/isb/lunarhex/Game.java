@@ -854,6 +854,7 @@ public class Game implements InteractiveView
                         int solutionIndex = solution.indexOf(boardState);
                         if (solutionIndex == -1) {
                             boardState = solution.get(0);
+                            currentMove = 0;
                         } else if (solutionIndex != solution.size() - 1) {
                             List<Integer> move_index = Utils.getMoveIndices(boardState, solution.get(solutionIndex + 1));
                             attemptMove(move_index.get(0), move_index.get(1));

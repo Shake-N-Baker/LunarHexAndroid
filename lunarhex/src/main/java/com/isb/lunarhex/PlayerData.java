@@ -24,8 +24,6 @@ public class PlayerData
     public static void initialize(Activity activity)
     {
         PlayerData.activity = activity;
-        /// TODO: Remove this when finished testing
-        PlayerData.activity.getPreferences(Context.MODE_PRIVATE).edit().clear().commit();
     }
 
     /**
@@ -96,6 +94,7 @@ public class PlayerData
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putInt(PlayerData.activity.getString(R.string.save_sound_volume), volume);
         editor.apply();
+        AudioManager.setSoundVolume(volume / 100f);
     }
 
     /**
@@ -120,5 +119,6 @@ public class PlayerData
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putInt(PlayerData.activity.getString(R.string.save_music_volume), volume);
         editor.apply();
+        AudioManager.setMusicVolume(volume / 100f);
     }
 }
