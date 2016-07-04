@@ -53,7 +53,7 @@ public class AudioManager
             mediaPlayer = null;
         }
         mediaPlayer = MediaPlayer.create(context, audioID);
-        if (audioID == R.raw.hit || audioID == R.raw.slide || audioID == R.raw.button)
+        if (audioID == R.raw.hit || audioID == R.raw.slide || audioID == R.raw.tap)
         {
             mediaPlayer.setVolume(soundVolume, soundVolume);
         }

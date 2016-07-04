@@ -656,7 +656,7 @@ public class Game implements InteractiveView
                 }
                 else
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                 }
             }
             else if (buttonHeldDown.equals("movesMinPlus") && buttonHeldDownFrames > 30 && buttonHeldDownFrames % 8 == 0)
@@ -668,7 +668,7 @@ public class Game implements InteractiveView
                 }
                 else
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                 }
                 if (generationMaxMoves < generationMinMoves)
                 {
@@ -684,7 +684,7 @@ public class Game implements InteractiveView
                 }
                 else
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                 }
                 if (generationMaxMoves < generationMinMoves)
                 {
@@ -700,7 +700,7 @@ public class Game implements InteractiveView
                 }
                 else
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                 }
             }
         }
@@ -810,12 +810,12 @@ public class Game implements InteractiveView
                 buttonHeldDownFrames = 0;
                 if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateX, generateY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateX, generateY) < BUTTON_RADIUS))) // Generate New Board
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                     newBoardState();
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateOptionsX, generateOptionsY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateOptionsX, generateOptionsY) < BUTTON_RADIUS))) // Open Board Options
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                     optionsOpen = true;
 
                     // Cache image of the current game scene with options menu open to speed up drawing
@@ -832,7 +832,7 @@ public class Game implements InteractiveView
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, retryX, retryY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, retryX, retryY) < BUTTON_RADIUS))) // Reset
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                     boardState = initialBoardState;
                     currentMove = 0;
                     hexSelect = -1;
@@ -866,7 +866,7 @@ public class Game implements InteractiveView
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS))) // Close Board Options
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                     optionsOpen = false;
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
@@ -878,7 +878,7 @@ public class Game implements InteractiveView
                     }
                     else
                     {
-                        AudioManager.play(R.raw.button);
+                        AudioManager.play(R.raw.tap);
                     }
                 }
                 else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
@@ -890,7 +890,7 @@ public class Game implements InteractiveView
                     }
                     else
                     {
-                        AudioManager.play(R.raw.button);
+                        AudioManager.play(R.raw.tap);
                     }
                     if (generationMaxMoves < generationMinMoves)
                     {
@@ -906,7 +906,7 @@ public class Game implements InteractiveView
                     }
                     else
                     {
-                        AudioManager.play(R.raw.button);
+                        AudioManager.play(R.raw.tap);
                     }
                     if (generationMaxMoves < generationMinMoves)
                     {
@@ -922,12 +922,12 @@ public class Game implements InteractiveView
                     }
                     else
                     {
-                        AudioManager.play(R.raw.button);
+                        AudioManager.play(R.raw.tap);
                     }
                 }
                 else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
                 {
-                    AudioManager.play(R.raw.button);
+                    AudioManager.play(R.raw.tap);
                     mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
                 }
                 else if (optionsOpen && (!optionsPanelRect.contains(Touch.x, Touch.y) && !optionsPanelRect.contains(Touch.downX, Touch.downY))) // Touching outside options panel

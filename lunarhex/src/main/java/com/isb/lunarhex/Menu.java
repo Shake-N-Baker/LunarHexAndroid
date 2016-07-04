@@ -29,11 +29,12 @@ public class Menu implements InteractiveView
     private static final String CREDITS_HEADER_TEXT = "CREDITS";
     private static final String SOUND_VOLUME_TEXT = "SOUND:";
     private static final String MUSIC_VOLUME_TEXT = "MUSIC:";
-    private static final String CREATED_BY_TEXT = "CREATED BY:   IAN BAKER";
-    private static final String CREATED_BY_EXTENDED_TEXT = "FOLLOW ME ON TWITTER @IANDEVSGAMES";
+    private static final String CREATED_BY_TEXT = "CREATED BY: IAN BAKER";
+    private static final String TWITTER_TEXT = "FOLLOW ME ON TWITTER:";
+    private static final String TWITTER_LINK_TEXT = "@IANDEVSGAMES";
     // TODO: Add music by artist name
-    private static final String MUSIC_BY_TEXT = "MUSIC BY:   TODO";
-    private static final String INSPIRED_BY_TEXT = "INSPIRED BY:   LUNAR LOCKOUT";
+    private static final String MUSIC_BY_TEXT = "MUSIC BY: TODO";
+    private static final String INSPIRED_BY_TEXT = "INSPIRED BY: LUNAR LOCKOUT";
     private static final float TITLE_Y_PERCENT = 20f / 100f;
     private static final float HAMBURGER_MENU_X_PERCENT = 90f / 100f;
     private static final float HAMBURGER_MENU_WIDTH_PERCENT = 6f / 100f;
@@ -52,6 +53,7 @@ public class Menu implements InteractiveView
     private static final float GITHUB_LINK_X_PERCENT = 8f / 100f;
     private static final float GITHUB_LINK_Y_PERCENT = 49f / 100f;
     private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
+    private static final float TWITTER_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float STAR_WIDTH_PERCENT = 4f / 100f;
@@ -95,6 +97,10 @@ public class Menu implements InteractiveView
     private static int GITHUB_LINK_Y;
     private static int GITHUB_LINK_TOUCH_BUFFER_X;
     private static int GITHUB_LINK_TOUCH_BUFFER_Y;
+    private static int TWITTER_LINK_X;
+    private static int TWITTER_LINK_Y;
+    private static int TWITTER_LINK_TOUCH_BUFFER_X;
+    private static int TWITTER_LINK_TOUCH_BUFFER_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
@@ -160,6 +166,11 @@ public class Menu implements InteractiveView
      * The width of the github link text
      */
     private int githubLinkWidth;
+
+    /**
+     * The width of the twitter link text
+     */
+    private int twitterLinkWidth;
 
     /**
      * The height of the hamburger menu texts, measured with github link text
@@ -346,6 +357,8 @@ public class Menu implements InteractiveView
         GITHUB_LINK_Y = Math.round(GITHUB_LINK_Y_PERCENT * screenHeight);
         GITHUB_LINK_TOUCH_BUFFER_X = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
         GITHUB_LINK_TOUCH_BUFFER_Y = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
+        TWITTER_LINK_TOUCH_BUFFER_X = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
+        TWITTER_LINK_TOUCH_BUFFER_Y = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         VOLUME_TOUCH_BUFFER_X = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenWidth);
         VOLUME_TOUCH_BUFFER_Y = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
@@ -421,6 +434,15 @@ public class Menu implements InteractiveView
         textPaint.getTextBounds(CREATED_BY_TEXT, 0, CREATED_BY_TEXT.length(), temp);
         hamburgerTextSpacingY = (int) (temp.height() * 1.6f);
 
+        // Place the Twitter link at the end of the twitter text
+        temp = new Rect();
+        textPaint.getTextBounds(TWITTER_TEXT + "x", 0, (TWITTER_TEXT + "x").length(), temp);
+        TWITTER_LINK_X = HAMBURGER_TEXT_X + temp.width();
+        TWITTER_LINK_Y = CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY);
+        temp = new Rect();
+        textPaint.getTextBounds(TWITTER_LINK_TEXT, 0, TWITTER_LINK_TEXT.length(), temp);
+        twitterLinkWidth = temp.width();
+
         // Generate the hamburger menu tinted background
         hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
@@ -447,6 +469,7 @@ public class Menu implements InteractiveView
                             hamburgerMenuOpen = false;
                             PlayerData.setSoundVolume(soundVolume);
                             PlayerData.setMusicVolume(musicVolume);
+                            AudioManager.play(R.raw.tap);
                         }
                     }
                     if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
@@ -455,6 +478,15 @@ public class Menu implements InteractiveView
                         {
                             // View Github page
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                            mainView.getContext().startActivity(browserIntent);
+                        }
+                    }
+                    if (((TWITTER_LINK_X - TWITTER_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (TWITTER_LINK_X + twitterLinkWidth + TWITTER_LINK_TOUCH_BUFFER_X)) && ((TWITTER_LINK_Y - TWITTER_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (TWITTER_LINK_Y + hamburgerMenuTextHeight + TWITTER_LINK_TOUCH_BUFFER_Y)))
+                    {
+                        if (((TWITTER_LINK_X - TWITTER_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (TWITTER_LINK_X + twitterLinkWidth + TWITTER_LINK_TOUCH_BUFFER_X)) && ((TWITTER_LINK_Y - TWITTER_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (TWITTER_LINK_Y + hamburgerMenuTextHeight + TWITTER_LINK_TOUCH_BUFFER_Y)))
+                        {
+                            // View TWITTER page
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/IanDevsGames"));
                             mainView.getContext().startActivity(browserIntent);
                         }
                     }
@@ -509,6 +541,7 @@ public class Menu implements InteractiveView
                             // Selected the hamburger menu
                             nothingClicked = false;
                             hamburgerMenuOpen = true;
+                            AudioManager.play(R.raw.tap);
                         }
                     }
                     if (dragDuration < 12)
@@ -526,6 +559,7 @@ public class Menu implements InteractiveView
                                     fadingOut = true;
                                     fadeFrame = MainView.TRANSITION_FRAMES;
                                     fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
+                                    AudioManager.play(R.raw.tap);
                                 }
                                 else
                                 {
@@ -534,6 +568,7 @@ public class Menu implements InteractiveView
                                     fadingOut = true;
                                     fadeFrame = MainView.TRANSITION_FRAMES;
                                     fadeOutEvent = new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(Math.round(viewingLevel) - 1));
+                                    AudioManager.play(R.raw.tap);
                                 }
                             }
                         }
@@ -925,16 +960,17 @@ public class Menu implements InteractiveView
             canvas.drawLine(VOLUME_CONTROL_X, MUSIC_TEXT_Y, VOLUME_CONTROL_X + VOLUME_CONTROL_WIDTH, MUSIC_TEXT_Y, hamburgerMenuPaint);
             canvas.drawCircle(VOLUME_CONTROL_X + ((musicVolume / 100f) * VOLUME_CONTROL_WIDTH), MUSIC_TEXT_Y, SELECTION_CIRCLE_RADIUS / SELECTION_CIRCLE_TO_VOLUME_CONTROL_RATIO, circleFilledPaint);
 
-            // Draw the link to the github source
+            // Draw the links on the hamburger menu
             textPaint.setColor(Color.argb(255, 51, 102, 187));
             textPaint.setUnderlineText(true);
             canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
+            canvas.drawText(TWITTER_LINK_TEXT, TWITTER_LINK_X, TWITTER_LINK_Y, textPaint);
             textPaint.setColor(Color.argb(255, 255, 255, 255));
             textPaint.setUnderlineText(false);
 
             // Draw the credits text
             canvas.drawText(CREATED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + hamburgerTextSpacingY, textPaint);
-            canvas.drawText(CREATED_BY_EXTENDED_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
+            canvas.drawText(TWITTER_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (2 * hamburgerTextSpacingY), textPaint);
             canvas.drawText(MUSIC_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY), textPaint);
             canvas.drawText(INSPIRED_BY_TEXT, HAMBURGER_TEXT_X, CREDITS_TEXT_Y + (4 * hamburgerTextSpacingY), textPaint);
         }
