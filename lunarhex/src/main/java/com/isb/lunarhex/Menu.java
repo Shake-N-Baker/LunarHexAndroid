@@ -823,63 +823,9 @@ public class Menu implements InteractiveView
 
         if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
-              int transparency = (int) (fadeTransparencyPercent * (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))));
+            int transparency = (int) (fadeTransparencyPercent * (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))));
 
-            // Draw the preview board
-            if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
-            {
-                List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
-
-                for (int x = 0; x < 5; x++)
-                {
-                    for (int y = 0; y < 6; y++)
-                    {
-                        // The final row only has 2 spaces instead of 5
-                        if (y == 5)
-                        {
-                            if (x != 1 && x != 3)
-                            {
-                                continue;
-                            }
-                        }
-
-                        // Search the colors to see if this index matches their coordinates
-                        boolean colorFound = false;
-                        for (List<Integer> color : board)
-                        {
-                            if (x == color.get(0) && y == color.get(1))
-                            {
-                                circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
-                                colorFound = true;
-                                break;
-                            }
-                        }
-
-                        // Tint the center red and color the rest of the spaces white
-                        if (!colorFound)
-                        {
-                            if (x == 2 && y == 2)
-                            {
-                                circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
-                            }
-                            else
-                            {
-                                circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
-                            }
-                        }
-
-                        // Columns of the board alternate in height
-                        if (x % 2 == 0)
-                        {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
-                        }
-                        else
-                        {
-                            canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
-                        }
-                    }
-                }
-            }
+            drawPreviewBoard(canvas, transparency, viewingLevel, differenceFromCenter);
 
             // Draw the selection circle
             circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
@@ -889,41 +835,7 @@ public class Menu implements InteractiveView
         // Shift everything else the full screen offset amount
         canvas.translate(-1 * screenOffset, 0);
 
-        // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
-        float titleTransparency = 1 - (viewingLevel);
-        if (titleTransparency < 0f)
-        {
-            titleTransparency = 0f;
-        }
-        titlePaint.setColor(Color.argb((int) (fadeTransparencyPercent * titleTransparency * 255), 255, 255, 255));
-
-        // Draw title text
-        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
-
-        // Draw random level text
-        float levelsFromText = viewingLevel;
-        textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
-
-        // Draw level texts
-        for (int level = 1; level < 31; level++)
-        {
-            levelsFromText = viewingLevel - (float) level;
-            if (levelsFromText < 0f)
-            {
-                levelsFromText *= -1f;
-            }
-            Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) (fadeTransparencyPercent * (1f - (levelsFromText / 2.3f)) * 255)));
-            if (newPlayer && level == 1)
-            {
-                textPaint.setColor(Color.argb(255, 255, 255, 255));
-            }
-            else
-            {
-                textPaint.setColor(Color.argb((int) (fadeTransparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-            }
-            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
-        }
+        drawMenuTexts(canvas, fadeTransparencyPercent, viewingLevel);
 
         // Draw new player arrow above first level and animate up and down motion
         if (newPlayer)
@@ -937,6 +849,129 @@ public class Menu implements InteractiveView
         // Draw hamburger menu fixed elements
         canvas.restoreToCount(defaultMatrix);
 
+        drawHamburgerMenu(canvas, fadeTransparencyPercent);
+    }
+
+    /**
+     * Draws the selected levels preview board.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   transparency - 0 to 255 the transparency with which to draw
+     * @param   viewingLevel - The level currently centered on the screen (round to get closest integer)
+     * @param   differenceFromCenter - The distance from being centered on the nearest level
+     */
+    private void drawPreviewBoard(Canvas canvas, int transparency, float viewingLevel, int differenceFromCenter)
+    {
+        if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
+        {
+            List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+
+            for (int x = 0; x < 5; x++)
+            {
+                for (int y = 0; y < 6; y++)
+                {
+                    // The final row only has 2 spaces instead of 5
+                    if (y == 5)
+                    {
+                        if (x != 1 && x != 3)
+                        {
+                            continue;
+                        }
+                    }
+
+                    // Search the colors to see if this index matches their coordinates
+                    boolean colorFound = false;
+                    for (List<Integer> color : board)
+                    {
+                        if (x == color.get(0) && y == color.get(1))
+                        {
+                            circleFilledPaint.setColor((transparency << 24) + (color.get(2) & 0x00FFFFFF));
+                            colorFound = true;
+                            break;
+                        }
+                    }
+
+                    // Tint the center red and color the rest of the spaces white
+                    if (!colorFound)
+                    {
+                        if (x == 2 && y == 2)
+                        {
+                            circleFilledPaint.setColor(Color.argb(transparency, 255, 196, 196));
+                        }
+                        else
+                        {
+                            circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
+                        }
+                    }
+
+                    // Columns of the board alternate in height
+                    if (x % 2 == 0)
+                    {
+                        canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                    }
+                    else
+                    {
+                        canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Draws the levels and title texts.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   transparencyPercent - 0.0 to 1.0 the transparency with which to draw
+     * @param   viewingLevel - The level currently centered on the screen (round to get closest integer)
+     */
+    private void drawMenuTexts(Canvas canvas, float transparencyPercent, float viewingLevel)
+    {
+        // Adjust the title text transparency to fade out when scrolling to levels other than the initial one
+        float titleTransparency = 1 - (viewingLevel);
+        if (titleTransparency < 0f)
+        {
+            titleTransparency = 0f;
+        }
+        titlePaint.setColor(Color.argb((int) (transparencyPercent * titleTransparency * 255), 255, 255, 255));
+
+        // Draw title text
+        canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
+
+        // Draw random level text
+        float levelsFromText = viewingLevel;
+        textPaint.setColor(Color.argb((int) (transparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
+
+        // Draw level texts
+        for (int level = 1; level < 31; level++)
+        {
+            levelsFromText = viewingLevel - (float) level;
+            if (levelsFromText < 0f)
+            {
+                levelsFromText *= -1f;
+            }
+            Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) (transparencyPercent * (1f - (levelsFromText / 2.3f)) * 255)));
+            if (newPlayer && level == 1)
+            {
+                textPaint.setColor(Color.argb(255, 255, 255, 255));
+            }
+            else
+            {
+                textPaint.setColor(Color.argb((int) (transparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+            }
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+        }
+    }
+
+    /**
+     * Draws the hamburger menu icon, text and components.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   transparency - 0.0 to 1.0 the transparency with which to draw
+     */
+    private void drawHamburgerMenu(Canvas canvas, float transparencyPercent)
+    {
         if (hamburgerMenuOpen)
         {
             // Draw hamburger menu shaded background
@@ -976,7 +1011,7 @@ public class Menu implements InteractiveView
         }
 
         // Draw hamburger menu
-        hamburgerMenuPaint.setColor(Color.argb((int) (fadeTransparencyPercent * 255), 255, 255, 255));
+        hamburgerMenuPaint.setColor(Color.argb((int) (transparencyPercent * 255), 255, 255, 255));
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y, hamburgerMenuPaint);
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + HAMBURGER_MENU_SPACING_Y, hamburgerMenuPaint);
         canvas.drawLine(HAMBURGER_MENU_X, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), HAMBURGER_MENU_X + HAMBURGER_MENU_WIDTH, HAMBURGER_MENU_Y + (2 * HAMBURGER_MENU_SPACING_Y), hamburgerMenuPaint);
