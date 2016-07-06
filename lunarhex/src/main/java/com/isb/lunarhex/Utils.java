@@ -50,6 +50,11 @@ public class Utils
     private static Paint iconPaint;
 
     /**
+     * The paint to use with drawing arrows
+     */
+    private static Paint arrowPaint;
+
+    /**
      * The hexagon outline border, initialized on first draw
      */
     private static int hexOutlineBorder = -1;
@@ -756,19 +761,43 @@ public class Utils
             iconPath.close();
             canvas.drawPath(iconPath, iconPaint);
         }
-        else if (type.toLowerCase().equals("arrow"))
+    }
+
+    /**
+     * Draws an arrow at the specified location with the given size.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   transparency - 0.0 to 1.0 the transparency with which to draw
+     * @param   x - X coordinate of center of the icon
+     * @param   y - Y coordinate of center of the icon
+     * @param   radius - The icon radius
+     */
+    public static void drawArrow(Canvas canvas, float transparency, float x, float y, float radius)
+    {
+        if (arrowPaint == null)
         {
-            iconPath = new Path();
-            iconPath.moveTo(x + ((0f / 100f) * width), y + ((50f / 100f) * height));
-            iconPath.lineTo(x + ((25f / 100f) * width), y + ((50f / 100f) * height));
-            iconPath.lineTo(x + ((25f / 100f) * width), y + ((0f / 100f) * height));
-            iconPath.lineTo(x + ((75f / 100f) * width), y + ((0f / 100f) * height));
-            iconPath.lineTo(x + ((75f / 100f) * width), y + ((50f / 100f) * height));
-            iconPath.lineTo(x + ((100f / 100f) * width), y + ((50f / 100f) * height));
-            iconPath.lineTo(x + ((50f / 100f) * width), y + ((100f / 100f) * height));
-            iconPath.close();
-            canvas.drawPath(iconPath, iconPaint);
+            arrowPaint = new Paint();
+            arrowPaint.setStyle(Paint.Style.FILL);
         }
+        arrowPaint.setColor(Color.argb((int) (transparency * 255), 255, 255, 255));
+
+        float diameter = radius * 2f;
+        float width = (float) Math.sqrt((diameter * diameter) / 2f);
+        float height = width;
+        float innerRadius = width / 2f;
+        x -= innerRadius;
+        y -= innerRadius;
+
+        Path arrowPath = new Path();
+        arrowPath.moveTo(x + ((0f / 100f) * width), y + ((50f / 100f) * height));
+        arrowPath.lineTo(x + ((25f / 100f) * width), y + ((50f / 100f) * height));
+        arrowPath.lineTo(x + ((25f / 100f) * width), y + ((0f / 100f) * height));
+        arrowPath.lineTo(x + ((75f / 100f) * width), y + ((0f / 100f) * height));
+        arrowPath.lineTo(x + ((75f / 100f) * width), y + ((50f / 100f) * height));
+        arrowPath.lineTo(x + ((100f / 100f) * width), y + ((50f / 100f) * height));
+        arrowPath.lineTo(x + ((50f / 100f) * width), y + ((100f / 100f) * height));
+        arrowPath.close();
+        canvas.drawPath(arrowPath, arrowPaint);
     }
 
     /**

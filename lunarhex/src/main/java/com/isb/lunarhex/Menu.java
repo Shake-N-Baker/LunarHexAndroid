@@ -843,7 +843,7 @@ public class Menu implements InteractiveView
             arrowCycleFrame++;
             arrowCycleFrame %= NEW_PLAYER_ARROW_CYCLE_FRAMES;
             int arrowHeight = (int) (Math.cos(Math.toRadians(arrowCycleFrame * (360 / NEW_PLAYER_ARROW_CYCLE_FRAMES))) * NEW_PLAYER_ARROW_FLUCTUATING_Y);
-            Utils.drawIcon(canvas, "arrow", NEW_PLAYER_ARROW_X, NEW_PLAYER_ARROW_Y - arrowHeight, SELECTION_CIRCLE_RADIUS / 2);
+            Utils.drawArrow(canvas, fadeTransparencyPercent, NEW_PLAYER_ARROW_X, NEW_PLAYER_ARROW_Y - arrowHeight, SELECTION_CIRCLE_RADIUS / 2);
         }
 
         // Draw hamburger menu fixed elements
@@ -954,7 +954,7 @@ public class Menu implements InteractiveView
             Utils.drawStar(canvas, (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X - (STAR_WIDTH / 2), LEVELS_TOP_LEFT_Y + SELECTION_CIRCLE_RADIUS + (STAR_HEIGHT / 5), STAR_WIDTH, STAR_HEIGHT, Character.getNumericValue(levelClearStates.charAt(Math.round(level) - 1)), Math.max(0, (int) (transparencyPercent * (1f - (levelsFromText / 2.3f)) * 255)));
             if (newPlayer && level == 1)
             {
-                textPaint.setColor(Color.argb(255, 255, 255, 255));
+                textPaint.setColor(Color.argb((int) (transparencyPercent * 255), 255, 255, 255));
             }
             else
             {
