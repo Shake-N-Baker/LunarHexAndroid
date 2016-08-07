@@ -35,10 +35,10 @@ public class Game implements InteractiveView
     private static final String PERFECT_CLEAR = "PERFECT!";
     private static final String INSTRUCTIONS_1 = "SLIDE THE RED PIECE TO THE MIDDLE TO WIN";
     private static final String INSTRUCTIONS_2 = "PIECES MAY ONLY SLIDE INTO OTHER PIECES";
-    private static final float HEX_WIDTH_PERCENT = 18f / 100f;
-    private static final float HEX_HEIGHT_PERCENT = 14f / 100f;
-    private static final float BOARD_X_PERCENT = 14f / 100f;
-    private static final float BOARD_Y_PERCENT = 8f / 100f;
+    public static final float HEX_WIDTH_PERCENT = 18f / 100f;
+    public static final float HEX_HEIGHT_PERCENT = 14f / 100f;
+    public static final float BOARD_X_PERCENT = 14f / 100f;
+    public static final float BOARD_Y_PERCENT = 8f / 100f;
     private static final float EXIT_X_PERCENT = 7f / 100f;
     private static final float EXIT_Y_PERCENT = 12f / 100f;
     private static final float BUTTON_X_PERCENT = 92f / 100f;

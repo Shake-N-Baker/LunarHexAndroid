@@ -258,6 +258,16 @@ public class Menu implements InteractiveView
     private List<Float> previewStartY;
 
     /**
+     * The preview board ending x coordinates, should align with the game board
+     */
+    private List<Float> previewEndX;
+
+    /**
+     * The preview board ending y coordinates, should align with the game board
+     */
+    private List<Float> previewEndY;
+
+    /**
      * The sound volume level from 0 to 100
      */
     private int soundVolume;
@@ -460,6 +470,14 @@ public class Menu implements InteractiveView
         // Generate preview board positions
         previewStartX = new ArrayList<Float>();
         previewStartY = new ArrayList<Float>();
+        previewEndX = new ArrayList<Float>();
+        previewEndY = new ArrayList<Float>();
+        int gameBoardX = Math.round(Game.BOARD_X_PERCENT * screenWidth);
+        int gameBoardY = Math.round(Game.BOARD_Y_PERCENT * screenHeight);
+        int gameHexWidth = Math.round(Game.HEX_WIDTH_PERCENT * screenWidth);
+        int gameHexHeight = Math.round(Game.HEX_HEIGHT_PERCENT * screenHeight);
+        gameBoardX += (gameHexWidth / 2f);
+        gameBoardY += (gameHexHeight / 2f);
         for (int x = 0; x < 5; x++)
         {
             for (int y = 0; y < 6; y++)
@@ -474,14 +492,17 @@ public class Menu implements InteractiveView
                 }
 
                 previewStartX.add((float) ((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X));
+                previewEndX.add((float) ((gameHexWidth * 0.75f * x) + gameBoardX));
                 // Columns of the board alternate in height
                 if (x % 2 == 0)
                 {
                     previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y));
+                    previewEndY.add((float) ((gameHexHeight * ((float) y + 0.5f)) + gameBoardY));
                 }
                 else
                 {
                     previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y));
+                    previewEndY.add((float) ((gameHexHeight * y) + gameBoardY));
                 }
             }
         }
@@ -706,12 +727,9 @@ public class Menu implements InteractiveView
     }
 
     /**
-     * Handles the updates to the current canvas and menu frame logic.
-     *
-     * @param   canvas - The canvas to draw on
-     * @param   framesPerSecond - The frames per second for debugging
+     * Updates the fading transition and sends an event when finished.
      */
-    public void update(Canvas canvas, float framesPerSecond)
+    private void handleFade()
     {
         if (fadingIn || fadingOut)
         {
@@ -731,6 +749,13 @@ public class Menu implements InteractiveView
                 }
             }
         }
+    }
+
+    /**
+     * Handles updating the screens velocity and tracks the drag path.
+     */
+    private void handleScreenVelocityAndDragPath()
+    {
         if (!dragging)
         {
             // Continue moving with the momentum of the finished drag events or scroll to the nearest level
@@ -807,8 +832,18 @@ public class Menu implements InteractiveView
             dragPathX.remove(dragPathX.size() - 1);
             dragDuration += 1;
         }
+    }
 
-        // Draw the menu
+    /**
+     * Handles the updates to the current canvas and menu frame logic.
+     *
+     * @param   canvas - The canvas to draw on
+     * @param   framesPerSecond - The frames per second for debugging
+     */
+    public void update(Canvas canvas, float framesPerSecond)
+    {
+        handleFade();
+        handleScreenVelocityAndDragPath();
         drawMenu(canvas);
     }
 
@@ -944,7 +979,21 @@ public class Menu implements InteractiveView
                             circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
                         }
                     }
-                    canvas.drawCircle(previewStartX.get(index), previewStartY.get(index), (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                    int easingTime = MainView.TRANSITION_FRAMES - fadeFrame;
+                    float easingStartX = previewEndX.get(index);
+                    float easingStartY = previewEndY.get(index);
+                    float easingChangeX = previewStartX.get(index) - previewEndX.get(index);
+                    float easingChangeY = previewStartY.get(index) - previewEndY.get(index);
+                    if (fadingOut)
+                    {
+                        easingStartX = previewStartX.get(index);
+                        easingStartY = previewStartY.get(index);
+                        easingChangeX = previewEndX.get(index) - previewStartX.get(index);
+                        easingChangeY = previewEndY.get(index) - previewStartY.get(index);
+                    }
+                    float easingX = (float) Utils.easeOut(easingTime, easingStartX, easingChangeX, MainView.TRANSITION_FRAMES);
+                    float easingY = (float) Utils.easeOut(easingTime, easingStartY, easingChangeY, MainView.TRANSITION_FRAMES);
+                    canvas.drawCircle(easingX, easingY, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                 }
             }
         }
