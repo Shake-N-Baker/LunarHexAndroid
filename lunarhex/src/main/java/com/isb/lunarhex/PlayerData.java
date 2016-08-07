@@ -94,7 +94,7 @@ public class PlayerData
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putInt(PlayerData.activity.getString(R.string.save_sound_volume), volume);
         editor.apply();
-        AudioManager.setSoundVolume(volume / 100f);
+        SoundManager.setSoundVolume(volume / 100f);
     }
 
     /**
@@ -119,6 +119,6 @@ public class PlayerData
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putInt(PlayerData.activity.getString(R.string.save_music_volume), volume);
         editor.apply();
-        AudioManager.setMusicVolume(volume / 100f);
+        SoundManager.setMusicVolume(volume / 100f);
     }
 }

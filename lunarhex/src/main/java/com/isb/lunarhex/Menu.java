@@ -469,7 +469,7 @@ public class Menu implements InteractiveView
                             hamburgerMenuOpen = false;
                             PlayerData.setSoundVolume(soundVolume);
                             PlayerData.setMusicVolume(musicVolume);
-                            AudioManager.play(R.raw.tap);
+                            SoundManager.play(R.raw.tap);
                         }
                     }
                     if (((GITHUB_LINK_X - GITHUB_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (GITHUB_LINK_X + githubLinkWidth + GITHUB_LINK_TOUCH_BUFFER_X)) && ((GITHUB_LINK_Y - GITHUB_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (GITHUB_LINK_Y + hamburgerMenuTextHeight + GITHUB_LINK_TOUCH_BUFFER_Y)))
@@ -541,7 +541,7 @@ public class Menu implements InteractiveView
                             // Selected the hamburger menu
                             nothingClicked = false;
                             hamburgerMenuOpen = true;
-                            AudioManager.play(R.raw.tap);
+                            SoundManager.play(R.raw.tap);
                         }
                     }
                     if (dragDuration < 12)
@@ -559,7 +559,7 @@ public class Menu implements InteractiveView
                                     fadingOut = true;
                                     fadeFrame = MainView.TRANSITION_FRAMES;
                                     fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
-                                    AudioManager.play(R.raw.tap);
+                                    SoundManager.play(R.raw.tap);
                                 }
                                 else
                                 {
@@ -568,7 +568,7 @@ public class Menu implements InteractiveView
                                     fadingOut = true;
                                     fadeFrame = MainView.TRANSITION_FRAMES;
                                     fadeOutEvent = new CustomEvent(CustomEvent.START_LEVEL, String.valueOf(Math.round(viewingLevel) - 1));
-                                    AudioManager.play(R.raw.tap);
+                                    SoundManager.play(R.raw.tap);
                                 }
                             }
                         }

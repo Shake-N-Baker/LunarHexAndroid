@@ -51,7 +51,7 @@ public class MainActivity extends Activity
     private void startWithState(Bundle savedInstanceState)
     {
         PlayerData.initialize(this);
-        AudioManager.initialize(this);
+        SoundManager.initialize(this);
         mainView = (MainView) findViewById(R.id.view);
         mainView.initialize(savedInstanceState);
     }

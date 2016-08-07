@@ -4,14 +4,14 @@ import android.content.Context;
 import android.media.MediaPlayer;
 
 /**
- * The audio manager handles sound and music for the game.
+ * The sound manager handles sound and music for the game.
  *
  * @author Ian Baker
  */
-public class AudioManager
+public class SoundManager
 {
     /**
-     * Reference to the singleton media player
+     * Reference to the media player used for music
      */
     private static MediaPlayer mediaPlayer;
 
@@ -35,7 +35,7 @@ public class AudioManager
      */
     public static void initialize(Context context)
     {
-        AudioManager.context = context;
+        SoundManager.context = context;
         soundVolume = PlayerData.getSoundVolume() / 100f;
         musicVolume = PlayerData.getMusicVolume() / 100f;
     }
@@ -52,16 +52,20 @@ public class AudioManager
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        /// TODO: Fix this for samsung galaxy s7 edge
         mediaPlayer = MediaPlayer.create(context, audioID);
-        if (audioID == R.raw.hit || audioID == R.raw.slide || audioID == R.raw.tap)
+        if (mediaPlayer != null)
         {
-            mediaPlayer.setVolume(soundVolume, soundVolume);
+            if (audioID == R.raw.hit || audioID == R.raw.slide || audioID == R.raw.tap)
+            {
+                mediaPlayer.setVolume(soundVolume, soundVolume);
+            }
+            else
+            {
+                mediaPlayer.setVolume(musicVolume, musicVolume);
+            }
+            mediaPlayer.start();
         }
-        else
-        {
-            mediaPlayer.setVolume(musicVolume, musicVolume);
-        }
-        mediaPlayer.start();
     }
 
     /**
@@ -71,7 +75,7 @@ public class AudioManager
      */
     public static void setSoundVolume(float volume)
     {
-        AudioManager.soundVolume = volume;
+        SoundManager.soundVolume = volume;
     }
 
     /**
@@ -81,6 +85,6 @@ public class AudioManager
      */
     public static void setMusicVolume(float volume)
     {
-        AudioManager.musicVolume = volume;
+        SoundManager.musicVolume = volume;
     }
 }
