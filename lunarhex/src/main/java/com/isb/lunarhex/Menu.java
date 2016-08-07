@@ -248,6 +248,16 @@ public class Menu implements InteractiveView
     private CustomEvent fadeOutEvent;
 
     /**
+     * The preview board starting x coordinates
+     */
+    private List<Float> previewStartX;
+
+    /**
+     * The preview board starting y coordinates
+     */
+    private List<Float> previewStartY;
+
+    /**
      * The sound volume level from 0 to 100
      */
     private int soundVolume;
@@ -446,6 +456,35 @@ public class Menu implements InteractiveView
         // Generate the hamburger menu tinted background
         hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         hamburgerBackground.eraseColor(Color.argb(192, 0, 0, 0));
+
+        // Generate preview board positions
+        previewStartX = new ArrayList<Float>();
+        previewStartY = new ArrayList<Float>();
+        for (int x = 0; x < 5; x++)
+        {
+            for (int y = 0; y < 6; y++)
+            {
+                // The final row only has 2 spaces instead of 5
+                if (y == 5)
+                {
+                    if (x != 1 && x != 3)
+                    {
+                        continue;
+                    }
+                }
+
+                previewStartX.add((float) ((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X));
+                // Columns of the board alternate in height
+                if (x % 2 == 0)
+                {
+                    previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y));
+                }
+                else
+                {
+                    previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y));
+                }
+            }
+        }
     }
 
     /**
@@ -865,6 +904,7 @@ public class Menu implements InteractiveView
         if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
         {
             List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
+            int index = -1;
 
             for (int x = 0; x < 5; x++)
             {
@@ -878,6 +918,7 @@ public class Menu implements InteractiveView
                             continue;
                         }
                     }
+                    index++;
 
                     // Search the colors to see if this index matches their coordinates
                     boolean colorFound = false;
@@ -903,16 +944,7 @@ public class Menu implements InteractiveView
                             circleFilledPaint.setColor(Color.argb(transparency, 255, 255, 255));
                         }
                     }
-
-                    // Columns of the board alternate in height
-                    if (x % 2 == 0)
-                    {
-                        canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
-                    }
-                    else
-                    {
-                        canvas.drawCircle((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X, (PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
-                    }
+                    canvas.drawCircle(previewStartX.get(index), previewStartY.get(index), (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
                 }
             }
         }
