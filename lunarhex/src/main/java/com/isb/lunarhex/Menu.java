@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.view.MotionEvent;
@@ -110,6 +111,8 @@ public class Menu implements InteractiveView
     private static int PREVIEW_BOARD_Y;
     private static int PREVIEW_BOARD_SPACING_X;
     private static int PREVIEW_BOARD_SPACING_Y;
+    private static int HEX_WIDTH;
+    private static int HEX_HEIGHT;
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
     private static int LEVELS_SPACING_X;
@@ -395,6 +398,8 @@ public class Menu implements InteractiveView
         PREVIEW_BOARD_Y = Math.round(PREVIEW_BOARD_Y_PERCENT * screenHeight);
         PREVIEW_BOARD_SPACING_X = Math.round(PREVIEW_BOARD_SPACING_X_PERCENT * screenWidth);
         PREVIEW_BOARD_SPACING_Y = Math.round(PREVIEW_BOARD_SPACING_Y_PERCENT * screenHeight);
+        HEX_WIDTH = Math.round(Game.HEX_WIDTH_PERCENT * screenWidth);
+        HEX_HEIGHT = Math.round(Game.HEX_WIDTH_PERCENT * screenHeight);
         TRANSITION_DISTANCE_X = Math.round(TRANSITION_DISTANCE_X_PERCENT * screenWidth);
         MAX_DRAG_VELOCITY_X = Math.round(MAX_DRAG_VELOCITY_X_PERCENT * screenWidth);
         DRAG_VELOCITY_RESISTANCE_X = Math.round(DRAG_VELOCITY_RESISTANCE_X_PERCENT * screenWidth);
@@ -897,7 +902,7 @@ public class Menu implements InteractiveView
 
         if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
         {
-            int transparency = (int) (fadeTransparencyPercent * (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))));
+            int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
 
             drawPreviewBoard(canvas, transparency, viewingLevel, differenceFromCenter);
 
@@ -993,7 +998,35 @@ public class Menu implements InteractiveView
                     }
                     float easingX = (float) Utils.easeOut(easingTime, easingStartX, easingChangeX, MainView.TRANSITION_FRAMES);
                     float easingY = (float) Utils.easeOut(easingTime, easingStartY, easingChangeY, MainView.TRANSITION_FRAMES);
-                    canvas.drawCircle(easingX, easingY, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                    if (fadingIn || fadingOut)
+                    {
+                        float radius = (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO;
+                        float radius_width;
+                        float radius_height;
+                        if (fadingIn)
+                        {
+                            radius_width = (float) Utils.easeIn(easingTime, (HEX_WIDTH / 2), radius - (HEX_WIDTH / 2), MainView.TRANSITION_FRAMES);
+                            radius_height = (float) Utils.easeIn(easingTime, (HEX_HEIGHT / 2), radius - (HEX_HEIGHT / 2), MainView.TRANSITION_FRAMES);
+                        }
+                        else
+                        {
+                            radius_width = (float) Utils.easeOut(easingTime, radius, (HEX_WIDTH / 2) - radius, MainView.TRANSITION_FRAMES);
+                            radius_height = (float) Utils.easeOut(easingTime, radius, (HEX_HEIGHT / 2) - radius, MainView.TRANSITION_FRAMES);
+                        }
+                        Path p = new Path();
+                        p.moveTo(easingX - radius_width, easingY);
+                        p.lineTo(easingX - (0.5f * radius_width), easingY + (0.866f * radius_height));
+                        p.lineTo(easingX + (0.5f * radius_width), easingY + (0.866f * radius_height));
+                        p.lineTo(easingX + radius_width, easingY);
+                        p.lineTo(easingX + (0.5f * radius_width), easingY - (0.866f * radius_height));
+                        p.lineTo(easingX - (0.5f * radius_width), easingY - (0.866f * radius_height));
+                        p.close();
+                        canvas.drawPath(p, circleFilledPaint);
+                    }
+                    else
+                    {
+                        canvas.drawCircle(easingX, easingY, (float) (SELECTION_CIRCLE_RADIUS - differenceFromCenter) / SELECTION_CIRCLE_TO_PREVIEW_BOARD_RATIO, circleFilledPaint);
+                    }
                 }
             }
         }

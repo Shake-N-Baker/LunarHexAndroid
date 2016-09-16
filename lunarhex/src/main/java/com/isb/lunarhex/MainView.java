@@ -32,7 +32,7 @@ public class MainView extends SurfaceView implements Runnable
      */
     private static final int FRAME_RATE = 60;
     private static final int DIMENSIONS_CHECK_FRAME = 10;
-    public static final int TRANSITION_FRAMES = 10;
+    public static final int TRANSITION_FRAMES = 20;
     public static int FONT_SIZE_20_SP;
     public static int FONT_SIZE_30_SP;
     public static int FONT_SIZE_60_SP;
