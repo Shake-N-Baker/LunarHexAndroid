@@ -741,6 +741,7 @@ public class Menu implements InteractiveView
             fadeFrame--;
             if (fadeFrame <= 0)
             {
+                fadeFrame = 0;
                 if (fadingIn)
                 {
                     fadingIn = false;
@@ -748,8 +749,6 @@ public class Menu implements InteractiveView
                 }
                 else
                 {
-                    fadingIn = false;
-                    fadingOut = false;
                     mainView.handleEvent(fadeOutEvent);
                 }
             }
@@ -1005,6 +1004,8 @@ public class Menu implements InteractiveView
                         float radius_height;
                         if (fadingIn)
                         {
+                            easingX = (float) Utils.easeIn(easingTime, easingStartX, easingChangeX, MainView.TRANSITION_FRAMES);
+                            easingY = (float) Utils.easeIn(easingTime, easingStartY, easingChangeY, MainView.TRANSITION_FRAMES);
                             radius_width = (float) Utils.easeIn(easingTime, (HEX_WIDTH / 2), radius - (HEX_WIDTH / 2), MainView.TRANSITION_FRAMES);
                             radius_height = (float) Utils.easeIn(easingTime, (HEX_HEIGHT / 2), radius - (HEX_HEIGHT / 2), MainView.TRANSITION_FRAMES);
                         }
