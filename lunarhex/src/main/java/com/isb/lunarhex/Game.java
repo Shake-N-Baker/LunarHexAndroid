@@ -138,6 +138,21 @@ public class Game implements InteractiveView
     private Rect optionsPanelRect;
 
     /**
+     * Whether the game is fading in
+     */
+    private boolean fadingIn;
+
+    /**
+     * Whether the game is fading out
+     */
+    private boolean fadingOut;
+
+    /**
+     * The number of frames left before the fade is finished
+     */
+    private int fadeFrame;
+
+    /**
      * The screen width
      */
     private int screenWidth;
@@ -174,6 +189,11 @@ public class Game implements InteractiveView
      * The paint used for text
      */
     private Paint textPaint;
+
+    /**
+     * The paint used for drawing the icon bitmaps
+     */
+    private Paint iconPaint;
 
     /**
      * The paint used for the options panel
@@ -366,6 +386,7 @@ public class Game implements InteractiveView
         optionsPaint = new Paint();
         optionsPaint.setColor(Color.argb(196, 0, 0, 0));
         optionsPaint.setStyle(Paint.Style.FILL);
+        iconPaint = new Paint();
         debugPaint = new Paint();
         debugPaint.setColor(Color.GREEN);
         debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
@@ -611,6 +632,7 @@ public class Game implements InteractiveView
     public void update(Canvas canvas, float framesPerSecond)
     {
         // Update
+        handleFade();
         handleButtonHeldDown();
         processSlide();
 
@@ -637,6 +659,30 @@ public class Game implements InteractiveView
         canvas.drawCircle(Touch.x, Touch.y, 5, paint);
         /// TODO: Remove draw debug frames per second, ALSO remove framesPerSecond argument (also in interface)
         canvas.drawText(String.valueOf(framesPerSecond), 10, screenHeight - 10, debugPaint);
+    }
+
+    /**
+     * Updates the fading transition and sends an event when finished.
+     */
+    private void handleFade()
+    {
+        if (fadingIn || fadingOut)
+        {
+            fadeFrame--;
+            if (fadeFrame <= 0)
+            {
+                fadeFrame = 0;
+                if (fadingIn)
+                {
+                    fadingIn = false;
+                    fadingOut = false;
+                }
+                else
+                {
+                    mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
+                }
+            }
+        }
     }
 
     /**
@@ -744,264 +790,268 @@ public class Game implements InteractiveView
      */
     public void handleTouch(MotionEvent motionEvent)
     {
-        if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+        if (!fadingIn && !fadingOut)
         {
-            if (slideFrame <= 0) ignoreTouch = false;
-        }
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN)
+            {
+                if (slideFrame <= 0) ignoreTouch = false;
+            }
 
-        // Don't allow touch events while animating the slide move
-        if (slideFrame > 0 || ignoreTouch)
-        {
-            ignoreTouch = true;
-            return;
-        }
+            // Don't allow touch events while animating the slide move
+            if (slideFrame > 0 || ignoreTouch)
+            {
+                ignoreTouch = true;
+                return;
+            }
 
-        int foundHex = findHex();
+            int foundHex = findHex();
 
-        // Respond to touch event with proper game response
-        switch (motionEvent.getAction())
-        {
-            case MotionEvent.ACTION_DOWN:
-                tapping = true;
-                if (!optionsOpen && foundHex != -1)
-                {
-                    // Select the hexagon if a piece exists on top of it and its not already selected
-                    if(hexSelect != foundHex)
+            // Respond to touch event with proper game response
+            switch (motionEvent.getAction())
+            {
+                case MotionEvent.ACTION_DOWN:
+                    tapping = true;
+                    if (!optionsOpen && foundHex != -1)
                     {
-                        if (Utils.pieceAtIndex(foundHex, boardState))
+                        // Select the hexagon if a piece exists on top of it and its not already selected
+                        if(hexSelect != foundHex)
                         {
-                            hexSelect = foundHex;
-                            selectionSetThisTap = true;
-                            List<List<Integer>> pathIndices = Utils.getPathIndices(boardState, hexSelect);
-                            moveIndices = pathIndices.get(0);
-                            stopIndices = pathIndices.get(1);
-                        }
-                    }
-                }
-                else if (!optionsOpen) // Selecting outside of the board, clear selection
-                {
-                    hexSelect = -1;
-                    moveIndices.clear();
-                    stopIndices.clear();
-                }
-                else if (optionsOpen) // Start tracking which options button is being held down
-                {
-                    if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min minus
-                    {
-                        buttonHeldDown = "movesMinMinus";
-                    }
-                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min plus
-                    {
-                        buttonHeldDown = "movesMinPlus";
-                    }
-                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max minus
-                    {
-                        buttonHeldDown = "movesMaxMinus";
-                    }
-                    else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max plus
-                    {
-                        buttonHeldDown = "movesMaxPlus";
-                    }
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                // Clear held button
-                buttonHeldDown = "";
-                buttonHeldDownFrames = 0;
-                if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateX, generateY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateX, generateY) < BUTTON_RADIUS))) // Generate New Board
-                {
-                    SoundManager.play(R.raw.tap);
-                    newBoardState();
-                }
-                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateOptionsX, generateOptionsY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateOptionsX, generateOptionsY) < BUTTON_RADIUS))) // Open Board Options
-                {
-                    SoundManager.play(R.raw.tap);
-                    optionsOpen = true;
-
-                    // Cache image of the current game scene with options menu open to speed up drawing
-                    cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
-                    Canvas c = new Canvas(cachedGameSceneWithOptionsOpen);
-                    drawBoard(c);
-                    drawHighlight(c);
-                    drawObjectsOnBoard(c);
-                    c.drawBitmap(optionsBackground, 0, 0, null);
-                    c.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
-                    c.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
-                    c.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
-                    c.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
-                }
-                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, retryX, retryY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, retryX, retryY) < BUTTON_RADIUS))) // Reset
-                {
-                    SoundManager.play(R.raw.tap);
-                    boardState = initialBoardState;
-                    currentMove = 0;
-                    hexSelect = -1;
-                    moveIndices.clear();
-                    stopIndices.clear();
-                }
-                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, hintX, hintY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, hintX, hintY) < BUTTON_RADIUS))) // Step Hint
-                {
-                    boolean enabled = true;
-                    if (currentLevel != -1)
-                    {
-                        if (PlayerData.getLevelClearStates().charAt(currentLevel) != '2')
-                        {
-                            enabled = false;
-                        }
-                    }
-                    if (enabled)
-                    {
-                        int solutionIndex = solution.indexOf(boardState);
-                        if (solutionIndex == -1) {
-                            boardState = solution.get(0);
-                            currentMove = 0;
-                        } else if (solutionIndex != solution.size() - 1) {
-                            List<Integer> move_index = Utils.getMoveIndices(boardState, solution.get(solutionIndex + 1));
-                            attemptMove(move_index.get(0), move_index.get(1));
-                        }
-                        hexSelect = -1;
-                        moveIndices.clear();
-                        stopIndices.clear();
-                    }
-                }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS))) // Close Board Options
-                {
-                    SoundManager.play(R.raw.tap);
-                    optionsOpen = false;
-                }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
-                {
-                    generationMinMoves--;
-                    if (generationMinMoves < 1)
-                    {
-                        generationMinMoves = 1;
-                    }
-                    else
-                    {
-                        SoundManager.play(R.raw.tap);
-                    }
-                }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
-                {
-                    generationMinMoves++;
-                    if (generationMinMoves > 20)
-                    {
-                        generationMinMoves = 20;
-                    }
-                    else
-                    {
-                        SoundManager.play(R.raw.tap);
-                    }
-                    if (generationMaxMoves < generationMinMoves)
-                    {
-                        generationMaxMoves = generationMinMoves;
-                    }
-                }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
-                {
-                    generationMaxMoves--;
-                    if (generationMaxMoves < 1)
-                    {
-                        generationMaxMoves = 1;
-                    }
-                    else
-                    {
-                        SoundManager.play(R.raw.tap);
-                    }
-                    if (generationMaxMoves < generationMinMoves)
-                    {
-                        generationMinMoves = generationMaxMoves;
-                    }
-                }
-                else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
-                {
-                    generationMaxMoves++;
-                    if (generationMaxMoves > 20)
-                    {
-                        generationMaxMoves = 20;
-                    }
-                    else
-                    {
-                        SoundManager.play(R.raw.tap);
-                    }
-                }
-                else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
-                {
-                    SoundManager.play(R.raw.tap);
-                    mainView.handleEvent(new CustomEvent(CustomEvent.EXIT_GAME));
-                }
-                else if (optionsOpen && (!optionsPanelRect.contains(Touch.x, Touch.y) && !optionsPanelRect.contains(Touch.downX, Touch.downY))) // Touching outside options panel
-                {
-                    optionsOpen = false;
-                }
-                else if (!optionsOpen && foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
-                {
-                    if (moveIndices.indexOf(foundHex) != -1)
-                    {
-                        // Released touch on the path, attempt to move to the end of the path
-                        int pathDir = Utils.getMoveDirection(hexSelect, foundHex);
-                        for (int i = 0; i < stopIndices.size(); i++)
-                        {
-                            if (Utils.getMoveDirection(hexSelect, stopIndices.get(i)) == pathDir)
+                            if (Utils.pieceAtIndex(foundHex, boardState))
                             {
-                                attemptMove(hexSelect, stopIndices.get(i));
-                                break;
+                                hexSelect = foundHex;
+                                selectionSetThisTap = true;
+                                List<List<Integer>> pathIndices = Utils.getPathIndices(boardState, hexSelect);
+                                moveIndices = pathIndices.get(0);
+                                stopIndices = pathIndices.get(1);
                             }
                         }
                     }
-                    else
-                    {
-                        attemptMove(hexSelect, foundHex);
-                    }
-                    if (moving || !selectionSetThisTap)
+                    else if (!optionsOpen) // Selecting outside of the board, clear selection
                     {
                         hexSelect = -1;
                         moveIndices.clear();
                         stopIndices.clear();
                     }
-                }
-                selectionSetThisTap = false;
-                tapping = false;
-                playerWon = Utils.boardSolved(boardState);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                // Check for touchs moving off a held button
-                if (optionsOpen)
-                {
-                    if (buttonHeldDown == "movesMinMinus")
+                    else if (optionsOpen) // Start tracking which options button is being held down
                     {
-                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
+                        if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min minus
                         {
-                            buttonHeldDown = "";
-                            buttonHeldDownFrames = 0;
+                            buttonHeldDown = "movesMinMinus";
+                        }
+                        else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS)) // Moves min plus
+                        {
+                            buttonHeldDown = "movesMinPlus";
+                        }
+                        else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max minus
+                        {
+                            buttonHeldDown = "movesMaxMinus";
+                        }
+                        else if ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS)) // Moves max plus
+                        {
+                            buttonHeldDown = "movesMaxPlus";
                         }
                     }
-                    else if (buttonHeldDown == "movesMinPlus")
+                    break;
+                case MotionEvent.ACTION_UP:
+                    // Clear held button
+                    buttonHeldDown = "";
+                    buttonHeldDownFrames = 0;
+                    if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateX, generateY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateX, generateY) < BUTTON_RADIUS))) // Generate New Board
                     {
-                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
+                        SoundManager.play(R.raw.tap);
+                        newBoardState();
+                    }
+                    else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, generateOptionsX, generateOptionsY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, generateOptionsX, generateOptionsY) < BUTTON_RADIUS))) // Open Board Options
+                    {
+                        SoundManager.play(R.raw.tap);
+                        optionsOpen = true;
+
+                        // Cache image of the current game scene with options menu open to speed up drawing
+                        cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
+                        Canvas c = new Canvas(cachedGameSceneWithOptionsOpen);
+                        drawBoard(c);
+                        drawHighlight(c);
+                        drawObjectsOnBoard(c);
+                        c.drawBitmap(optionsBackground, 0, 0, null);
+                        c.drawText(OPTIONS_TITLE_1, OPTIONS_PANEL_TEXT_TITLE_1_X, OPTIONS_PANEL_TEXT_TITLE_1_Y, textPaint);
+                        c.drawText(OPTIONS_TITLE_2, OPTIONS_PANEL_TEXT_TITLE_2_X, OPTIONS_PANEL_TEXT_TITLE_2_Y, textPaint);
+                        c.drawText(OPTIONS_MAXIMUM, OPTIONS_PANEL_TEXT_MAX_X, OPTIONS_PANEL_TEXT_MAX_Y, textPaint);
+                        c.drawText(OPTIONS_MINIMUM, OPTIONS_PANEL_TEXT_MIN_X, OPTIONS_PANEL_TEXT_MIN_Y, textPaint);
+                    }
+                    else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, retryX, retryY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, retryX, retryY) < BUTTON_RADIUS))) // Reset
+                    {
+                        SoundManager.play(R.raw.tap);
+                        boardState = initialBoardState;
+                        currentMove = 0;
+                        hexSelect = -1;
+                        moveIndices.clear();
+                        stopIndices.clear();
+                    }
+                    else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, hintX, hintY) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, hintX, hintY) < BUTTON_RADIUS))) // Step Hint
+                    {
+                        boolean enabled = true;
+                        if (currentLevel != -1)
                         {
-                            buttonHeldDown = "";
-                            buttonHeldDownFrames = 0;
+                            if (PlayerData.getLevelClearStates().charAt(currentLevel) != '2')
+                            {
+                                enabled = false;
+                            }
+                        }
+                        if (enabled)
+                        {
+                            int solutionIndex = solution.indexOf(boardState);
+                            if (solutionIndex == -1) {
+                                boardState = solution.get(0);
+                                currentMove = 0;
+                            } else if (solutionIndex != solution.size() - 1) {
+                                List<Integer> move_index = Utils.getMoveIndices(boardState, solution.get(solutionIndex + 1));
+                                attemptMove(move_index.get(0), move_index.get(1));
+                            }
+                            hexSelect = -1;
+                            moveIndices.clear();
+                            stopIndices.clear();
                         }
                     }
-                    else if (buttonHeldDown == "movesMaxMinus")
+                    else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, CLOSE_OPTIONS_X, CLOSE_OPTIONS_Y) < BUTTON_RADIUS))) // Close Board Options
                     {
-                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
+                        SoundManager.play(R.raw.tap);
+                        optionsOpen = false;
+                    }
+                    else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
+                    {
+                        generationMinMoves--;
+                        if (generationMinMoves < 1)
                         {
-                            buttonHeldDown = "";
-                            buttonHeldDownFrames = 0;
+                            generationMinMoves = 1;
+                        }
+                        else
+                        {
+                            SoundManager.play(R.raw.tap);
                         }
                     }
-                    else if (buttonHeldDown == "movesMaxPlus")
+                    else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
                     {
-                        if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
+                        generationMinMoves++;
+                        if (generationMinMoves > 20)
                         {
-                            buttonHeldDown = "";
-                            buttonHeldDownFrames = 0;
+                            generationMinMoves = 20;
+                        }
+                        else
+                        {
+                            SoundManager.play(R.raw.tap);
+                        }
+                        if (generationMaxMoves < generationMinMoves)
+                        {
+                            generationMaxMoves = generationMinMoves;
                         }
                     }
-                }
-                break;
+                    else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
+                    {
+                        generationMaxMoves--;
+                        if (generationMaxMoves < 1)
+                        {
+                            generationMaxMoves = 1;
+                        }
+                        else
+                        {
+                            SoundManager.play(R.raw.tap);
+                        }
+                        if (generationMaxMoves < generationMinMoves)
+                        {
+                            generationMinMoves = generationMaxMoves;
+                        }
+                    }
+                    else if (optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
+                    {
+                        generationMaxMoves++;
+                        if (generationMaxMoves > 20)
+                        {
+                            generationMaxMoves = 20;
+                        }
+                        else
+                        {
+                            SoundManager.play(R.raw.tap);
+                        }
+                    }
+                    else if (!optionsOpen && ((Utils.distanceBetweenPoints(Touch.x, Touch.y, EXIT_X, EXIT_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, EXIT_X, EXIT_Y) < BUTTON_RADIUS))) // Exit game
+                    {
+                        SoundManager.play(R.raw.tap);
+                        fadingOut = true;
+                        fadeFrame = MainView.TRANSITION_FRAMES;
+                    }
+                    else if (optionsOpen && (!optionsPanelRect.contains(Touch.x, Touch.y) && !optionsPanelRect.contains(Touch.downX, Touch.downY))) // Touching outside options panel
+                    {
+                        optionsOpen = false;
+                    }
+                    else if (!optionsOpen && foundHex != -1) // Attempt to move selected hexagon to hexagon at the release point of the touch
+                    {
+                        if (moveIndices.indexOf(foundHex) != -1)
+                        {
+                            // Released touch on the path, attempt to move to the end of the path
+                            int pathDir = Utils.getMoveDirection(hexSelect, foundHex);
+                            for (int i = 0; i < stopIndices.size(); i++)
+                            {
+                                if (Utils.getMoveDirection(hexSelect, stopIndices.get(i)) == pathDir)
+                                {
+                                    attemptMove(hexSelect, stopIndices.get(i));
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            attemptMove(hexSelect, foundHex);
+                        }
+                        if (moving || !selectionSetThisTap)
+                        {
+                            hexSelect = -1;
+                            moveIndices.clear();
+                            stopIndices.clear();
+                        }
+                    }
+                    selectionSetThisTap = false;
+                    tapping = false;
+                    playerWon = Utils.boardSolved(boardState);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    // Check for touchs moving off a held button
+                    if (optionsOpen)
+                    {
+                        if (buttonHeldDown == "movesMinMinus")
+                        {
+                            if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min minus
+                            {
+                                buttonHeldDown = "";
+                                buttonHeldDownFrames = 0;
+                            }
+                        }
+                        else if (buttonHeldDown == "movesMinPlus")
+                        {
+                            if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MIN_Y) < BUTTON_RADIUS))) // Moves min plus
+                            {
+                                buttonHeldDown = "";
+                                buttonHeldDownFrames = 0;
+                            }
+                        }
+                        else if (buttonHeldDown == "movesMaxMinus")
+                        {
+                            if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_MINUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max minus
+                            {
+                                buttonHeldDown = "";
+                                buttonHeldDownFrames = 0;
+                            }
+                        }
+                        else if (buttonHeldDown == "movesMaxPlus")
+                        {
+                            if (!((Utils.distanceBetweenPoints(Touch.x, Touch.y, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS) && (Utils.distanceBetweenPoints(Touch.downX, Touch.downY, MOVES_PLUS_X, MOVES_MAX_Y) < BUTTON_RADIUS))) // Moves max plus
+                            {
+                                buttonHeldDown = "";
+                                buttonHeldDownFrames = 0;
+                            }
+                        }
+                    }
+                    break;
+            }
         }
     }
 
@@ -1209,20 +1259,20 @@ public class Game implements InteractiveView
         // Draw icons and text
         String textToDraw = "";
         int textX = 0;
-        boolean textDrawn = false;
+        boolean textVisible = false;
         if (playerWon)
         {
             if (currentMove == (solution.size() - 1))
             {
                 textToDraw = PERFECT_CLEAR;
                 textX = PERFECT_CLEAR_X;
-                textDrawn = true;
+                textVisible = true;
             }
             else
             {
                 textToDraw = CLEAR;
                 textX = CLEAR_X;
-                textDrawn = true;
+                textVisible = true;
             }
         }
         else
@@ -1231,24 +1281,43 @@ public class Game implements InteractiveView
             {
                 textToDraw = INSTRUCTIONS_1;
                 textX = INSTRUCTIONS_1_X;
-                textDrawn = true;
+                textVisible = true;
             }
             else if (currentLevel == 1)
             {
                 textToDraw = INSTRUCTIONS_2;
                 textX = INSTRUCTIONS_2_X;
-                textDrawn = true;
+                textVisible = true;
             }
         }
-        if (textDrawn)
+        // Set icon and text transparency
+        if (fadingIn || fadingOut)
         {
-            canvas.drawBitmap(textBackground, 0, 0, null);
-            canvas.drawBitmap(iconBitmap, 0, 0, null);
+            if (fadingIn)
+            {
+                textPaint.setColor(Color.argb((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255), 255, 255, 255));
+                iconPaint.setAlpha((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255));
+            }
+            else
+            {
+                textPaint.setColor(Color.argb((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255), 255, 255, 255));
+                iconPaint.setAlpha((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255));
+            }
+        }
+        else
+        {
+            textPaint.setColor(Color.argb(255, 255, 255, 255));
+            iconPaint.setAlpha(255);
+        }
+        if (textVisible)
+        {
+            canvas.drawBitmap(textBackground, 0, 0, iconPaint);
+            canvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
             canvas.drawText(textToDraw, textX, TEXT_Y, textPaint);
         }
         else
         {
-            canvas.drawBitmap(iconBitmap, 0, 0, null);
+            canvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
         }
     }
 
@@ -1453,6 +1522,8 @@ public class Game implements InteractiveView
      */
     public void startFadeIn()
     {
-
+        fadingIn = true;
+        fadingOut = false;
+        fadeFrame = MainView.TRANSITION_FRAMES;
     }
 }
