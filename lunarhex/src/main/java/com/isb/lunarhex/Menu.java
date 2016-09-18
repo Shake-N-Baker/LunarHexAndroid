@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -115,7 +116,7 @@ public class Menu implements InteractiveView
     private static int HEX_HEIGHT;
     private static int LEVELS_TOP_LEFT_X;
     private static int LEVELS_TOP_LEFT_Y;
-    private static int LEVELS_SPACING_X;
+    public static int LEVELS_SPACING_X;
     private static int NEW_PLAYER_ARROW_X;
     private static int NEW_PLAYER_ARROW_Y;
     private static int NEW_PLAYER_ARROW_FLUCTUATING_Y;
@@ -223,7 +224,7 @@ public class Menu implements InteractiveView
     /**
      * The magnitude of the canvas translation for the screen offset
      */
-    private int screenOffset;
+    public int screenOffset;
 
     /**
      * The flag whether the hamburger menu is open
@@ -302,8 +303,9 @@ public class Menu implements InteractiveView
      * @param   screenWidth - The screen width
      * @param   screenHeight - The screen height
      * @param   mainBoards - The set of main boards
+     * @param   state - The bundle state of the menu
      */
-    public Menu(MainView main, int screenWidth, int screenHeight, List<String> mainBoards)
+    public Menu(MainView main, int screenWidth, int screenHeight, List<String> mainBoards, Bundle state)
     {
         this.mainView = main;
 
@@ -347,6 +349,12 @@ public class Menu implements InteractiveView
         soundVolume = PlayerData.getSoundVolume();
         musicVolume = PlayerData.getMusicVolume();
         levelClearStates = PlayerData.getLevelClearStates();
+
+        // Reload the bundle state if the app was on either game or menu view prior to going to the background or similar event
+        if(state != null)
+        {
+            screenOffset = (state.getInt(MainActivity.STATE_LEVEL) + 1) * LEVELS_SPACING_X;
+        }
 
         setSize(screenWidth, screenHeight);
     }

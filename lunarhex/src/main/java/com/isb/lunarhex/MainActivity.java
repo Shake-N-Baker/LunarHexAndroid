@@ -82,6 +82,7 @@ public class MainActivity extends Activity
         else
         {
             outState.putString(STATE_VIEW, "menu");
+            outState.putInt(STATE_LEVEL, Math.round((float) mainView.menu.screenOffset / (float) Menu.LEVELS_SPACING_X) - 1);
         }
         super.onSaveInstanceState(outState);
     }
