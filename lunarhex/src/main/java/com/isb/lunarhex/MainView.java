@@ -353,6 +353,8 @@ public class MainView extends SurfaceView implements Runnable
             // Update the menu with information on any levels completed
             menu.levelClearStates = PlayerData.getLevelClearStates();
             menu.newPlayer = PlayerData.getNewPlayerStatus();
+            // Match the menu screen offset (focused level) to the games current level when returning
+            menu.screenOffset = (game.currentLevel + 1) * Menu.LEVELS_SPACING_X;
             view = menu;
         }
         view.startFadeIn();
