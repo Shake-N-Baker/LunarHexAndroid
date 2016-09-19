@@ -914,6 +914,7 @@ public class Menu implements InteractiveView
             drawPreviewBoard(canvas, transparency, viewingLevel, differenceFromCenter);
 
             // Draw the selection circle
+            transparency = (int) (Math.max(((fadeTransparencyPercent * 2) - 1f), 0f) * (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS))));
             circlePaint.setColor(Color.argb(transparency, 168, 183, 225));
             canvas.drawCircle(SELECTION_CIRCLE_X, SELECTION_CIRCLE_Y, SELECTION_CIRCLE_RADIUS - differenceFromCenter, circlePaint);
         }
