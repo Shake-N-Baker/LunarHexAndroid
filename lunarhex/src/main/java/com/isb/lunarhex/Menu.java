@@ -448,17 +448,17 @@ public class Menu implements InteractiveView
         // Setup the offset from center rectangles for each level text
         levelTextCenterOffsetX = new ArrayList<Integer>();
         levelTextCenterOffsetY = new ArrayList<Integer>();
-        temp = new Rect();
-        textPaint.getTextBounds(RANDOM_GAME_TEXT, 0, RANDOM_GAME_TEXT.length(), temp);
-        levelTextCenterOffsetX.add(temp.width() / 2);
-        levelTextCenterOffsetY.add(temp.height() / 2);
-        for (int i = 1; i < 31; i++)
+        for (int i = 0; i < 30; i++)
         {
             temp = new Rect();
             textPaint.getTextBounds(String.valueOf(i), 0, String.valueOf(i).length(), temp);
             levelTextCenterOffsetX.add(temp.width() / 2);
             levelTextCenterOffsetY.add(temp.height() / 2);
         }
+        temp = new Rect();
+        textPaint.getTextBounds(RANDOM_GAME_TEXT, 0, RANDOM_GAME_TEXT.length(), temp);
+        levelTextCenterOffsetX.add(temp.width() / 2);
+        levelTextCenterOffsetY.add(temp.height() / 2);
         temp = new Rect();
         textPaint.getTextBounds(GITHUB_LINK_TEXT, 0, GITHUB_LINK_TEXT.length(), temp);
         githubLinkWidth = temp.width();
@@ -625,7 +625,7 @@ public class Menu implements InteractiveView
                             {
                                 // Clicked the selection circle
                                 nothingClicked = false;
-                                if (Math.round(viewingLevel) == 0)
+                                if (Math.round(viewingLevel) == 31)
                                 {
                                     // Random level
                                     dragVelocity = 0;
@@ -634,7 +634,7 @@ public class Menu implements InteractiveView
                                     fadeOutEvent = new CustomEvent(CustomEvent.NEW_CUSTOM_GAME);
                                     SoundManager.play(R.raw.tap);
                                 }
-                                else
+                                else if (0 < Math.round(viewingLevel) && Math.round(viewingLevel) < 31)
                                 {
                                     // Play selected level
                                     dragVelocity = 0;
@@ -730,9 +730,9 @@ public class Menu implements InteractiveView
                     {
                         screenOffset = 0;
                     }
-                    else if (screenOffset > (30 * LEVELS_SPACING_X))
+                    else if (screenOffset > (31 * LEVELS_SPACING_X))
                     {
-                        screenOffset = 30 * LEVELS_SPACING_X;
+                        screenOffset = 31 * LEVELS_SPACING_X;
                     }
                 }
             }
@@ -780,9 +780,9 @@ public class Menu implements InteractiveView
                     screenOffset = 0;
                     dragVelocity = 0;
                 }
-                else if (screenOffset > (30 * LEVELS_SPACING_X))
+                else if (screenOffset > (31 * LEVELS_SPACING_X))
                 {
-                    screenOffset = 30 * LEVELS_SPACING_X;
+                    screenOffset = 31 * LEVELS_SPACING_X;
                     dragVelocity = 0;
                 }
 
@@ -907,7 +907,7 @@ public class Menu implements InteractiveView
         }
         float viewingLevel = (float) screenOffset / (float) LEVELS_SPACING_X;
 
-        if (differenceFromCenter < SELECTION_CIRCLE_RADIUS)
+        if (differenceFromCenter < SELECTION_CIRCLE_RADIUS && Math.round(viewingLevel) != 0)
         {
             int transparency = (int) (255 * (1f - ((float) differenceFromCenter / (float) SELECTION_CIRCLE_RADIUS)));
 
@@ -1062,10 +1062,7 @@ public class Menu implements InteractiveView
         // Draw title text
         canvas.drawText(TITLE_TEXT, TITLE_X, TITLE_Y, titlePaint);
 
-        // Draw random level text
-        float levelsFromText = viewingLevel;
-        textPaint.setColor(Color.argb((int) (transparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
-        canvas.drawText(RANDOM_GAME_TEXT, LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(0), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(0), textPaint);
+        float levelsFromText;
 
         // Draw level texts
         for (int level = 1; level < 31; level++)
@@ -1084,8 +1081,14 @@ public class Menu implements InteractiveView
             {
                 textPaint.setColor(Color.argb((int) (transparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
             }
-            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level), textPaint);
+            canvas.drawText(Integer.toString(level), (LEVELS_SPACING_X * level) + LEVELS_TOP_LEFT_X  - levelTextCenterOffsetX.get(level - 1), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(level - 1), textPaint);
         }
+
+        // Draw random level text
+        levelsFromText = 31f - viewingLevel;
+        textPaint.setColor(Color.argb((int) (transparencyPercent * (1f - (levelsFromText / 3f)) * 255), 255, 255, 255));
+        canvas.drawText(RANDOM_GAME_TEXT, (LEVELS_SPACING_X * 31) + LEVELS_TOP_LEFT_X - levelTextCenterOffsetX.get(30), LEVELS_TOP_LEFT_Y + levelTextCenterOffsetY.get(30), textPaint);
+
     }
 
     /**

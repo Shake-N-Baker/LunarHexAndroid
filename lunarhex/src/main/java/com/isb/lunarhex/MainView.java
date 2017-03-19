@@ -354,7 +354,14 @@ public class MainView extends SurfaceView implements Runnable
             menu.levelClearStates = PlayerData.getLevelClearStates();
             menu.newPlayer = PlayerData.getNewPlayerStatus();
             // Match the menu screen offset (focused level) to the games current level when returning
-            menu.screenOffset = (game.currentLevel + 1) * Menu.LEVELS_SPACING_X;
+            if (game.currentLevel == -1)
+            {
+                menu.screenOffset = (31) * Menu.LEVELS_SPACING_X;
+            }
+            else
+            {
+                menu.screenOffset = (game.currentLevel + 1) * Menu.LEVELS_SPACING_X;
+            }
             view = menu;
         }
         view.startFadeIn();
@@ -392,7 +399,7 @@ public class MainView extends SurfaceView implements Runnable
      */
     private void generateBackground(int screenWidth, int screenHeight)
     {
-        background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
-        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 30f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
+        background = Bitmap.createBitmap((int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 31f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight, Bitmap.Config.ARGB_8888);
+        Utils.generateBackground(background, (int) (screenWidth * (1.00f + ((Menu.LEVELS_SPACING_X_PERCENT * 31f) / (float) Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE))), screenHeight);
     }
 }
