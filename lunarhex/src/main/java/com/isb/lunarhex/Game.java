@@ -313,7 +313,7 @@ public class Game implements InteractiveView
     /**
      * The level the player was on when cached image was stored
      */
-    public int cachedLevel = -1;
+    public int cachedLevel = -2;
 
     /**
      * The current number of moves the player has taken since the initial board state
