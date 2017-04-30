@@ -655,7 +655,7 @@ public class Menu implements InteractiveView
                                 {
                                     levelOffset += 1;
                                 }
-                                if ((0 <= (Math.round(viewingLevel) + levelOffset - 2)) && ((Math.round(viewingLevel) + levelOffset - 2) <= 30))
+                                if ((1 <= (Math.round(viewingLevel) + levelOffset - 2)) && ((Math.round(viewingLevel) + levelOffset - 2) <= 31))
                                 {
                                     int x = SELECTION_CIRCLE_X + ((levelOffset - 2) * LEVELS_SPACING_X);
                                     if (Utils.distanceBetweenPoints(x, SELECTION_CIRCLE_Y, Touch.x, Touch.y) < SELECTION_CIRCLE_RADIUS)

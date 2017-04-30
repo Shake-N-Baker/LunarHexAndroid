@@ -123,6 +123,11 @@ public class Game implements InteractiveView
     private static Bitmap cachedGameSceneWithOptionsOpen;
 
     /**
+     * The cached image of the current game to speed up drawing
+     */
+    private static Bitmap cachedGameScene;
+
+    /**
      * The text background panel for the clear and instruction texts
      */
     private static Bitmap textBackground;
@@ -224,6 +229,11 @@ public class Game implements InteractiveView
     private int hexSelect = -1;
 
     /**
+     * The index of the hexagon selected when cached image was stored
+     */
+    private int cachedHexSelect = -1;
+
+    /**
      * A hexagon bitmap to check mouse against
      */
     private Bitmap hexCheck;
@@ -301,6 +311,11 @@ public class Game implements InteractiveView
     public int currentLevel = -1;
 
     /**
+     * The level the player was on when cached image was stored
+     */
+    public int cachedLevel = -1;
+
+    /**
      * The current number of moves the player has taken since the initial board state
      */
     public int currentMove = 0;
@@ -316,14 +331,29 @@ public class Game implements InteractiveView
     private boolean playerWon = false;
 
     /**
+     * Whether the player is in a board clear state when cached image was stored
+     */
+    private boolean cachedPlayerWon = false;
+
+    /**
      * The indices along the paths of the currently selected piece
      */
     private List<Integer> moveIndices;
 
     /**
+     * The indices along the paths of the selected piece when cached image was stored
+     */
+    private List<Integer> cachedMoveIndices;
+
+    /**
      * The indices at the end of the paths of the currently selected piece
      */
     private List<Integer> stopIndices;
+
+    /**
+     * The indices at the end of the paths of the selected piece when cached image was stored
+     */
+    private List<Integer> cachedStopIndices;
 
     /**
      * The icon bitmap image to use for drawing the icons
@@ -372,7 +402,9 @@ public class Game implements InteractiveView
         moving = false;
 
         moveIndices = new ArrayList<Integer>();
+        cachedMoveIndices = new ArrayList<Integer>();
         stopIndices = new ArrayList<Integer>();
+        cachedStopIndices = new ArrayList<Integer>();
 
         optionsOpen = false;
         buttonHeldDown = "";
@@ -551,11 +583,15 @@ public class Game implements InteractiveView
         // Update button UI for levels vs random
         updateUIState();
 
+        // Cache image of the game scene to speed up drawing
+        cachedGameScene = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        cachedGameScene.eraseColor(0xFF000000);
+
         // Cache image of the current game scene with options menu open to speed up drawing
         cachedGameSceneWithOptionsOpen = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
         c = new Canvas(cachedGameSceneWithOptionsOpen);
-        drawBoard(c);
+        drawBoardTextAndIcons(c);
         drawHighlight(c);
         if (!boardState.equals(""))
         {
@@ -643,7 +679,7 @@ public class Game implements InteractiveView
         }
         else
         {
-            drawBoard(canvas);
+            drawBoardTextAndIcons(canvas);
             drawHighlight(canvas);
             drawObjectsOnBoard(canvas);
         }
@@ -869,7 +905,7 @@ public class Game implements InteractiveView
                         // Cache image of the current game scene with options menu open to speed up drawing
                         cachedGameSceneWithOptionsOpen.eraseColor(0xFF000000);
                         Canvas c = new Canvas(cachedGameSceneWithOptionsOpen);
-                        drawBoard(c);
+                        drawBoardTextAndIcons(c);
                         drawHighlight(c);
                         drawObjectsOnBoard(c);
                         c.drawBitmap(optionsBackground, 0, 0, null);
@@ -1200,125 +1236,168 @@ public class Game implements InteractiveView
     }
 
     /**
-     * Draws the game board.
+     * Returns whether the game board/text/icons have changed.
      *
-     * @param canvas - The canvas to draw the board on
+     * @return  Whether the game board/text/icons have changed
      */
-    private void drawBoard(Canvas canvas)
+    private boolean gameBoardTextOrIconsChanged()
     {
-        int defaultMatrix = canvas.save();
-
-        // Clear board
-        canvas.drawARGB(0xff, 0x00, 0x00, 0x00);
-
-        // Draw the background shifted based on the current level
-        canvas.translate(-1 * getBackgroundOffset(), 0);
-        canvas.drawBitmap(MainView.background, 0, 0, null);
-
-        // Remove the translation shift before drawing the rest of the game
-        canvas.restoreToCount(defaultMatrix);
-        defaultMatrix = canvas.save();
-
-        // Draw the hexagon tiles from back to front
-        float width = HEX_WIDTH;
-        // Squish the hexagons into each other slightly to prevent small visual oddities along edges
-        float placementWidth = width - 1;
-        float height = HEX_HEIGHT;
-        float startX = BOARD_X;
-        float startY = BOARD_Y;
-        float x = startX + (width * 0.75f);
-        float y = startY;
-        int index = 1;
-        for (int y_index = 0; y_index < 11; y_index++)
+        boolean changed = false;
+        if (fadingIn || fadingOut) changed = true;
+        if (cachedHexSelect != hexSelect) changed = true;
+        if (cachedPlayerWon != playerWon) changed = true;
+        if (cachedLevel != currentLevel) changed = true;
+        if (!cachedMoveIndices.equals(moveIndices)) changed = true;
+        if (!cachedStopIndices.equals(stopIndices)) changed = true;
+        if (changed)
         {
-            for (int x_index = 0; x_index < 3; x_index++)
+            // Store new cached variables for current state
+            cachedHexSelect = hexSelect;
+            cachedPlayerWon = playerWon;
+            cachedLevel = currentLevel;
+            cachedMoveIndices.clear();
+            cachedStopIndices.clear();
+            int i;
+            for(i = 0; i < moveIndices.size(); i++)
             {
-                if ((y_index % 2 == 0) && x_index == 2) break;
-                if (hexSelect == index) canvas.drawBitmap(hexBoardYellowBitmap, x, y, null);
-                else if (stopIndices.indexOf(index) != -1) canvas.drawBitmap(hexBoardDarkGreyBitmap, x, y, null);
-                else if (moveIndices.indexOf(index) != -1) canvas.drawBitmap(hexBoardLightGreyBitmap, x, y, null);
-                else if (index == 12) canvas.drawBitmap(hexBoardRedBitmap, x, y, null);
-                else canvas.drawBitmap(hexBoardWhiteBitmap, x, y, null);
-                x += (placementWidth * 1.5);
-                if (index == 25) index++;
-                else index += 2;
+                cachedMoveIndices.add(moveIndices.get(i));
             }
-            if (y_index % 2 == 0)
+            for(i = 0; i < stopIndices.size(); i++)
             {
-                x = startX;
-                index -= 5;
+                cachedStopIndices.add(stopIndices.get(i));
+            }
+        }
+        return changed;
+    }
+
+    /**
+     * Draws the game board, text and icons.
+     *
+     * @param canvas - The canvas to draw the board, text and icons on
+     */
+    private void drawBoardTextAndIcons(Canvas canvas)
+    {
+        if (gameBoardTextOrIconsChanged())
+        {
+            // Save new cached board/text/icon bitmap
+            Canvas cachedCanvas = new Canvas(cachedGameScene);
+
+            int defaultMatrix = cachedCanvas.save();
+
+            // Clear board
+            cachedCanvas.drawARGB(0xff, 0x00, 0x00, 0x00);
+
+            // Draw the background shifted based on the current level
+            cachedCanvas.translate(-1 * getBackgroundOffset(), 0);
+            cachedCanvas.drawBitmap(MainView.background, 0, 0, null);
+
+            // Remove the translation shift before drawing the rest of the game
+            cachedCanvas.restoreToCount(defaultMatrix);
+            defaultMatrix = cachedCanvas.save();
+
+            // Draw the hexagon tiles from back to front
+            float width = HEX_WIDTH;
+            // Squish the hexagons into each other slightly to prevent small visual oddities along edges
+            float placementWidth = width - 1;
+            float height = HEX_HEIGHT;
+            float startX = BOARD_X;
+            float startY = BOARD_Y;
+            float x = startX + (width * 0.75f);
+            float y = startY;
+            int index = 1;
+            for (int y_index = 0; y_index < 11; y_index++)
+            {
+                for (int x_index = 0; x_index < 3; x_index++)
+                {
+                    if ((y_index % 2 == 0) && x_index == 2) break;
+                    if (hexSelect == index) cachedCanvas.drawBitmap(hexBoardYellowBitmap, x, y, null);
+                    else if (stopIndices.indexOf(index) != -1) cachedCanvas.drawBitmap(hexBoardDarkGreyBitmap, x, y, null);
+                    else if (moveIndices.indexOf(index) != -1) cachedCanvas.drawBitmap(hexBoardLightGreyBitmap, x, y, null);
+                    else if (index == 12) cachedCanvas.drawBitmap(hexBoardRedBitmap, x, y, null);
+                    else cachedCanvas.drawBitmap(hexBoardWhiteBitmap, x, y, null);
+                    x += (placementWidth * 1.5);
+                    if (index == 25) index++;
+                    else index += 2;
+                }
+                if (y_index % 2 == 0)
+                {
+                    x = startX;
+                    index -= 5;
+                }
+                else
+                {
+                    x = startX + (placementWidth * 0.75f);
+                    if (index == 26) index = 25;
+                }
+                y += (height * 0.5);
+            }
+
+            // Draw icons and text
+            String textToDraw = "";
+            int textX = 0;
+            boolean textVisible = false;
+            if (playerWon)
+            {
+                if (currentMove == (solution.size() - 1))
+                {
+                    textToDraw = PERFECT_CLEAR;
+                    textX = PERFECT_CLEAR_X;
+                    textVisible = true;
+                }
+                else
+                {
+                    textToDraw = CLEAR;
+                    textX = CLEAR_X;
+                    textVisible = true;
+                }
             }
             else
             {
-                x = startX + (placementWidth * 0.75f);
-                if (index == 26) index = 25;
+                if (currentLevel == 0)
+                {
+                    textToDraw = INSTRUCTIONS_1;
+                    textX = INSTRUCTIONS_1_X;
+                    textVisible = true;
+                }
+                else if (currentLevel == 1)
+                {
+                    textToDraw = INSTRUCTIONS_2;
+                    textX = INSTRUCTIONS_2_X;
+                    textVisible = true;
+                }
             }
-            y += (height * 0.5);
-        }
-
-        // Draw icons and text
-        String textToDraw = "";
-        int textX = 0;
-        boolean textVisible = false;
-        if (playerWon)
-        {
-            if (currentMove == (solution.size() - 1))
+            // Set icon and text transparency
+            if (fadingIn || fadingOut)
             {
-                textToDraw = PERFECT_CLEAR;
-                textX = PERFECT_CLEAR_X;
-                textVisible = true;
+                if (fadingIn)
+                {
+                    textPaint.setColor(Color.argb((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255), 255, 255, 255));
+                    iconPaint.setAlpha((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255));
+                }
+                else
+                {
+                    textPaint.setColor(Color.argb((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255), 255, 255, 255));
+                    iconPaint.setAlpha((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255));
+                }
             }
             else
             {
-                textToDraw = CLEAR;
-                textX = CLEAR_X;
-                textVisible = true;
+                textPaint.setColor(Color.argb(255, 255, 255, 255));
+                iconPaint.setAlpha(255);
             }
-        }
-        else
-        {
-            if (currentLevel == 0)
+            if (textVisible)
             {
-                textToDraw = INSTRUCTIONS_1;
-                textX = INSTRUCTIONS_1_X;
-                textVisible = true;
-            }
-            else if (currentLevel == 1)
-            {
-                textToDraw = INSTRUCTIONS_2;
-                textX = INSTRUCTIONS_2_X;
-                textVisible = true;
-            }
-        }
-        // Set icon and text transparency
-        if (fadingIn || fadingOut)
-        {
-            if (fadingIn)
-            {
-                textPaint.setColor(Color.argb((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255), 255, 255, 255));
-                iconPaint.setAlpha((int) ((1f - ((float) fadeFrame / MainView.TRANSITION_FRAMES)) * 255));
+                cachedCanvas.drawBitmap(textBackground, 0, 0, iconPaint);
+                cachedCanvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
+                cachedCanvas.drawText(textToDraw, textX, TEXT_Y, textPaint);
             }
             else
             {
-                textPaint.setColor(Color.argb((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255), 255, 255, 255));
-                iconPaint.setAlpha((int) (((float) fadeFrame / MainView.TRANSITION_FRAMES) * 255));
+                cachedCanvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
             }
         }
-        else
-        {
-            textPaint.setColor(Color.argb(255, 255, 255, 255));
-            iconPaint.setAlpha(255);
-        }
-        if (textVisible)
-        {
-            canvas.drawBitmap(textBackground, 0, 0, iconPaint);
-            canvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
-            canvas.drawText(textToDraw, textX, TEXT_Y, textPaint);
-        }
-        else
-        {
-            canvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
-        }
+        // Draw the cached game scene
+        canvas.drawBitmap(cachedGameScene, 0, 0, null);
     }
 
     /**
