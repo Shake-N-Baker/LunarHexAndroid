@@ -258,6 +258,24 @@ public class Utils
     }
 
     /**
+     * Gets the preview board index (back to front) of the hexagon from the game index.
+     * (left to right)
+     *
+     * @param	index - The index of the hexagon from the game (left to right)
+     * @return	The index of the hexagon for the preview board (back to front)
+     */
+    public static int getPreviewFromGameIndex(int index)
+    {
+        Point p = getCoordinatesFromIndex(index);
+        if (p.x == 0) return p.y;
+        else if (p.x == 1) return 5 + p.y;
+        else if (p.x == 2) return 11 + p.y;
+        else if (p.x == 3) return 16 + p.y;
+        else if (p.x == 4) return 22 + p.y;
+        return -1;
+    }
+
+    /**
      * Gets the X/Y index coordinates of the hexagon, Zero-based.
      *
      * @param	index - The index of the hexagon in the list

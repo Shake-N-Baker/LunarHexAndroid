@@ -272,6 +272,16 @@ public class Menu implements InteractiveView
     private List<Float> previewEndY;
 
     /**
+     * The original preview board ending x coordinates, should align with the game board
+     */
+    private List<Float> originalPreviewEndX;
+
+    /**
+     * The original preview board ending y coordinates, should align with the game board
+     */
+    private List<Float> originalPreviewEndY;
+
+    /**
      * The sound volume level from 0 to 100
      */
     private int soundVolume;
@@ -485,6 +495,8 @@ public class Menu implements InteractiveView
         previewStartY = new ArrayList<Float>();
         previewEndX = new ArrayList<Float>();
         previewEndY = new ArrayList<Float>();
+        originalPreviewEndX = new ArrayList<Float>();
+        originalPreviewEndY = new ArrayList<Float>();
         int gameBoardX = Math.round(Game.BOARD_X_PERCENT * screenWidth);
         int gameBoardY = Math.round(Game.BOARD_Y_PERCENT * screenHeight);
         int gameHexWidth = Math.round(Game.HEX_WIDTH_PERCENT * screenWidth);
@@ -518,6 +530,15 @@ public class Menu implements InteractiveView
                     previewEndY.add((float) ((gameHexHeight * y) + gameBoardY));
                 }
             }
+        }
+        int i;
+        for (i = 0; i < previewEndX.size(); i++)
+        {
+            originalPreviewEndX.add(previewEndX.get(i));
+        }
+        for (i = 0; i < previewEndY.size(); i++)
+        {
+            originalPreviewEndY.add(previewEndY.get(i));
         }
     }
 
@@ -940,6 +961,61 @@ public class Menu implements InteractiveView
     }
 
     /**
+     * Updates the preview positions with the current board state of the game.
+     *
+     * @param   initialBoardState - The initial board state in string format
+     * @param   currentBoardState - The current board state in string format
+     */
+    public void updatePreviewPositions(String initialBoardState, String currentBoardState)
+    {
+        List<Integer> previewInitialIndex = new ArrayList<Integer>();
+        List<Integer> previewCurrentIndex = new ArrayList<Integer>();
+
+        String[] initialSplit = initialBoardState.split(",");
+        int i;
+        for (i = 0; i < initialSplit.length; i++)
+        {
+            int initialValue = Integer.parseInt(initialSplit[i].split("-")[1]);
+            previewInitialIndex.add(Utils.getPreviewFromGameIndex(initialValue));
+        }
+        String[] currentSplit = currentBoardState.split(",");
+        for (i = 0; i < currentSplit.length; i++)
+        {
+            int currentValue = Integer.parseInt(currentSplit[i].split("-")[1]);
+            previewCurrentIndex.add(Utils.getPreviewFromGameIndex(currentValue));
+        }
+
+        // Flip the preview board positions for moved indicies
+        for (i = 0; i < previewInitialIndex.size(); i++)
+        {
+            float tempX = previewEndX.get(previewInitialIndex.get(i));
+            float tempY = previewEndY.get(previewInitialIndex.get(i));
+            previewEndX.set(previewInitialIndex.get(i),previewEndX.get(previewCurrentIndex.get(i)));
+            previewEndY.set(previewInitialIndex.get(i),previewEndY.get(previewCurrentIndex.get(i)));
+            previewEndX.set(previewCurrentIndex.get(i),tempX);
+            previewEndY.set(previewCurrentIndex.get(i),tempY);
+        }
+    }
+
+    /**
+     * Resets the preview positions back to normal.
+     */
+    private void resetPreviewPositions()
+    {
+        previewEndX.clear();
+        previewEndY.clear();
+        int i;
+        for (i = 0; i < originalPreviewEndX.size(); i++)
+        {
+            previewEndX.add(originalPreviewEndX.get(i));
+        }
+        for (i = 0; i < originalPreviewEndY.size(); i++)
+        {
+            previewEndY.add(originalPreviewEndY.get(i));
+        }
+    }
+
+    /**
      * Draws the selected levels preview board.
      *
      * @param   canvas - The canvas to draw on
@@ -1032,6 +1108,10 @@ public class Menu implements InteractiveView
                         p.lineTo(easingX - (0.5f * radius_width), easingY - (0.866f * radius_height));
                         p.close();
                         canvas.drawPath(p, circleFilledPaint);
+                        if (fadeFrame == 1)
+                        {
+                            resetPreviewPositions();
+                        }
                     }
                     else
                     {
