@@ -13,6 +13,7 @@ public class CustomEvent
     public static final String NEW_CUSTOM_GAME = "newCustomGame";
     public static final String START_LEVEL = "startLevel";
     public static final String EXIT_GAME = "exitGame";
+    public static final String TRANSITION_NEXT_LEVEL = "transitionNextLevel";
 
     /**
      * The custom event name

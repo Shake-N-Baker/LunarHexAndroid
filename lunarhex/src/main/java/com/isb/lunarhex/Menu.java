@@ -123,7 +123,7 @@ public class Menu implements InteractiveView
     private static int TRANSITION_DISTANCE_X;
     private static int MAX_DRAG_VELOCITY_X;
     private static int DRAG_VELOCITY_RESISTANCE_X;
-    private static int DRAG_VELOCITY_JUMP_1_LEVEL;
+    public static int DRAG_VELOCITY_JUMP_1_LEVEL;
     private static int DRAG_VELOCITY_JUMP_2_LEVELS;
 
     /**
@@ -214,7 +214,7 @@ public class Menu implements InteractiveView
     /**
      * The velocity of the last drag event
      */
-    private int dragVelocity;
+    public int dragVelocity;
 
     /**
      * The initial value of the screen offset when drag touch event began
@@ -876,7 +876,11 @@ public class Menu implements InteractiveView
     public void update(Canvas canvas, float framesPerSecond)
     {
         handleFade();
-        handleScreenVelocityAndDragPath();
+        if (!fadingIn)
+        {
+            // Don't move screen if fading in, adjust screen to center if fading out
+            handleScreenVelocityAndDragPath();
+        }
         drawMenu(canvas);
     }
 

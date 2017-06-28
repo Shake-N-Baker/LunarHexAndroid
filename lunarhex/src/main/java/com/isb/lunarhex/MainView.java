@@ -341,12 +341,14 @@ public class MainView extends SurfaceView implements Runnable
             game.currentLevel = -1;
             game.newBoardState();
             view = game;
+            view.startFadeIn();
         }
         else if (event.isType(CustomEvent.START_LEVEL))
         {
             game.currentLevel = Integer.parseInt(event.data);
             game.newBoardState();
             view = game;
+            view.startFadeIn();
         }
         else if (event.isType(CustomEvent.EXIT_GAME))
         {
@@ -365,8 +367,12 @@ public class MainView extends SurfaceView implements Runnable
             // Update the menu preview board positions with the current board state of the game
             menu.updatePreviewPositions(game.initialBoardState, game.boardState);
             view = menu;
+            view.startFadeIn();
         }
-        view.startFadeIn();
+        else if (event.isType(CustomEvent.TRANSITION_NEXT_LEVEL))
+        {
+            menu.dragVelocity = Menu.DRAG_VELOCITY_JUMP_1_LEVEL;
+        }
     }
 
     /**

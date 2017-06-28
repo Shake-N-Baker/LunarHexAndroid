@@ -805,6 +805,17 @@ public class Game implements InteractiveView
                 if (playerWon && currentLevel != -1)
                 {
                     // Cleared the board, player wins
+                    if (PlayerData.getLevelClearStates().charAt(currentLevel) == '0' && currentLevel != 29)
+                    {
+                        // Newly cleared and not the final level, transition to the next level
+                        fadingOut = true;
+                        fadeFrame = MainView.TRANSITION_FRAMES;
+                        if (PlayerData.getLevelClearStates().charAt(currentLevel + 1) == '0')
+                        {
+                            // Next level is not cleared, have menu scroll to it on exit
+                            mainView.handleEvent(new CustomEvent(CustomEvent.TRANSITION_NEXT_LEVEL));
+                        }
+                    }
                     if (currentMove == (solution.size() - 1))
                     {
                         PlayerData.updateLevelClearStates(currentLevel, 2);
@@ -1593,6 +1604,7 @@ public class Game implements InteractiveView
      */
     private int getBackgroundOffset()
     {
+        if (currentLevel == -1) return (int) (((31) * Menu.LEVELS_SPACING_X_PERCENT * screenWidth) / Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE);
         return (int) (((currentLevel + 1) * Menu.LEVELS_SPACING_X_PERCENT * screenWidth) / Menu.BACKGROUND_OFFSET_DAMPENING_MAGNITUDE);
     }
 
