@@ -871,9 +871,8 @@ public class Menu implements InteractiveView
      * Handles the updates to the current canvas and menu frame logic.
      *
      * @param   canvas - The canvas to draw on
-     * @param   framesPerSecond - The frames per second for debugging
      */
-    public void update(Canvas canvas, float framesPerSecond)
+    public void update(Canvas canvas)
     {
         handleFade();
         if (!fadingIn)

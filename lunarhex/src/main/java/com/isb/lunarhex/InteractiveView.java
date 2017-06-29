@@ -11,7 +11,7 @@ import android.view.MotionEvent;
  */
 public interface InteractiveView
 {
-    void update(Canvas canvas, float framesPerSecond);
+    void update(Canvas canvas);
     void handleTouch(MotionEvent motionEvent);
     void startFadeIn();
 }

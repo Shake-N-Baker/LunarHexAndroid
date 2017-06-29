@@ -3,7 +3,6 @@ package com.isb.lunarhex;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -86,13 +85,6 @@ public class MainView extends SurfaceView implements Runnable
      * The total number of frames/cycles that have transpired
      */
     private int totalFrames;
-
-    /// TODO: Remove debug FPS tracking variable
-    /**
-     * Float measurement of the frames per second
-     */
-    private float framesPerSecond = 0f;
-    private List<Integer> totalTimes = new ArrayList<Integer>();
 
     /**
      * Reference to the list of boards to be used in the main set of boards.
@@ -259,23 +251,6 @@ public class MainView extends SurfaceView implements Runnable
             }
             startTime = System.currentTimeMillis();
 
-            /// TODO: Remove debug set frames per second
-            if (totalTime > 0)
-            {
-                framesPerSecond = 1000 / totalTime;
-                totalTimes.add((int) totalTime);
-                if (totalTimes.size() > 60)
-                {
-                    totalTimes.remove(0);
-                    int sum = 0;
-                    for (int i = 0; i < totalTimes.size(); i++)
-                    {
-                        sum += totalTimes.get(i);
-                    }
-                    framesPerSecond = (60 * 1000) / sum;
-                }
-            }
-
             cycle();
         }
     }
@@ -308,7 +283,7 @@ public class MainView extends SurfaceView implements Runnable
     {
         checkResize();
         Canvas canvas = holder.lockCanvas();
-        view.update(canvas, framesPerSecond);
+        view.update(canvas);
         holder.unlockCanvasAndPost(canvas);
     }
 

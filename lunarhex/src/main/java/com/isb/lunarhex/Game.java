@@ -205,9 +205,6 @@ public class Game implements InteractiveView
      */
     private Paint optionsPaint;
 
-    /// TODO: Remove me!
-    private Paint debugPaint;
-
     /**
      * List of the bounding boxes for each hexagon tile
      */
@@ -419,10 +416,6 @@ public class Game implements InteractiveView
         optionsPaint.setColor(Color.argb(196, 0, 0, 0));
         optionsPaint.setStyle(Paint.Style.FILL);
         iconPaint = new Paint();
-        debugPaint = new Paint();
-        debugPaint.setColor(Color.GREEN);
-        debugPaint.setTextSize(mainView.FONT_SIZE_20_SP);
-        debugPaint.setTypeface(mainView.LATO_FONT);
 
         // Reload the bundle state if the app was on the game view prior to going to the background or similar event
         if(state != null)
@@ -663,9 +656,8 @@ public class Game implements InteractiveView
      * Handles the updates to the current canvas and game frame logic.
      *
      * @param   canvas - The canvas to draw on
-     * @param   framesPerSecond - The frames per second for debugging
      */
-    public void update(Canvas canvas, float framesPerSecond)
+    public void update(Canvas canvas)
     {
         // Update
         handleFade();
@@ -683,18 +675,6 @@ public class Game implements InteractiveView
             drawHighlight(canvas);
             drawObjectsOnBoard(canvas);
         }
-
-        /// TODO: Remove draw debug down cursor
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(10);
-        canvas.drawCircle(Touch.downX, Touch.downY, 5, paint);
-        /// TODO: Remove draw debug cursor
-        paint.setColor(Color.GREEN);
-        canvas.drawCircle(Touch.x, Touch.y, 5, paint);
-        /// TODO: Remove draw debug frames per second, ALSO remove framesPerSecond argument (also in interface)
-        canvas.drawText(String.valueOf(framesPerSecond), 10, screenHeight - 10, debugPaint);
     }
 
     /**
