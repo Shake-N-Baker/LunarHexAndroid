@@ -34,8 +34,8 @@ public class Menu implements InteractiveView
     private static final String CREATED_BY_TEXT = "CREATED BY: IAN BAKER";
     private static final String TWITTER_TEXT = "FOLLOW ME ON TWITTER:";
     private static final String TWITTER_LINK_TEXT = "@IANDEVSGAMES";
-    // TODO: Add music by artist name
-    private static final String MUSIC_BY_TEXT = "MUSIC BY: TODO";
+    private static final String MUSIC_BY_TEXT = "MUSIC BY:";
+    private static final String MUSIC_BY_LINK_TEXT = "MILIEU";
     private static final String INSPIRED_BY_TEXT = "INSPIRED BY: LUNAR LOCKOUT";
     private static final float TITLE_Y_PERCENT = 20f / 100f;
     private static final float HAMBURGER_MENU_X_PERCENT = 90f / 100f;
@@ -56,6 +56,7 @@ public class Menu implements InteractiveView
     private static final float GITHUB_LINK_Y_PERCENT = 49f / 100f;
     private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float TWITTER_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
+    private static final float MUSIC_BY_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
     private static final float SELECTION_CIRCLE_Y_PERCENT = 73f / 100f;
     private static final float STAR_WIDTH_PERCENT = 4f / 100f;
@@ -103,6 +104,10 @@ public class Menu implements InteractiveView
     private static int TWITTER_LINK_Y;
     private static int TWITTER_LINK_TOUCH_BUFFER_X;
     private static int TWITTER_LINK_TOUCH_BUFFER_Y;
+    private static int MUSIC_BY_LINK_X;
+    private static int MUSIC_BY_LINK_Y;
+    private static int MUSIC_BY_LINK_TOUCH_BUFFER_X;
+    private static int MUSIC_BY_LINK_TOUCH_BUFFER_Y;
     private static int SELECTION_CIRCLE_X;
     private static int SELECTION_CIRCLE_Y;
     private static int SELECTION_CIRCLE_RADIUS;
@@ -175,6 +180,11 @@ public class Menu implements InteractiveView
      * The width of the twitter link text
      */
     private int twitterLinkWidth;
+
+    /**
+     * The width of the music by link text
+     */
+    private int musicByLinkWidth;
 
     /**
      * The height of the hamburger menu texts, measured with github link text
@@ -400,6 +410,8 @@ public class Menu implements InteractiveView
         GITHUB_LINK_TOUCH_BUFFER_Y = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         TWITTER_LINK_TOUCH_BUFFER_X = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
         TWITTER_LINK_TOUCH_BUFFER_Y = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
+        MUSIC_BY_LINK_TOUCH_BUFFER_X = Math.round(MUSIC_BY_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
+        MUSIC_BY_LINK_TOUCH_BUFFER_Y = Math.round(MUSIC_BY_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         VOLUME_TOUCH_BUFFER_X = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenWidth);
         VOLUME_TOUCH_BUFFER_Y = Math.round(VOLUME_TOUCH_BUFFER_PERCENT * screenHeight);
         SELECTION_CIRCLE_X = Math.round(SELECTION_CIRCLE_X_PERCENT * screenWidth);
@@ -485,6 +497,15 @@ public class Menu implements InteractiveView
         temp = new Rect();
         textPaint.getTextBounds(TWITTER_LINK_TEXT, 0, TWITTER_LINK_TEXT.length(), temp);
         twitterLinkWidth = temp.width();
+
+        // Place the music author link at the end of the 'music by:' text
+        temp = new Rect();
+        textPaint.getTextBounds(MUSIC_BY_TEXT + "x", 0, (MUSIC_BY_TEXT + "x").length(), temp);
+        MUSIC_BY_LINK_X = HAMBURGER_TEXT_X + temp.width();
+        MUSIC_BY_LINK_Y = CREDITS_TEXT_Y + (3 * hamburgerTextSpacingY);
+        temp = new Rect();
+        textPaint.getTextBounds(MUSIC_BY_LINK_TEXT, 0, MUSIC_BY_LINK_TEXT.length(), temp);
+        musicByLinkWidth = temp.width();
 
         // Generate the hamburger menu tinted background
         hamburgerBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
@@ -581,6 +602,15 @@ public class Menu implements InteractiveView
                         {
                             // View TWITTER page
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://twitter.com/IanDevsGames"));
+                            mainView.getContext().startActivity(browserIntent);
+                        }
+                    }
+                    if (((MUSIC_BY_LINK_X - MUSIC_BY_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (MUSIC_BY_LINK_X + musicByLinkWidth + MUSIC_BY_LINK_TOUCH_BUFFER_X)) && ((MUSIC_BY_LINK_Y - MUSIC_BY_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (MUSIC_BY_LINK_Y + hamburgerMenuTextHeight + MUSIC_BY_LINK_TOUCH_BUFFER_Y)))
+                    {
+                        if (((MUSIC_BY_LINK_X - MUSIC_BY_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (MUSIC_BY_LINK_X + musicByLinkWidth + MUSIC_BY_LINK_TOUCH_BUFFER_X)) && ((MUSIC_BY_LINK_Y - MUSIC_BY_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (MUSIC_BY_LINK_Y + hamburgerMenuTextHeight + MUSIC_BY_LINK_TOUCH_BUFFER_Y)))
+                        {
+                            // View music author page
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://milieumusic.bandcamp.com/track/soft-space"));
                             mainView.getContext().startActivity(browserIntent);
                         }
                     }
@@ -1210,6 +1240,7 @@ public class Menu implements InteractiveView
             textPaint.setUnderlineText(true);
             canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
             canvas.drawText(TWITTER_LINK_TEXT, TWITTER_LINK_X, TWITTER_LINK_Y, textPaint);
+            canvas.drawText(MUSIC_BY_LINK_TEXT, MUSIC_BY_LINK_X, MUSIC_BY_LINK_Y, textPaint);
             textPaint.setColor(Color.argb(255, 255, 255, 255));
             textPaint.setUnderlineText(false);
 
