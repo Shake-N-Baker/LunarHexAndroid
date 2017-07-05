@@ -344,9 +344,9 @@ public class MainView extends SurfaceView implements Runnable
             else
             {
                 menu.screenOffset = (game.currentLevel + 1) * Menu.LEVELS_SPACING_X;
+                // Update the menu preview board positions with the current board state of the game
+                menu.updatePreviewPositions(game.initialBoardState, game.boardState);
             }
-            // Update the menu preview board positions with the current board state of the game
-            menu.updatePreviewPositions(game.initialBoardState, game.boardState);
             view = menu;
             view.startFadeIn();
         }

@@ -1069,7 +1069,6 @@ public class Menu implements InteractiveView
      */
     private void drawPreviewBoard(Canvas canvas, int transparency, float viewingLevel, int differenceFromCenter)
     {
-        /// TODO: Fix random level, move, exit -> Level 1, preview screen moves
         if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
         {
             List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));
