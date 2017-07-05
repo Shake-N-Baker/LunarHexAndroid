@@ -583,7 +583,6 @@ public class Menu implements InteractiveView
                             // Close the hamburger menu
                             hamburgerMenuOpen = false;
                             PlayerData.setSoundVolume(soundVolume);
-                            PlayerData.setMusicVolume(musicVolume);
                             SoundManager.play(R.raw.tap);
                         }
                     }
@@ -644,6 +643,18 @@ public class Menu implements InteractiveView
                         else if (musicVolume < 0)
                         {
                             musicVolume = 0;
+                        }
+                        if (musicVolume > 0)
+                        {
+                            PlayerData.setMusicVolume(musicVolume);
+                            if (!SoundManager.musicPlaying())
+                            {
+                                SoundManager.playMusic(R.raw.milieu_soft_space);
+                            }
+                        }
+                        else
+                        {
+                            SoundManager.stopMusic();
                         }
                     }
                 }
@@ -1058,6 +1069,7 @@ public class Menu implements InteractiveView
      */
     private void drawPreviewBoard(Canvas canvas, int transparency, float viewingLevel, int differenceFromCenter)
     {
+        /// TODO: Fix random level, move, exit -> Level 1, preview screen moves
         if (1 <= Math.round(viewingLevel) && Math.round(viewingLevel) <= 30)
         {
             List<List<Integer>> board = boards.get(Math.round(viewingLevel - 1));

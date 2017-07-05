@@ -80,7 +80,7 @@ public class PlayerData
     public static int getSoundVolume()
     {
         SharedPreferences sharedPrefs = PlayerData.activity.getPreferences(Context.MODE_PRIVATE);
-        return sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_sound_volume), 100);
+        return sharedPrefs.getInt(PlayerData.activity.getString(R.string.save_sound_volume), 50);
     }
 
     /**

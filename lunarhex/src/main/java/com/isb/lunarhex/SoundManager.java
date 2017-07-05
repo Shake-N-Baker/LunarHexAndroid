@@ -11,9 +11,19 @@ import android.media.MediaPlayer;
 public class SoundManager
 {
     /**
+     * Reference to the media player used for sound
+     */
+    private static MediaPlayer soundMediaPlayer;
+
+    /**
      * Reference to the media player used for music
      */
-    private static MediaPlayer mediaPlayer;
+    private static MediaPlayer musicMediaPlayer;
+
+    /**
+     * The last position of the music before pausing
+     */
+    private static int lastMusicPosition;
 
     /**
      * Reference to the context to be used
@@ -41,31 +51,80 @@ public class SoundManager
     }
 
     /**
-     * Plays the audio file passed in.
+     * Plays the sound file passed in.
      *
      * @param   audioID - The resource id for the audio to be played
      */
     public static void play(int audioID)
     {
-        if (mediaPlayer != null)
+        if (soundVolume > 0)
         {
-            mediaPlayer.release();
-            mediaPlayer = null;
+            if (soundMediaPlayer != null)
+            {
+                soundMediaPlayer.release();
+                soundMediaPlayer = null;
+            }
+            soundMediaPlayer = MediaPlayer.create(context, audioID);
+            if (soundMediaPlayer != null)
+            {
+                soundMediaPlayer.setVolume(soundVolume, soundVolume);
+                soundMediaPlayer.start();
+            }
         }
-        /// TODO: Fix this for samsung galaxy s7 edge
-        mediaPlayer = MediaPlayer.create(context, audioID);
-        if (mediaPlayer != null)
+    }
+
+    /**
+     * Plays the music file passed in.
+     *
+     * @param   audioID - The resource id for the audio to be played
+     */
+    public static void playMusic(int audioID)
+    {
+        if (musicVolume > 0)
         {
-            if (audioID == R.raw.hit || audioID == R.raw.slide || audioID == R.raw.tap)
+            if (musicMediaPlayer != null)
             {
-                mediaPlayer.setVolume(soundVolume, soundVolume);
+                musicMediaPlayer.release();
+                musicMediaPlayer = null;
             }
-            else
+            musicMediaPlayer = MediaPlayer.create(context, audioID);
+            if (musicMediaPlayer != null)
             {
-                mediaPlayer.setVolume(musicVolume, musicVolume);
+                musicMediaPlayer.setVolume(musicVolume, musicVolume);
+                musicMediaPlayer.setLooping(true);
+                musicMediaPlayer.seekTo(lastMusicPosition);
+                musicMediaPlayer.start();
             }
-            mediaPlayer.start();
         }
+    }
+
+    /**
+     * Stop the music from playing recording its current position.
+     */
+    public static void stopMusic()
+    {
+        if (musicMediaPlayer != null)
+        {
+            if (musicMediaPlayer.isPlaying())
+            {
+                musicMediaPlayer.pause();
+                lastMusicPosition = musicMediaPlayer.getCurrentPosition();
+            }
+        }
+    }
+
+    /**
+     * Checks whether the music is currently playing.
+     *
+     * @return  Boolean whether the music is currently playing
+     */
+    public static boolean musicPlaying()
+    {
+        if (musicMediaPlayer != null)
+        {
+            return musicMediaPlayer.isPlaying();
+        }
+        return false;
     }
 
     /**
@@ -76,6 +135,10 @@ public class SoundManager
     public static void setSoundVolume(float volume)
     {
         SoundManager.soundVolume = volume;
+        if (soundMediaPlayer != null)
+        {
+            soundMediaPlayer.setVolume(soundVolume, soundVolume);
+        }
     }
 
     /**
@@ -86,5 +149,9 @@ public class SoundManager
     public static void setMusicVolume(float volume)
     {
         SoundManager.musicVolume = volume;
+        if (musicMediaPlayer != null)
+        {
+            musicMediaPlayer.setVolume(musicVolume, musicVolume);
+        }
     }
 }

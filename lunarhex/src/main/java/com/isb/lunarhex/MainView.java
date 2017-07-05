@@ -153,6 +153,12 @@ public class MainView extends SurfaceView implements Runnable
         {
             view = game;
         }
+
+        // Check that no music is playing (in case of resuming) then start up the music
+        if (!SoundManager.musicPlaying())
+        {
+            SoundManager.playMusic(R.raw.milieu_soft_space);
+        }
     }
 
     /**
