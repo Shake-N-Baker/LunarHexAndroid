@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">LunarHex</string>
+    <string name="app_name">Lunar Hex</string>
     <string name="action_settings">Settings</string>
     <string name="save_level_clear_states">saveLevelClearStates</string>
     <string name="save_sound_volume">saveSoundVolume</string>
