@@ -113,6 +113,11 @@ public class Game implements InteractiveView
     private int hintY;
 
     /**
+     * Whether the current level has been cleared in the shortest moves possible
+     */
+    private boolean perfectClear;
+
+    /**
      * The options menu background image
      */
     private static Bitmap optionsBackground;
@@ -353,9 +358,13 @@ public class Game implements InteractiveView
     private List<Integer> cachedStopIndices;
 
     /**
-     * The icon bitmap image to use for drawing the icons
+     * The icon bitmap images to use for drawing the icons
      */
-    private static Bitmap iconBitmap;
+    private static Bitmap iconHomeBitmap;
+    private static Bitmap iconNewBitmap;
+    private static Bitmap iconOptionsBitmap;
+    private static Bitmap iconRetryBitmap;
+    private static Bitmap iconHintBitmap;
 
     /**
      * Bitmaps containing the various hexagons to draw for pieces and the board
@@ -514,8 +523,22 @@ public class Game implements InteractiveView
         Canvas temp = new Canvas(hexCheck);
         Utils.drawHex(temp, 0, 0, HEX_WIDTH, HEX_HEIGHT, 0xFF0000, 0, false);
 
-        // Generate the icon bitmap to draw all the icons at once
-        iconBitmap = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
+        // Generate the icon bitmaps to draw the icons quickly
+        iconHomeBitmap = Bitmap.createBitmap(2 * BUTTON_RADIUS, 2 * BUTTON_RADIUS, Bitmap.Config.ARGB_8888);
+        iconNewBitmap = Bitmap.createBitmap(2 * BUTTON_RADIUS, 2 * BUTTON_RADIUS, Bitmap.Config.ARGB_8888);
+        iconOptionsBitmap = Bitmap.createBitmap(2 * BUTTON_RADIUS, 2 * BUTTON_RADIUS, Bitmap.Config.ARGB_8888);
+        iconRetryBitmap = Bitmap.createBitmap(2 * BUTTON_RADIUS, 2 * BUTTON_RADIUS, Bitmap.Config.ARGB_8888);
+        iconHintBitmap = Bitmap.createBitmap(2 * BUTTON_RADIUS, 2 * BUTTON_RADIUS, Bitmap.Config.ARGB_8888);
+        iconHomeBitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        iconNewBitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        iconOptionsBitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        iconRetryBitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        iconHintBitmap.eraseColor(Color.argb(0, 0, 0, 0));
+        Utils.drawIcon(new Canvas(iconHomeBitmap), "home", BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS);
+        Utils.drawIcon(new Canvas(iconNewBitmap), "new", BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS);
+        Utils.drawIcon(new Canvas(iconOptionsBitmap), "options", BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS);
+        Utils.drawIcon(new Canvas(iconRetryBitmap), "retry", BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS);
+        Utils.drawIcon(new Canvas(iconHintBitmap), "hint", BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS);
 
         optionsBackground = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
         optionsBackground.eraseColor(Color.argb(128, 0, 0, 0));
@@ -574,7 +597,7 @@ public class Game implements InteractiveView
         Utils.drawHex(c, 0, 0, HEX_WIDTH / 2, HEX_HEIGHT / 2, 0x9900AA, HEX_DEPTH / 2, true);
 
         // Update button UI for levels vs random
-        updateUIState();
+        updateUIVariables();
 
         // Cache image of the game scene to speed up drawing
         cachedGameScene = Bitmap.createBitmap(screenWidth, screenHeight, Bitmap.Config.ARGB_8888);
@@ -598,9 +621,9 @@ public class Game implements InteractiveView
     }
 
     /**
-     * Updates the user interface state to show and hide the correct buttons.
+     * Updates the user interface variables to show and hide the correct buttons.
      */
-    private void updateUIState()
+    private void updateUIVariables()
     {
         playerWon = Utils.boardSolved(boardState);
         if (currentLevel != -1)
@@ -609,15 +632,7 @@ public class Game implements InteractiveView
             generateOptionsY = Math.round(2f * screenHeight);
             retryY = BUTTON_1_Y;
             hintY = BUTTON_2_Y;
-
-            // Draw only level icons
-            iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
-            Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "retry", retryX, retryY, BUTTON_RADIUS);
-            if (PlayerData.getLevelClearStates().charAt(currentLevel) == '2')
-            {
-                Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
-            }
+            perfectClear = (PlayerData.getLevelClearStates().charAt(currentLevel) == '2');
         }
         else
         {
@@ -625,14 +640,6 @@ public class Game implements InteractiveView
             generateOptionsY = BUTTON_2_Y;
             retryY = BUTTON_3_Y;
             hintY = BUTTON_4_Y;
-
-            // Draw only non-level icons
-            iconBitmap.eraseColor(Color.argb(0, 0, 0, 0));
-            Utils.drawIcon(new Canvas(iconBitmap), "home", EXIT_X, EXIT_Y, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "new", generateX, generateY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "options", generateOptionsX, generateOptionsY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "retry", retryX, retryY, BUTTON_RADIUS);
-            Utils.drawIcon(new Canvas(iconBitmap), "hint", hintX, hintY, BUTTON_RADIUS);
         }
     }
 
@@ -649,7 +656,7 @@ public class Game implements InteractiveView
         {
             randomBoardState(generationMinMoves, generationMaxMoves);
         }
-        updateUIState();
+        updateUIVariables();
     }
 
     /**
@@ -804,7 +811,7 @@ public class Game implements InteractiveView
                     {
                         PlayerData.updateLevelClearStates(currentLevel, 1);
                     }
-                    updateUIState();
+                    updateUIVariables();
                 }
             }
         }
@@ -1379,12 +1386,12 @@ public class Game implements InteractiveView
             if (textVisible)
             {
                 cachedCanvas.drawBitmap(textBackground, 0, 0, iconPaint);
-                cachedCanvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
+                drawIcons(cachedCanvas);
                 cachedCanvas.drawText(textToDraw, textX, TEXT_Y, textPaint);
             }
             else
             {
-                cachedCanvas.drawBitmap(iconBitmap, 0, 0, iconPaint);
+                drawIcons(cachedCanvas);
             }
         }
         // Draw the cached game scene
@@ -1574,6 +1581,32 @@ public class Game implements InteractiveView
         else
         {
             canvas.drawText(String.valueOf(generationMinMoves), OPTIONS_PANEL_VALUE_X, OPTIONS_PANEL_VALUE_MIN_Y, textPaint);
+        }
+    }
+
+    /**
+     * Draws the game icons onto the screen.
+     *
+     * @param   canvas - The canvas to draw on
+     */
+    private void drawIcons(Canvas canvas)
+    {
+        if (currentLevel != -1)
+        {
+            canvas.drawBitmap(iconHomeBitmap, EXIT_X - BUTTON_RADIUS, EXIT_Y - BUTTON_RADIUS, iconPaint);
+            canvas.drawBitmap(iconRetryBitmap, retryX - BUTTON_RADIUS, retryY - BUTTON_RADIUS, iconPaint);
+            if (perfectClear)
+            {
+                canvas.drawBitmap(iconHintBitmap, hintX - BUTTON_RADIUS, hintY - BUTTON_RADIUS, iconPaint);
+            }
+        }
+        else
+        {
+            canvas.drawBitmap(iconHomeBitmap, EXIT_X - BUTTON_RADIUS, EXIT_Y - BUTTON_RADIUS, iconPaint);
+            canvas.drawBitmap(iconNewBitmap, generateX - BUTTON_RADIUS, generateY - BUTTON_RADIUS, iconPaint);
+            canvas.drawBitmap(iconOptionsBitmap, generateOptionsX - BUTTON_RADIUS, generateOptionsY - BUTTON_RADIUS, iconPaint);
+            canvas.drawBitmap(iconRetryBitmap, retryX - BUTTON_RADIUS, retryY - BUTTON_RADIUS, iconPaint);
+            canvas.drawBitmap(iconHintBitmap, hintX - BUTTON_RADIUS, hintY - BUTTON_RADIUS, iconPaint);
         }
     }
 
