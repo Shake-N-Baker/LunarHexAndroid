@@ -96,6 +96,10 @@ public class MainActivity extends Activity
     {
         super.onResume();
         mainView.resume();
+        if (!SoundManager.musicPlaying())
+        {
+            SoundManager.playMusic(R.raw.milieu_soft_space);
+        }
     }
 
     /**
@@ -107,6 +111,7 @@ public class MainActivity extends Activity
     {
         super.onPause();
         mainView.pause();
+        SoundManager.stopMusic();
     }
 
     /**
