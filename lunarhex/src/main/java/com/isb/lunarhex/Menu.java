@@ -1141,6 +1141,7 @@ public class Menu implements InteractiveView
                             radius_width = (float) Utils.easeOut(easingTime, radius, (HEX_WIDTH / 2) - radius, MainView.TRANSITION_FRAMES);
                             radius_height = (float) Utils.easeOut(easingTime, radius, (HEX_HEIGHT / 2) - radius, MainView.TRANSITION_FRAMES);
                         }
+                        radius_height = radius_height * 1.1f;
                         Path p = new Path();
                         p.moveTo(easingX - radius_width, easingY);
                         p.lineTo(easingX - (0.5f * radius_width), easingY + (0.866f * radius_height));
