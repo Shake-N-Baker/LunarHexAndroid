@@ -429,7 +429,7 @@ public class Menu implements InteractiveView
         PREVIEW_BOARD_SPACING_X = Math.round(PREVIEW_BOARD_SPACING_X_PERCENT * screenWidth);
         PREVIEW_BOARD_SPACING_Y = Math.round(PREVIEW_BOARD_SPACING_Y_PERCENT * screenHeight);
         HEX_WIDTH = Math.round(Game.HEX_WIDTH_PERCENT * screenWidth);
-        HEX_HEIGHT = Math.round(Game.HEX_WIDTH_PERCENT * screenHeight);
+        HEX_HEIGHT = Math.round(Game.HEX_HEIGHT_PERCENT * screenHeight);
         TRANSITION_DISTANCE_X = Math.round(TRANSITION_DISTANCE_X_PERCENT * screenWidth);
         MAX_DRAG_VELOCITY_X = Math.round(MAX_DRAG_VELOCITY_X_PERCENT * screenWidth);
         DRAG_VELOCITY_RESISTANCE_X = Math.round(DRAG_VELOCITY_RESISTANCE_X_PERCENT * screenWidth);
@@ -520,10 +520,8 @@ public class Menu implements InteractiveView
         originalPreviewEndY = new ArrayList<Float>();
         int gameBoardX = Math.round(Game.BOARD_X_PERCENT * screenWidth);
         int gameBoardY = Math.round(Game.BOARD_Y_PERCENT * screenHeight);
-        int gameHexWidth = Math.round(Game.HEX_WIDTH_PERCENT * screenWidth);
-        int gameHexHeight = Math.round(Game.HEX_HEIGHT_PERCENT * screenHeight);
-        gameBoardX += (gameHexWidth / 2f);
-        gameBoardY += (gameHexHeight / 2f);
+        gameBoardX += (HEX_WIDTH / 2f);
+        gameBoardY += (HEX_HEIGHT / 2f);
         for (int x = 0; x < 5; x++)
         {
             for (int y = 0; y < 6; y++)
@@ -538,17 +536,17 @@ public class Menu implements InteractiveView
                 }
 
                 previewStartX.add((float) ((PREVIEW_BOARD_SPACING_X * x) + PREVIEW_BOARD_X));
-                previewEndX.add((float) ((gameHexWidth * 0.75f * x) + gameBoardX));
+                previewEndX.add((float) ((HEX_WIDTH * 0.75f * x) + gameBoardX));
                 // Columns of the board alternate in height
                 if (x % 2 == 0)
                 {
                     previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * ((float) y + 0.5f)) + PREVIEW_BOARD_Y));
-                    previewEndY.add((float) ((gameHexHeight * ((float) y + 0.5f)) + gameBoardY));
+                    previewEndY.add((float) ((HEX_HEIGHT * ((float) y + 0.5f)) + gameBoardY));
                 }
                 else
                 {
                     previewStartY.add((float) ((PREVIEW_BOARD_SPACING_Y * y) + PREVIEW_BOARD_Y));
-                    previewEndY.add((float) ((gameHexHeight * y) + gameBoardY));
+                    previewEndY.add((float) ((HEX_HEIGHT * y) + gameBoardY));
                 }
             }
         }
