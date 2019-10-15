@@ -4,7 +4,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/lunar_hex_launcher"
+        android:icon="@mipmap/lunar_hex_adaptive_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
