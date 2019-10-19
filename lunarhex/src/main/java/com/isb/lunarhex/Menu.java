@@ -27,6 +27,7 @@ public class Menu implements InteractiveView
     private static final String RANDOM_GAME_TEXT = "RANDOM";
     private static final String TITLE_TEXT = "LUNAR HEX";
     private static final String GITHUB_LINK_TEXT = "VIEW SOURCE CODE ON GITHUB";
+    private static final String PRIVACY_POLICY_LINK_TEXT = "PRIVACY POLICY";
     private static final String AUDIO_HEADER_TEXT = "AUDIO";
     private static final String CREDITS_HEADER_TEXT = "CREDITS";
     private static final String SOUND_VOLUME_TEXT = "SOUND:";
@@ -47,14 +48,17 @@ public class Menu implements InteractiveView
     private static final float HAMBURGER_TEXT_X_PERCENT = 12f / 100f;
     private static final float VOLUME_TOUCH_BUFFER_PERCENT = 3f / 100f;
     private static final float AUDIO_TEXT_Y_PERCENT = 14f / 100f;
-    private static final float CREDITS_TEXT_Y_PERCENT = 63f / 100f;
-    private static final float SOUND_TEXT_Y_PERCENT = 24f / 100f;
-    private static final float MUSIC_TEXT_Y_PERCENT = 35f / 100f;
+    private static final float CREDITS_TEXT_Y_PERCENT = 57f / 100f;
+    private static final float SOUND_TEXT_Y_PERCENT = 21f / 100f;
+    private static final float MUSIC_TEXT_Y_PERCENT = 32f / 100f;
     private static final float VOLUME_CONTROL_X_PERCENT = 32f / 100f;
     private static final float VOLUME_CONTROL_WIDTH_PERCENT = 47f / 100f;
     private static final float GITHUB_LINK_X_PERCENT = 8f / 100f;
-    private static final float GITHUB_LINK_Y_PERCENT = 49f / 100f;
+    private static final float GITHUB_LINK_Y_PERCENT = 89f / 100f;
     private static final float GITHUB_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
+    private static final float PRIVACY_POLICY_LINK_X_PERCENT = 8f / 100f;
+    private static final float PRIVACY_POLICY_LINK_Y_PERCENT = 44f / 100f;
+    private static final float PRIVACY_POLICY_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float TWITTER_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float MUSIC_BY_LINK_TOUCH_BUFFER_PERCENT = 4f / 100f;
     private static final float SELECTION_CIRCLE_X_PERCENT = 50f / 100f;
@@ -100,6 +104,10 @@ public class Menu implements InteractiveView
     private static int GITHUB_LINK_Y;
     private static int GITHUB_LINK_TOUCH_BUFFER_X;
     private static int GITHUB_LINK_TOUCH_BUFFER_Y;
+    private static int PRIVACY_POLICY_LINK_X;
+    private static int PRIVACY_POLICY_LINK_Y;
+    private static int PRIVACY_POLICY_LINK_TOUCH_BUFFER_X;
+    private static int PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y;
     private static int TWITTER_LINK_X;
     private static int TWITTER_LINK_Y;
     private static int TWITTER_LINK_TOUCH_BUFFER_X;
@@ -175,6 +183,11 @@ public class Menu implements InteractiveView
      * The width of the github link text
      */
     private int githubLinkWidth;
+
+    /**
+     * The width of the privacy policy link text
+     */
+    private int privacyPolicyLinkWidth;
 
     /**
      * The width of the twitter link text
@@ -408,6 +421,10 @@ public class Menu implements InteractiveView
         GITHUB_LINK_Y = Math.round(GITHUB_LINK_Y_PERCENT * screenHeight);
         GITHUB_LINK_TOUCH_BUFFER_X = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
         GITHUB_LINK_TOUCH_BUFFER_Y = Math.round(GITHUB_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
+        PRIVACY_POLICY_LINK_X = Math.round(PRIVACY_POLICY_LINK_X_PERCENT * screenWidth);
+        PRIVACY_POLICY_LINK_Y = Math.round(PRIVACY_POLICY_LINK_Y_PERCENT * screenHeight);
+        PRIVACY_POLICY_LINK_TOUCH_BUFFER_X = Math.round(PRIVACY_POLICY_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
+        PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y = Math.round(PRIVACY_POLICY_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         TWITTER_LINK_TOUCH_BUFFER_X = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
         TWITTER_LINK_TOUCH_BUFFER_Y = Math.round(TWITTER_LINK_TOUCH_BUFFER_PERCENT * screenHeight);
         MUSIC_BY_LINK_TOUCH_BUFFER_X = Math.round(MUSIC_BY_LINK_TOUCH_BUFFER_PERCENT * screenWidth);
@@ -485,6 +502,9 @@ public class Menu implements InteractiveView
         textPaint.getTextBounds(GITHUB_LINK_TEXT, 0, GITHUB_LINK_TEXT.length(), temp);
         githubLinkWidth = temp.width();
         hamburgerMenuTextHeight = temp.height();
+        temp = new Rect();
+        textPaint.getTextBounds(PRIVACY_POLICY_LINK_TEXT, 0, PRIVACY_POLICY_LINK_TEXT.length(), temp);
+        privacyPolicyLinkWidth = temp.width();
         temp = new Rect();
         textPaint.getTextBounds(CREATED_BY_TEXT, 0, CREATED_BY_TEXT.length(), temp);
         hamburgerTextSpacingY = (int) (temp.height() * 1.6f);
@@ -590,6 +610,15 @@ public class Menu implements InteractiveView
                         {
                             // View Github page
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Shake-N-Baker/LunarHexAndroid"));
+                            mainView.getContext().startActivity(browserIntent);
+                        }
+                    }
+                    if (((PRIVACY_POLICY_LINK_X - PRIVACY_POLICY_LINK_TOUCH_BUFFER_X) <= Touch.x) && (Touch.x <= (PRIVACY_POLICY_LINK_X + privacyPolicyLinkWidth + PRIVACY_POLICY_LINK_TOUCH_BUFFER_X)) && ((PRIVACY_POLICY_LINK_Y - PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y) <= Touch.y) && (Touch.y <= (PRIVACY_POLICY_LINK_Y + hamburgerMenuTextHeight + PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y)))
+                    {
+                        if (((PRIVACY_POLICY_LINK_X - PRIVACY_POLICY_LINK_TOUCH_BUFFER_X) <= Touch.downX) && (Touch.downX <= (PRIVACY_POLICY_LINK_X + privacyPolicyLinkWidth + PRIVACY_POLICY_LINK_TOUCH_BUFFER_X)) && ((PRIVACY_POLICY_LINK_Y - PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y) <= Touch.downY) && (Touch.downY <= (PRIVACY_POLICY_LINK_Y + hamburgerMenuTextHeight + PRIVACY_POLICY_LINK_TOUCH_BUFFER_Y)))
+                        {
+                            // View Privacy Policy
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://ianscottbaker.com/privacy-lunar-hex"));
                             mainView.getContext().startActivity(browserIntent);
                         }
                     }
@@ -1218,7 +1247,7 @@ public class Menu implements InteractiveView
      * Draws the hamburger menu icon, text and components.
      *
      * @param   canvas - The canvas to draw on
-     * @param   transparency - 0.0 to 1.0 the transparency with which to draw
+     * @param   transparencyPercent - 0.0 to 1.0 the transparency with which to draw
      */
     private void drawHamburgerMenu(Canvas canvas, float transparencyPercent)
     {
@@ -1249,6 +1278,7 @@ public class Menu implements InteractiveView
             textPaint.setColor(Color.argb(255, 51, 102, 187));
             textPaint.setUnderlineText(true);
             canvas.drawText(GITHUB_LINK_TEXT, GITHUB_LINK_X, GITHUB_LINK_Y, textPaint);
+            canvas.drawText(PRIVACY_POLICY_LINK_TEXT, PRIVACY_POLICY_LINK_X, PRIVACY_POLICY_LINK_Y, textPaint);
             canvas.drawText(TWITTER_LINK_TEXT, TWITTER_LINK_X, TWITTER_LINK_Y, textPaint);
             canvas.drawText(MUSIC_BY_LINK_TEXT, MUSIC_BY_LINK_X, MUSIC_BY_LINK_Y, textPaint);
             textPaint.setColor(Color.argb(255, 255, 255, 255));
