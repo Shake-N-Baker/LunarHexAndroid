@@ -1,7 +1,6 @@
 package com.isb.lunarhex;
 
 import android.graphics.Canvas;
-import android.os.Bundle;
 import android.view.MotionEvent;
 
 /**
